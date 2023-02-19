@@ -1,0 +1,10 @@
+some backends have `IO_set_fd_limit` thats because syscall/posix is not portable enough to handle different types of fds.
+so we are kinda emulating IO_* functions based on type of fd.
+
+as example;
+in linux you can call write() for every fd. doesnt matter type of fd socket or file etc.
+but in windows you need to call send() instead of write(). this breaks portability of function.
+so for windows backend IO_write checks type of fd then calls right function write() or send().
+
+and this is not related about how windows sucks even other unix kernels does same thing for spectific functions.
+freebsd has completely different sendfile() and dstfd only able to be socket.
