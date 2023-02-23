@@ -6,8 +6,8 @@
 typedef int socklen_t;
 #pragma comment(lib, "ws2_32.lib")
 PRE{
-	WSADATA wsa;
-	if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0){
-		PR_abort();
-	}
+  WSADATA wsa;
+  if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0){
+    PR_abort();
+  }
 }

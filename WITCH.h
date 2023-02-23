@@ -13,9 +13,9 @@
 #define CONCAT4(_0_m, _1_m, _2_m, _3_m) _CONCAT4(_0_m, _1_m, _2_m, _3_m)
 
 #ifndef WITCH_INCLUDE_PATH
-	#define _WITCH_PATH(p0) <WITCH/p0>
+  #define _WITCH_PATH(p0) <WITCH/p0>
 #else
-	#define _WITCH_PATH(p0) <WITCH_INCLUDE_PATH/p0>
+  #define _WITCH_PATH(p0) <WITCH_INCLUDE_PATH/p0>
 #endif
 
 #include _WITCH_PATH(internal/COMPILER.h)

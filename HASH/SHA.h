@@ -7,11 +7,11 @@
 #define HASH_SHA256_size 32
 
 void HASH_SHA256(void *hash, const void *data, uintptr_t size){
-	SHA256((const unsigned char *)data, size, (unsigned char *)hash);
+  SHA256((const unsigned char *)data, size, (unsigned char *)hash);
 }
 
 #define HASH_SHA512_size 64
 
 void HASH_SHA512(void *hash, const void *data, uintptr_t size){
-	SHA512((const unsigned char *)data, size, (unsigned char *)hash);
+  SHA512((const unsigned char *)data, size, (unsigned char *)hash);
 }

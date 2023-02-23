@@ -11,21 +11,21 @@
 typedef struct EV_t EV_t;
 
 typedef struct{
-	VEC_t nodes;
-	TH_mutex_t mutex;
-	ev_async evsync;
+  VEC_t nodes;
+  TH_mutex_t mutex;
+  ev_async evsync;
 }_EV_queue_t;
 
 #include _WITCH_PATH(EV/backend/0/method/timer/types.h)
 #include _WITCH_PATH(EV/backend/0/method/tp/types.h)
 
 struct EV_t{
-	struct ev_loop *loop;
+  struct ev_loop *loop;
 
-	_EV_queue_t queue;
+  _EV_queue_t queue;
 
-	_EV_tp_t tp;
+  _EV_tp_t tp;
 
-	/* w by listener, r by user */
-	auint32_t stat[EV_total_e];
+  /* w by listener, r by user */
+  auint32_t stat[EV_total_e];
 };

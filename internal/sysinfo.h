@@ -1,44 +1,44 @@
 #pragma once
 
 #ifndef PAGE_SIZE
-	#define PAGE_SIZE 4096
+  #define PAGE_SIZE 4096
 #endif
 
 /* defining THREADS in compile time can help optimize more */
 /* but it also removes portability of executable */
 #if defined(_WITCH_num_online_cpus)
-	#define WITCH_num_online_cpus() _WITCH_num_online_cpus
+  #define WITCH_num_online_cpus() _WITCH_num_online_cpus
 #else
-	#if defined(WOS_UNIX) && WITCH_LIBC
-		#include _WITCH_PATH(PR/PR.h)
-		#include <unistd.h>
-		uint32_t _WITCH_num_online_cpus;
-		PRE{
-			sint32_t ret = sysconf(_SC_NPROCESSORS_ONLN);
-			if(ret < 0){
-				PR_abort();
-			}
-			_WITCH_num_online_cpus = ret;
-		}
-		uint32_t WITCH_num_online_cpus(void){
-			return _WITCH_num_online_cpus;
-		}
-	#elif defined(WOS_WINDOWS)
-		#include _WITCH_PATH(include/windows/windows.h)
-		uint32_t _WITCH_num_online_cpus;
-		PRE{
-			SYSTEM_INFO sysinfo;
-			GetSystemInfo(&sysinfo);
-			_WITCH_num_online_cpus = sysinfo.dwNumberOfProcessors;
-		}
-		uint32_t WITCH_num_online_cpus(void){
-			return _WITCH_num_online_cpus;
-		}
-	#elif defined(WITCH_PLATFORM_linux_kernel_module)
-		uint32_t WITCH_num_online_cpus(void){
-			return num_online_cpus();
-		}
-	#else
-		#error ?
-	#endif
+  #if defined(WOS_UNIX) && WITCH_LIBC
+    #include _WITCH_PATH(PR/PR.h)
+    #include <unistd.h>
+    uint32_t _WITCH_num_online_cpus;
+    PRE{
+      sint32_t ret = sysconf(_SC_NPROCESSORS_ONLN);
+      if(ret < 0){
+        PR_abort();
+      }
+      _WITCH_num_online_cpus = ret;
+    }
+    uint32_t WITCH_num_online_cpus(void){
+      return _WITCH_num_online_cpus;
+    }
+  #elif defined(WOS_WINDOWS)
+    #include _WITCH_PATH(include/windows/windows.h)
+    uint32_t _WITCH_num_online_cpus;
+    PRE{
+      SYSTEM_INFO sysinfo;
+      GetSystemInfo(&sysinfo);
+      _WITCH_num_online_cpus = sysinfo.dwNumberOfProcessors;
+    }
+    uint32_t WITCH_num_online_cpus(void){
+      return _WITCH_num_online_cpus;
+    }
+  #elif defined(WITCH_PLATFORM_linux_kernel_module)
+    uint32_t WITCH_num_online_cpus(void){
+      return num_online_cpus();
+    }
+  #else
+    #error ?
+  #endif
 #endif
