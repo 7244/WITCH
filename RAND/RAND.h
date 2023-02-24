@@ -43,6 +43,24 @@ void RAND_soft_ram(void *ptr, uintptr_t size){
   }
 }
 
+/* bob jenkins prng */
+uint32_t RAND_bjprng32(uint32_t p){
+  p += (p << 10);
+  p ^= (p >> 6);
+  p += (p << 3);
+  p ^= (p >> 11);
+  p += (p << 15);
+  return p;
+}
+
+uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
+  uint32_t r = 0;
+  r = RAND_bjprng32(r + p0);
+  r = RAND_bjprng32(r + p1);
+  r = RAND_bjprng32(r + p2);
+  return r;
+}
+
 sint8_t RAND_soft_snum8(sint8_t min, sint8_t max){
   return RAND_soft_8() % ((max - min) + 1) + min;
 }
