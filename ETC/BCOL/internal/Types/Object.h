@@ -23,6 +23,7 @@ struct ObjectData_t{
 };
 
 #define BLL_set_prefix ObjectList
+#define BLL_set_SafeNext 2
 #define BLL_set_AreWeInsideStruct 1
 #define BLL_set_Language 1
 #define BLL_set_type_node uint32_t

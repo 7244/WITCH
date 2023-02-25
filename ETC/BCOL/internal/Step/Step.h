@@ -68,6 +68,7 @@ void Step(
       ObjectData->Position = NewObjectPosition;
     }
 
+    gt_Object0Unlinked:
     ObjectID = this->ObjectList.EndSafeNext();
   }
 

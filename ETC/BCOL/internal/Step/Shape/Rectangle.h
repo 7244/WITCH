@@ -27,9 +27,13 @@ _f WantedCollisionRequesters = 0;
         ShapeData->ShapeID,
         {RectangleGridX, RectangleMiddleGridY},
         &Contact);
+      if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+        goto gt_Object0Unlinked;
+      }
       if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
         continue;
       };
+
       _vf oRectangle;
       _vf oDirection;
       CPC_Rectangle_Square(
@@ -63,9 +67,13 @@ _f WantedCollisionRequesters = 0;
           ShapeData->ShapeID,
           {RectangleGridX, RectangleGridY},
           &Contact);
+        if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+          goto gt_Object0Unlinked;
+        }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
           continue;
         };
+
         _vf oRectangle;
         _vf oDirection;
         CPC_Rectangle_Square(
@@ -100,9 +108,13 @@ _f WantedCollisionRequesters = 0;
           ShapeData->ShapeID,
           {RectangleGridX, RectangleGridY},
           &Contact);
+        if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+          goto gt_Object0Unlinked;
+        }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
           continue;
         };
+
         _vf oRectangle;
         _vf oDirection;
         CPC_Rectangle_Square(

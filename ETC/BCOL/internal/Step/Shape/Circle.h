@@ -27,6 +27,9 @@ _f WantedCollisionRequesters = 0;
         ShapeData->ShapeID,
         {CircleGridX, CircleMiddleGridY},
         &Contact);
+      if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+        goto gt_Object0Unlinked;
+      }
       if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
         continue;
       };
@@ -55,6 +58,9 @@ _f WantedCollisionRequesters = 0;
           ShapeData->ShapeID,
           {CircleGridX, CircleMiddleGridY},
           &ContactResult);
+        if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+          goto gt_Object0Unlinked;
+        }
       #endif
 
       WantedPosition += oCircle;
@@ -84,9 +90,13 @@ _f WantedCollisionRequesters = 0;
           ShapeData->ShapeID,
           {CircleGridX, CircleGridY},
           &Contact);
+        if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+          goto gt_Object0Unlinked;
+        }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
           continue;
         };
+
         _vf oCircle;
         _vf oDirection;
         CPC_Circle_Square(
@@ -111,6 +121,9 @@ _f WantedCollisionRequesters = 0;
             ShapeData->ShapeID,
             {CircleGridX, CircleGridY},
             &ContactResult);
+          if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+            goto gt_Object0Unlinked;
+          }
         #endif
 
         WantedPosition += oCircle;
@@ -141,9 +154,13 @@ _f WantedCollisionRequesters = 0;
           ShapeData->ShapeID,
           {CircleGridX, CircleGridY},
           &Contact);
+        if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+          goto gt_Object0Unlinked;
+        }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
           continue;
         };
+
         _vf oCircle;
         _vf oDirection;
         CPC_Circle_Square(
@@ -168,6 +185,9 @@ _f WantedCollisionRequesters = 0;
             ShapeData->ShapeID,
             {CircleGridX, CircleGridY},
             &ContactResult);
+          if(this->ObjectList.CheckSafeNext(0) != ObjectID){
+            goto gt_Object0Unlinked;
+          }
         #endif
 
         WantedPosition += oCircle;
