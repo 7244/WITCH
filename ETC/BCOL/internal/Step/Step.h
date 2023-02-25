@@ -1,10 +1,9 @@
 void Step(
   _f delta
 ){
-  TraverseObjects_t TraverseObjects;
-  this->TraverseObjects_init(&TraverseObjects);
-  while(this->TraverseObjects_loop(&TraverseObjects)){
-    auto ObjectID = TraverseObjects.ObjectID;
+  ObjectID_t ObjectID = this->ObjectList.GetNodeFirst();
+  while(ObjectID != this->ObjectList.dst){
+    this->ObjectList.StartSafeNext(ObjectID);
     auto ObjectData = this->GetObjectData(ObjectID);
 
     /* bad */
@@ -68,6 +67,8 @@ void Step(
     else{
       ObjectData->Position = NewObjectPosition;
     }
+
+    ObjectID = this->ObjectList.EndSafeNext();
   }
 
   #if ETC_BCOL_set_StepNumber == 1
