@@ -231,6 +231,24 @@ uint32_t LOG64(uint64_t num, uint8_t base){
   #define WITCH_c(_m) (_m)
 #endif
 
+/* compile time assert */
+#ifndef __cta
+  /* taken from stackoverflow.com/a/3385694 */
+  #define __cta_static_assert(COND,MSG) typedef char __cta_##MSG[(!!(COND))*2-1]
+  #define __cta_3(X,L) __cta_static_assert(X,static_assertion_at_line_##L)
+  #define __cta_2(X,L) __cta_3(X,L)
+  #define __cta(X) __cta_2(X,__LINE__)
+#endif
+
+#ifndef __sizeof0_struct
+  #define __sizeof0_struct __sizeof0_struct
+  typedef struct{
+    uint8_t p[0];
+  }__sizeof0_struct;
+
+  __cta(sizeof(__sizeof0_struct) == 0);
+#endif
+
 #if defined(WL_CPP)
   #ifndef __is_type_same
     template <typename, typename>
@@ -278,6 +296,34 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     struct __conditional_value_t {
       static constexpr auto value = __conditional_value<_Test, _Ty1, _Ty2>::value;
     };
+  #endif
+  #ifndef __sizeof
+    #define __sizeof __sizeof
+    /*
+    template <typename t>
+    inline constexpr uintptr_t __sizeof(){
+      return __conditional_value<
+        sizeof(t) == 0,
+        0,
+        __conditional_value<
+          std::is_empty<t>,
+          0,
+          sizeof(t)
+        >::value
+      >::value;
+    }
+    */
+    inline constexpr uintptr_t __sizeof(auto t){
+      return __conditional_value<
+        sizeof(t) == 0,
+        0,
+        __conditional_value<
+          std::is_empty<t>::value,
+          0,
+          sizeof(t)
+        >::value
+      >::value;
+    }
   #endif
   #ifndef __ofof
     #define __ofof __ofof
