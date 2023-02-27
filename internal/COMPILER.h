@@ -240,13 +240,10 @@ uint32_t LOG64(uint64_t num, uint8_t base){
   #define __cta(X) __cta_2(X,__LINE__)
 #endif
 
-#ifndef __sizeof0_struct
-  #define __sizeof0_struct __sizeof0_struct
+#ifndef __empty_struct
+  #define __empty_struct __empty_struct
   typedef struct{
-    uint8_t p[0];
-  }__sizeof0_struct;
-
-  __cta(sizeof(__sizeof0_struct) == 0);
+  }__empty_struct;
 #endif
 
 #if defined(WL_CPP)
@@ -296,34 +293,6 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     struct __conditional_value_t {
       static constexpr auto value = __conditional_value<_Test, _Ty1, _Ty2>::value;
     };
-  #endif
-  #ifndef __sizeof
-    #define __sizeof __sizeof
-    /*
-    template <typename t>
-    inline constexpr uintptr_t __sizeof(){
-      return __conditional_value<
-        sizeof(t) == 0,
-        0,
-        __conditional_value<
-          std::is_empty<t>,
-          0,
-          sizeof(t)
-        >::value
-      >::value;
-    }
-    */
-    inline constexpr uintptr_t __sizeof(auto t){
-      return __conditional_value<
-        sizeof(t) == 0,
-        0,
-        __conditional_value<
-          std::is_empty<t>::value,
-          0,
-          sizeof(t)
-        >::value
-      >::value;
-    }
   #endif
   #ifndef __ofof
     #define __ofof __ofof
@@ -390,50 +359,46 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     }
   #endif
   #ifndef __dme
-    template <__compiletime_str StringName = "", typename type = long double>
-    struct __dme_t{
+    template <__compiletime_str StringName = "", typename type = __empty_struct, typename CommonData_t = __empty_struct>
+    struct __dme_t : CommonData_t{
       const char *sn = StringName;
       // data type
       using dt = type;
       /* data struct size */
       uint32_t m_DSS = __conditional_value<
-          std::is_same<
-            type, 
-            long double
-          >::value, 
-          0, 
-            __conditional_value<
-              std::is_empty<dt>::value,
-              0,
-              sizeof(dt)
-            >::value
-        >::value;
+        std::is_empty<dt>::value,
+        0,
+        sizeof(dt)
+      >::value;
     };
     #define __dme(p0, p1) \
       using CONCAT(p0,_t) = __dme_t<STR(p0), __return_type_of<decltype([] { \
         struct{p1} v; \
         return v; \
-      })>>; \
+      })>, CommonData>; \
       CONCAT(p0,_t) p0
-    template <typename inherited_t>
+    template <typename inherited_t, typename CommonData_t = __empty_struct>
     struct __dme_inherit{
+      using CommonData = CommonData_t;
+      using _dme_type = __dme_t<"", __empty_struct, CommonData>;
+
       static constexpr uint32_t GetMemberAmount(){
-        return sizeof(inherited_t) / sizeof(__dme_t<>);
+        return sizeof(inherited_t) / sizeof(_dme_type);
       }
 
       /* number to address */
-      __dme_t<> *NA(uintptr_t CI){
-        return (__dme_t<> *)((uint8_t *)this + CI * sizeof(__dme_t<>));
+      _dme_type *NA(uintptr_t CI){
+        return (_dme_type *)((uint8_t *)this + CI * sizeof(_dme_type));
       }
 
       /* address to number */
       static constexpr uintptr_t AN(auto inherited_t:: *C){
-        return __ofof(C) / sizeof(__dme_t<>);
+        return __ofof(C) / sizeof(_dme_type);
       }
 
       /* is number invalid */
       bool ICI(uintptr_t CI){
-        return CI * sizeof(__dme_t<>) > sizeof(inherited_t);
+        return CI * sizeof(_dme_type) > sizeof(inherited_t);
       }
     };
   #endif
