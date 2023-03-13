@@ -581,7 +581,7 @@ _BLL_POFTWBIT(NewNode)
     _BLL_POFTWBIT(_gln)(_BLL_PBLLTFFC srcNodeReference)->PrevNodeReference = NodeReference;
     _BLL_GetList->src = NodeReference;
     _BLL_POFTWBIT(_Node_Construct)(_BLL_PBLLTFFC srcNodeReference);
-    return srcNodeReference;
+    return NodeReference;
   }
   _BLL_SOFTWBIT
   _P(NodeReference_t)
@@ -625,7 +625,7 @@ _BLL_POFTWBIT(NewNode)
     #endif
     _BLL_GetList->dst = NodeReference;
     _BLL_POFTWBIT(_Node_Construct)(_BLL_PBLLTFFC dstNodeReference);
-    return dstNodeReference;
+    return NodeReference;
   }
   _BLL_SOFTWBIT
   _P(NodeReference_t)
