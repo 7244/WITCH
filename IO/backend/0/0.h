@@ -7,6 +7,7 @@
   /* we actually dont need this */
   /* but some retard standard libs need */
   #include <fcntl.h>
+  #include <sys/mman.h>
   typedef struct stat64 IO_stat_t;
 #else
   #include <asm/fcntl.h>
@@ -24,6 +25,16 @@
     typedef struct stat64 IO_stat_t;
   #else
     #error ?
+  #endif
+
+  #ifndef MAP_SHARED
+    #define MAP_SHARED 0x01
+  #endif
+  #ifndef MAP_PRIVATE
+    #define MAP_PRIVATE 0x02
+  #endif
+  #ifndef MAP_SHARED_VALIDATE
+    #define MAP_SHARED_VALIDATE 0x03
   #endif
 #endif
 
@@ -278,8 +289,8 @@ int IO_epoll_create(int flags){
   return syscall1(__NR_epoll_create1, flags);
 }
 
-void *IO_mmap(void *addr, IO_size_t length, int prot, int flags, int fd, IO_off_t offset){
-  return (void *)syscall6(__NR_mmap, (uintptr_t)addr, length, prot, flags, fd, offset);
+sintptr_t IO_mmap(void *addr, IO_size_t length, int prot, int flags, int fd, IO_off_t offset){
+  return syscall6(__NR_mmap, (uintptr_t)addr, length, prot, flags, fd, offset);
 }
 void IO_munmap(void *addr, IO_size_t length){
   int r = syscall2(__NR_munmap, (uintptr_t)addr, length);
