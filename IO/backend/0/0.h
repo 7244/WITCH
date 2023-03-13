@@ -277,3 +277,13 @@ bool IO_IsPathExists(const void *path){
 int IO_epoll_create(int flags){
   return syscall1(__NR_epoll_create1, flags);
 }
+
+void *IO_mmap(void *addr, IO_size_t length, int prot, int flags, int fd, IO_off_t offset){
+  return (void *)syscall6(__NR_mmap, (uintptr_t)addr, length, prot, flags, fd, offset);
+}
+void IO_munmap(void *addr, IO_size_t length){
+  int r = syscall2(__NR_munmap, (uintptr_t)addr, length);
+  if(r != 0){
+    PR_abort();
+  }
+}
