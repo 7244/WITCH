@@ -31,7 +31,7 @@ sint32_t MD_SCR_open(MD_SCR_t *scr){
   scr->texture = 0;
   scr->device = 0;
   scr->context = 0;
-  src->map_result = ~S_OK;
+  scr->map_result = ~S_OK;
   scr->imDed = 0;
 
   IDXGIFactory1 *factory = 0;
