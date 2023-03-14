@@ -28,7 +28,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
   if (EncoderSetting->CodecStandard != ETC_VCODECSTD_H264) {
     return ETC_VEDC_Encode_Error_EncoderDoesntSupportCodecStandard;
   }
-  if (EncoderSetting->RateControl.Type != ETC_VEDC_EncoderSetting_RateControlType_CBR) {
+  if (EncoderSetting->RateControl.Type != ETC_VEDC_EncoderSetting_RateControlType_VBR) {
     return ETC_VEDC_Encode_Error_InvalidRateControl;
   }
 
@@ -145,7 +145,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_SetRateControl(
 ) {
   _ETC_VEDC_Encode_Encoder_nvenc_t* Encoder = (_ETC_VEDC_Encode_Encoder_nvenc_t*)*EncoderData;
 
-  if (RateControl->Type != ETC_VEDC_EncoderSetting_RateControlType_CBR) {
+  if (RateControl->Type != ETC_VEDC_EncoderSetting_RateControlType_VBR) {
     return ETC_VEDC_Encode_Error_InvalidRateControl;
   }
 
