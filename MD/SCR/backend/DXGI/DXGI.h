@@ -20,6 +20,8 @@ typedef struct{
   ID3D11Device *device;
   ID3D11DeviceContext *context;
   D3D11_TEXTURE2D_DESC tex_desc;
+  D3D11_MAPPED_SUBRESOURCE map;
+  HRESULT map_result;
   bool imDed;
 
   MD_SCR_Geometry_t Geometry;
@@ -29,6 +31,7 @@ sint32_t MD_SCR_open(MD_SCR_t *scr){
   scr->texture = 0;
   scr->device = 0;
   scr->context = 0;
+  src->map_result = ~S_OK;
   scr->imDed = 0;
 
   IDXGIFactory1 *factory = 0;
@@ -189,7 +192,6 @@ void MD_SCR_close(MD_SCR_t *scr){
 }
 
 uint8_t *MD_SCR_read(MD_SCR_t *scr){
-
   if (scr->imDed) {
     if (MD_SCR_open(scr)) {
       return 0;
@@ -225,20 +227,27 @@ uint8_t *MD_SCR_read(MD_SCR_t *scr){
       std::cout << "DXGI bad errors:" << std::hex << result << '\n';
       return 0;
     }
-    return (uint8_t *)map.pData;
+    if(scr->map_result == S_OK){
+      goto gt_succ;
+    }
+    else{
+      return 0;
+    }
   }
   if(desktop_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void **)&tex) != S_OK){
     return 0;
   }
 
+  if(scr->map_result == S_OK){
+    scr->context->Unmap(scr->texture, 0);
+  }
+
   scr->context->CopyResource(scr->texture, tex);
 
-  D3D11_MAPPED_SUBRESOURCE map;
-  HRESULT map_result = scr->context->Map(scr->texture, 0, D3D11_MAP_READ, 0, &map);
-
-  scr->Geometry.LineSize = map.RowPitch;
-
-  scr->context->Unmap(scr->texture, 0);
+  scr->map_result = scr->context->Map(scr->texture, 0, D3D11_MAP_READ, 0, &scr->map);
+  if(scr->map_result != S_OK){
+    return 0;
+  }
 
   if(tex){
     tex->Release();
@@ -252,8 +261,7 @@ uint8_t *MD_SCR_read(MD_SCR_t *scr){
     return 0;
   }
 
-  if(map_result != S_OK){
-    return 0;
-  }
-  return (uint8_t *)map.pData;
+  gt_succ:
+  scr->Geometry.LineSize = scr->map.RowPitch;
+  return (uint8_t *)scr->map.pData;
 }
