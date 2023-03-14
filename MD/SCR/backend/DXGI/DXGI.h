@@ -223,8 +223,9 @@ uint8_t *MD_SCR_read(MD_SCR_t *scr){
       MD_SCR_close(scr);
       scr->imDed = true;
       std::cout << "DXGI bad errors:" << std::hex << result << '\n';
+      return 0;
     }
-    return 0;
+    return (uint8_t *)map.pData;
   }
   if(desktop_resource->QueryInterface(__uuidof(ID3D11Texture2D), (void **)&tex) != S_OK){
     return 0;
