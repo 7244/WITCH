@@ -1051,13 +1051,9 @@ void cursor_close(CursorReference_t CursorReference){
   this->CursorList.unlrec(CursorReference);
 }
 
-void SetLineWidth(uint32_t LineWidth){
-  if(LineWidth == this->LineWidth){
-    return;
-  }
-  bool wib = LineWidth < this->LineWidth;
-  this->LineWidth = LineWidth;
-  if(wib){
+/* triggers width change for all lines */
+void NowAllCharacterSizesAre(bool Smaller){
+  if(Smaller){
     LineReference_t LineReference = this->LineList.GetNodeFirst();
     while(LineReference != this->LineList.dst){
       _LineList_Node_t *LineNode = this->LineList.GetNodeByReference(LineReference);
@@ -1093,6 +1089,15 @@ void SetLineWidth(uint32_t LineWidth){
       LineReference = LineNode->NextNodeReference;
     }
   }
+}
+
+void SetLineWidth(uint32_t LineWidth){
+  if(LineWidth == this->LineWidth){
+    return;
+  }
+  bool wib = LineWidth < this->LineWidth;
+  this->LineWidth = LineWidth;
+  NowAllCharacterSizesAre(wib);
 }
 
 struct CursorInformation_t{

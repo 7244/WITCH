@@ -321,25 +321,12 @@ _BLL_POFTWBIT(_grecnrofnr)
 #if BLL_set_IsNodeUnlinked == 1
   _BLL_SOFTWBIT
   bool
-  _BLL_POFTWBIT(IsNodeUnlinked)
-  (
-    _BLL_DBLLTFFC
-    _P(Node_t) *Node
-  ){
-    if(Node->PrevNodeReference.NRI == (BLL_set_type_node)-1){
-      return 1;
-    }
-    return 0;
-  }
-  _BLL_SOFTWBIT
-  bool
   _BLL_POFTWBIT(IsNodeReferenceUnlinked)
   (
     _BLL_DBLLTFFC
     _P(NodeReference_t) NodeReference
   ){
-    _P(Node_t) *Node = _BLL_POFTWBIT(_GetNodeByReference)(_BLL_PBLLTFFC NodeReference);
-    return _BLL_POFTWBIT(IsNodeUnlinked)(_BLL_PBLLTFFC Node);
+    return _BLL_POFTWBIT(_grecnrofnr)(_BLL_PBLLTFFC NodeReference)->NRI == (BLL_set_type_node)-1;
   }
 #endif
 
@@ -375,9 +362,6 @@ _BLL_POFTWBIT(GetNodeByReference)
           break;
         }
       #endif
-      if(_BLL_POFTWBIT(IsNodeUnlinked)(_BLL_PBLLTFFC Node)){
-        PR_abort();
-      }
     }while(0);
   #endif
   return Node;
@@ -717,19 +701,16 @@ _BLL_POFTWBIT(NewNode)
     _P(NodeReference_t) NodeReference
   ){
     #if BLL_set_debug_InvalidAction >= 1
-      if(NodeReference == _BLL_GetList->src){
+      if(_BLL_POFTWBIT(IsNRSentienel)(_BLL_PBLLTFFC NodeReference) == 1){
         PR_abort();
       }
-      if(NodeReference == _BLL_GetList->dst){
+      if(_BLL_POFTWBIT(IsNodeReferenceUnlinked)(_BLL_PBLLTFFC NodeReference) == 1){
         PR_abort();
       }
     #endif
+
     _P(Node_t) *Node = _BLL_POFTWBIT(gln)(_BLL_PBLLTFFC NodeReference);
-    #if BLL_set_debug_InvalidAction >= 1
-      if(_BLL_POFTWBIT(IsNodeUnlinked)(_BLL_PBLLTFFC Node)){
-        PR_abort();
-      }
-    #endif
+
     #if BLL_set_SafeNext == 1
       if(_BLL_GetList->SafeNext == NodeReference){
         _BLL_GetList->SafeNext = Node->PrevNodeReference;
@@ -741,10 +722,13 @@ _BLL_POFTWBIT(NewNode)
         }
       }
     #endif
+
     _P(NodeReference_t) nextNodeReference = Node->NextNodeReference;
     _P(NodeReference_t) prevNodeReference = Node->PrevNodeReference;
     _BLL_POFTWBIT(gln)(_BLL_PBLLTFFC prevNodeReference)->NextNodeReference = nextNodeReference;
     _BLL_POFTWBIT(gln)(_BLL_PBLLTFFC nextNodeReference)->PrevNodeReference = prevNodeReference;
+
+    _BLL_POFTWBIT(_grecnrofnr)(_BLL_PBLLTFFC NodeReference)->NRI = (BLL_set_type_node)-1;
   }
 
   /* unlink recycle */
