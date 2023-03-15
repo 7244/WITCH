@@ -129,9 +129,10 @@ BLL_StructEnd(_P(Node_t))
 #endif
 
 #if defined(BLL_set_MultipleType_Sizes)
+  consteval
   static
   uintptr_t
-  _P(_MultipleType_GetRecycleIndex)(
+  _P(_MultipleType_GetLinkIndex)(
   ){
     uintptr_t BestSize = -1;
     uintptr_t BestIndex;
@@ -291,12 +292,9 @@ _BLL_POFTWBIT(_GetNRTHOfNR)
   _BLL_DBLLTFFC
   _P(NodeReference_t) NodeReference,
   BLL_set_type_node TH
-  #if defined(BLL_set_MultipleType_Sizes)
-    , uintptr_t PointerIndex
-  #endif
 ){
   #if defined(BLL_set_MultipleType_Sizes)
-    _P(Node_t) *n = _BLL_POFTWBIT(_GetNodeByReference)(_BLL_PBLLTFFC NodeReference, PointerIndex);
+    _P(Node_t) *n = _BLL_POFTWBIT(_GetNodeByReference)(_BLL_PBLLTFFC NodeReference, _P(_MultipleType_GetLinkIndex)());
   #else
     _P(Node_t) *n = _BLL_POFTWBIT(_GetNodeByReference)(_BLL_PBLLTFFC NodeReference);
   #endif
@@ -311,22 +309,18 @@ _BLL_POFTWBIT(_grecnrofnr)
   _BLL_DBLLTFFC
   _P(NodeReference_t) NodeReference
 ){
-  #if defined(BLL_set_MultipleType_Sizes)
-    return _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 0, _P(_MultipleType_GetRecycleIndex)());
-  #else
-    return _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 0);
-  #endif
+  return _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 0);
 }
 
-#if BLL_set_IsNodeUnlinked == 1
+#if BLL_set_IsNodeRecycled == 1
   _BLL_SOFTWBIT
   bool
-  _BLL_POFTWBIT(IsNodeReferenceUnlinked)
+  _BLL_POFTWBIT(IsNodeReferenceRecycled)
   (
     _BLL_DBLLTFFC
     _P(NodeReference_t) NodeReference
   ){
-    return _BLL_POFTWBIT(_grecnrofnr)(_BLL_PBLLTFFC NodeReference)->NRI == (BLL_set_type_node)-1;
+    return _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 1)->NRI == (BLL_set_type_node)-1;
   }
 #endif
 
@@ -438,7 +432,7 @@ _BLL_POFTWBIT(Recycle)
   _P(NodeReference_t) *NextRecycled = _BLL_POFTWBIT(_grecnrofnr)(_BLL_PBLLTFFC NodeReference);
 
   *NextRecycled = _BLL_GetList->e.c;
-  #if BLL_set_IsNodeUnlinked == 1
+  #if BLL_set_IsNodeRecycled == 1
     _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 1)->NRI = (BLL_set_type_node)-1;
   #endif
   _BLL_GetList->e.c = NodeReference;
@@ -507,11 +501,6 @@ _BLL_POFTWBIT(_NewNode_NoConstruct)
   else{
     NodeReference = _BLL_POFTWBIT(_NewNode_alloc_NoConstruct)(_BLL_PBLLTFF);
   }
-  #if BLL_set_debug_InvalidAction >= 1
-    _P(Node_t) *Node = _BLL_POFTWBIT(_GetNodeByReference)(_BLL_PBLLTFFC NodeReference);
-    Node->PrevNodeReference.NRI = (BLL_set_type_node)-1;
-    Node->NextNodeReference.NRI = (BLL_set_type_node)-1;
-  #endif
   return NodeReference;
 }
 _BLL_SOFTWBIT
@@ -521,6 +510,9 @@ _BLL_POFTWBIT(NewNode)
   _BLL_DBLLTFF
 ){
   _P(NodeReference_t) NodeReference = _BLL_POFTWBIT(_NewNode_NoConstruct)(_BLL_PBLLTFF);
+  #if BLL_set_IsNodeRecycled == 1
+    _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC NodeReference, 1)->NRI = (BLL_set_type_node)-2;
+  #endif
   _BLL_POFTWBIT(_Node_Construct)(_BLL_PBLLTFFC NodeReference);
   return NodeReference;
 }
@@ -727,8 +719,6 @@ _BLL_POFTWBIT(NewNode)
     _P(NodeReference_t) prevNodeReference = Node->PrevNodeReference;
     _BLL_POFTWBIT(gln)(_BLL_PBLLTFFC prevNodeReference)->NextNodeReference = nextNodeReference;
     _BLL_POFTWBIT(gln)(_BLL_PBLLTFFC nextNodeReference)->PrevNodeReference = prevNodeReference;
-
-    _BLL_POFTWBIT(_grecnrofnr)(_BLL_PBLLTFFC NodeReference)->NRI = (BLL_set_type_node)-1;
   }
 
   /* unlink recycle */
