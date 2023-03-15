@@ -817,6 +817,39 @@ _BLL_POFTWBIT(_AfterInitNodes)
   #endif
 }
 
+_BLL_SOFTWBIT
+void
+_BLL_POFTWBIT(_DestructAllNodes)
+(
+  _BLL_DBLLTFF
+){
+  #ifdef BLL_set_CPP_Node_ConstructDestruct
+    #if BLL_set_Link == 1
+      _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC _BLL_GetList->src, 1)->NRI = (BLL_set_type_node)-1;
+      _BLL_POFTWBIT(_GetNRTHOfNR)(_BLL_PBLLTFFC _BLL_GetList->dst, 1)->NRI = (BLL_set_type_node)-1;
+    #endif
+    #if BLL_set_StoreFormat == 0
+      for(BLL_set_type_node i = 0; i < _BLL_GetList->NodeList.Current; i++){
+        _P(NodeReference_t) nr;
+        nr.NRI = i;
+        if(_BLL_POFTWBIT(IsNodeReferenceRecycled)(_BLL_PBLLTFFC nr) == 0){
+          _BLL_POFTWBIT(_Node_Destruct)(_BLL_PBLLTFFC nr);
+        }
+      }
+    #elif BLL_set_StoreFormat == 1
+      for(BLL_set_type_node i = 0; i < _BLL_GetList->NodeCurrent; i++){
+        _P(NodeReference_t) nr;
+        nr.NRI = i;
+        if(_BLL_POFTWBIT(IsNodeReferenceRecycled)(_BLL_PBLLTFFC nr) == 0){
+          _BLL_POFTWBIT(_Node_Destruct)(_BLL_PBLLTFFC nr);
+        }
+      }
+    #else
+      #error ?
+    #endif
+  #endif
+}
+
 #ifdef BLL_set_CPP_ConstructDestruct
   private:
 #endif
@@ -866,6 +899,7 @@ _BLL_POFTWBIT(Close)
 (
   _BLL_DBLLTFF
 ){
+  _BLL_POFTWBIT(_DestructAllNodes)(_BLL_PBLLTFF);
   #if BLL_set_StoreFormat == 0
     _P(_NodeList_Close)(&_BLL_GetList->NodeList);
   #elif BLL_set_StoreFormat == 1
@@ -883,6 +917,7 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
 (
   _BLL_DBLLTFF
 ){
+  _BLL_POFTWBIT(_DestructAllNodes)(_BLL_PBLLTFF);
   #if BLL_set_ResizeListAfterClear == 0
     #if BLL_set_StoreFormat == 0
       _BLL_GetList->NodeList.Current = 0;
