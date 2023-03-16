@@ -1190,16 +1190,18 @@ SetCharacterWidth_Silent(
 
 /* line iterate */
 struct li_t{
+  _ETC_WED_P(t) *wed;
   LineReference_t id;
 
-  li_t(){
-    id = LineList.GetNodeFirst();
+  li_t(_ETC_WED_P(t) *p_wed){
+    wed = p_wed;
+    id = wed->LineList.GetNodeFirst();
   }
   bool operator()(){
-    return id != LineList.dst;
+    return id != wed->LineList.dst;
   }
   void it(){
-    id = id.Next(&LineList);
+    id = id.Next(&wed->LineList);
   }
 };
 
@@ -1208,8 +1210,8 @@ struct ci_t{
   CharacterReference_t id;
   _Line_t *Line;
 
-  ci_t(LineReference_t LineID){
-    Line = &LineList[LineID];
+  ci_t(_ETC_WED_P(t) *wed, LineReference_t LineID){
+    Line = &wed->LineList[LineID];
     id = Line->CharacterList.GetNodeFirst();
   }
   bool operator()(){
