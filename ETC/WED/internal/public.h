@@ -620,7 +620,12 @@ void MoveCursorSelectionToDown(CursorReference_t CursorReference){
   }
 }
 
-void AddCharacterToCursor(CursorReference_t CursorReference, CharacterData_t data, uint16_t width){
+void
+AddCharacterToCursor(
+  CursorReference_t CursorReference,
+  CharacterData_t data,
+  uint16_t width
+){
   Cursor_t *Cursor = &this->CursorList[CursorReference];
   _CursorIsTriggered(Cursor);
   switch(Cursor->type){
@@ -1072,19 +1077,12 @@ void NowAllCharacterSizesAre(bool Smaller){
       LineReference_t PrevLineReference = LineNode->PrevNodeReference;
       _LineIsDecreased(LineReference, LineNode);
 
-      /* both way is same */
-      #if set_debug_InvalidLineAccess == 1
-        if(this->LineList.IsNodeUnlinked(LineNode)){
-          LineReference = PrevLineReference;
-          LineNode = this->LineList.GetNodeByReference(LineReference);
-        }
-      #else
-        _LineList_Node_t *PrevLineNode = this->LineList.GetNodeByReference(PrevLineReference);
-        if(PrevLineNode->NextNodeReference != LineReference){
-          LineReference = PrevLineReference;
-          LineNode = PrevLineNode;
-        }
-      #endif
+      /* TODO this is old code. are you sure about current line can be erased from _LineIsDecreased() ? */
+      /* since we start looping from first line it should be imposible */
+      _LineList_Node_t *PrevLineNode = this->LineList.GetNodeByReference(PrevLineReference);
+      if(PrevLineNode->NextNodeReference != LineReference){
+        LineNode = PrevLineNode;
+      }
 
       LineReference = LineNode->NextNodeReference;
     }
@@ -1167,19 +1165,57 @@ GetDataOfCharacter(
   LineReference_t LineReference,
   CharacterReference_t CharacterReference
 ){
-  _Line_t *Line = &this->LineList[LineReference];
+  _Line_t *Line = &LineList[LineReference];
   return &Line->CharacterList[CharacterReference].data;
 }
 
-LineReference_t
-GetFirstLineID
-(
-){
-  return this->LineList.GetNodeFirst();
+LineReference_t GetFirstLineID(){
+  return LineList.GetNodeFirst();
 }
-LineReference_t
-GetLastLineID
-(
-){
-  return this->LineList.GetNodeLast();
+LineReference_t GetLastLineID(){
+  return LineList.GetNodeLast();
 }
+
+/* doesnt check rules */
+void
+SetCharacterWidth_Silent(
+  LineReference_t LineID,
+  CharacterReference_t CharacterID,
+  uint16_t Width
+){
+  _Line_t *Line = &LineList[LineID];
+  Line->TotalWidth -= Line->CharacterList[CharacterID].width;
+  Line->TotalWidth += Line->CharacterList[CharacterID].width = Width;
+}
+
+/* line iterate */
+struct li_t{
+  LineReference_t id;
+
+  li_t(){
+    id = LineList.GetNodeFirst();
+  }
+  bool operator()(){
+    return id != LineList.dst;
+  }
+  void it(){
+    id = id.Next(&LineList);
+  }
+};
+
+/* character iterate */
+struct ci_t{
+  CharacterReference_t id;
+  _Line_t *Line;
+
+  ci_t(LineReference_t LineID){
+    Line = &LineList[LineID];
+    id = Line->CharacterList.GetNodeFirst();
+  }
+  bool operator()(){
+    return id != Line->CharacterList.dst;
+  }
+  void it(){
+    id = id.Next(&Line->CharacterList);
+  }
+};
