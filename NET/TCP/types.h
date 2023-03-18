@@ -39,7 +39,7 @@ typedef struct{
 }NET_TCP_Queuer_t;
 #define BLL_set_prefix _NET_TCP_QueuerList
 #define BLL_set_NodeData NET_TCP_Queuer_t data;
-#define BLL_set_IsNodeUnlinked 1
+#define BLL_set_IsNodeRecycled 1
 #include _WITCH_PATH(BLL/BLL.h)
 typedef _NET_TCP_QueuerList_NodeReference_t NET_TCP_QueuerReference_t;
 

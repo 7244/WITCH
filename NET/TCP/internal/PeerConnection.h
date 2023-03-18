@@ -16,7 +16,7 @@ NET_TCP_QueuerReference_t NET_TCP_IterateReadQueuerReference(NET_TCP_peer_t *pee
   return _NET_TCP_QueuerList_GetNodeByReference(&peer->ReadQueuerList, QueuerReference)->NextNodeReference;
 }
 bool NET_TCP_IsReadQueuerReferenceValid(NET_TCP_peer_t *peer, NET_TCP_QueuerReference_t QueuerReference){
-  return !_NET_TCP_QueuerList_IsNodeReferenceUnlinked(&peer->ReadQueuerList, QueuerReference);
+  return !_NET_TCP_QueuerList_IsNodeReferenceRecycled(&peer->ReadQueuerList, QueuerReference);
 }
 
 NET_TCP_QueuerReference_t NET_TCP_GetWriteQueuerReferenceFirst(NET_TCP_peer_t *peer){
@@ -29,7 +29,7 @@ NET_TCP_QueuerReference_t NET_TCP_IterateWriteQueuerReference(NET_TCP_peer_t *pe
   return _NET_TCP_QueuerList_GetNodeByReference(&peer->WriteQueuerList, QueuerReference)->NextNodeReference;
 }
 bool NET_TCP_IsWriteQueuerReferenceValid(NET_TCP_peer_t *peer, NET_TCP_QueuerReference_t QueuerReference){
-  return !_NET_TCP_QueuerList_IsNodeReferenceUnlinked(&peer->WriteQueuerList, QueuerReference);
+  return !_NET_TCP_QueuerList_IsNodeReferenceRecycled(&peer->WriteQueuerList, QueuerReference);
 }
 
 NET_TCP_layerflag_t NET_TCP_StateLoop(NET_TCP_peer_t *peer){
