@@ -336,7 +336,7 @@ _BLL_POFTWBIT(GetNodeByReference)
 ){
   #if BLL_set_debug_InvalidAction == 1
     if(NodeReference >= _BLL_GetList->NodeList.Current){
-      PR_abort();
+      __abort();
     }
   #endif
   #if defined(BLL_set_MultipleType_Sizes)
@@ -694,10 +694,10 @@ _BLL_POFTWBIT(NewNode)
   ){
     #if BLL_set_debug_InvalidAction >= 1
       if(_BLL_POFTWBIT(IsNRSentienel)(_BLL_PBLLTFFC NodeReference) == 1){
-        PR_abort();
+        __abort();
       }
       if(_BLL_POFTWBIT(IsNodeReferenceUnlinked)(_BLL_PBLLTFFC NodeReference) == 1){
-        PR_abort();
+        __abort();
       }
     #endif
 
@@ -989,11 +989,11 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
     #if BLL_set_debug_InvalidAction == 1
       #if BLL_set_SafeNext == 1
         if(_BLL_GetList->SafeNext.NRI != (BLL_set_type_node)-1){
-          PR_abort();
+          __abort();
         }
       #else
         if(_BLL_GetList->SafeNextCount == BLL_set_SafeNext){
-          PR_abort();
+          __abort();
         }
       #endif
     #endif
@@ -1012,11 +1012,11 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
     #if BLL_set_debug_InvalidAction == 1
       #if BLL_set_SafeNext == 1
         if(_BLL_GetList->SafeNext.NRI == (BLL_set_type_node)-1){
-          PR_abort();
+          __abort();
         }
       #else
         if(_BLL_GetList->SafeNextCount == 0){
-          PR_abort();
+          __abort();
         }
       #endif
     #endif
@@ -1044,11 +1044,11 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
     #if BLL_set_debug_InvalidAction == 1
       #if BLL_set_SafeNext == 1
         if(Depth != 1){
-          PR_abort();
+          __abort();
         }
       #else
         if(Depth > _BLL_GetList->SafeNextCount){
-          PR_abort();
+          __abort();
         }
       #endif
     #endif

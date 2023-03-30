@@ -9,3 +9,8 @@
 #else
   #error ?
 #endif
+
+#ifdef __abort
+  #undef __abort
+#endif
+#define __abort PR_abort

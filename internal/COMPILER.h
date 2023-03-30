@@ -414,3 +414,15 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     #error ?
   #endif
 #endif
+
+#ifndef __abort
+  #define __abort __abort
+  void __abort(){
+    #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
+      /* write to kernel owned address from userside. should guarantee crash. */
+      *(uintptr_t *)(1 << SYSTEM_BIT - 1) = 0;
+    #else
+      #error ?
+    #endif
+  }
+#endif
