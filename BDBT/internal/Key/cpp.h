@@ -59,7 +59,7 @@ struct _BDBT_P(Key_t){
       uint8_t Byte = *kp8;
       if constexpr(BeforeLast == 0){
         Byte >>= KeyIndex;
-        for(uint8_t i = KeyIndex; i < 8 - BDBT_set_BitPerNode; i += BDBT_set_BitPerNode){
+        for(uint8_t i = 8 - BDBT_set_BitPerNode; i > KeyIndex ; i -= BDBT_set_BitPerNode){
           uint8_t k = Byte & _BDBT_set_ElementPerNode - 1;
           _BDBT_BP(NodeReference_t) pnr = cnr;
           cnr = _BDBT_BP(NewNode)(list);
@@ -179,9 +179,11 @@ struct _BDBT_P(Key_t){
   }
 
   struct Traverse_t{
-    _BDBT_BP(NodeReference_t) tna[KeySize / BDBT_set_BitPerNode];
-    uint8_t tka[KeySize / BDBT_set_BitPerNode];
     KeySize_t Current;
+    struct{
+      _BDBT_BP(NodeReference_t) n;
+      uint8_t k;
+    }ta[KeySize / BDBT_set_BitPerNode];
 
     _BDBT_BP(NodeReference_t) Output;
 
@@ -190,9 +192,9 @@ struct _BDBT_P(Key_t){
     (
       _BDBT_BP(NodeReference_t) rnr
     ){
-      this->Current = 0;
-      this->tna[this->Current] = rnr;
-      this->tka[this->Current] = 0;
+      Current = 0;
+      ta[0].k = 0;
+      ta[0].n = rnr;
     }
 
     bool
@@ -202,29 +204,31 @@ struct _BDBT_P(Key_t){
       void *Key
     ){
       gt_begin:
-      while(this->tka[this->Current] < _BDBT_set_ElementPerNode){
-        _BDBT_BP(Node_t) *Node = _BDBT_BP(GetNodeByReference)(list, this->tna[this->Current]);
+      auto tp = &ta[Current];
+      while(tp->k < _BDBT_set_ElementPerNode){
+        _BDBT_BP(Node_t) *Node = _BDBT_BP(GetNodeByReference)(list, tp->n);
 
-        uint8_t tk = this->tka[this->Current]++;
+        uint8_t tk = tp->k++;
         _BDBT_BP(NodeReference_t) nnr = Node->n[tk];
-        if(nnr != _BDBT_BP(GetNotValidNodeReference)(list)){
-          KeySize_t d8 = this->Current * BDBT_set_BitPerNode / 8;
-          KeySize_t m8 = this->Current * BDBT_set_BitPerNode % 8;
-          ((uint8_t *)Key)[d8] ^= ((uint8_t *)Key)[d8] & _BDBT_set_ElementPerNode - 1 << m8;
-          ((uint8_t *)Key)[d8] |= tk << m8;
-          if(this->Current == KeySize / BDBT_set_BitPerNode - 1){
-            this->Output = nnr;
-            return 1;
-          }
-          this->Current++;
-          this->tna[this->Current] = nnr;
-          this->tka[this->Current] = 0;
+        if(nnr == _BDBT_BP(GetNotValidNodeReference)(list)){
+          continue;
         }
+        KeySize_t d8 = Current * BDBT_set_BitPerNode / 8;
+        KeySize_t m8 = Current * BDBT_set_BitPerNode % 8;
+        ((uint8_t *)Key)[d8] ^= ((uint8_t *)Key)[d8] & _BDBT_set_ElementPerNode - 1 << m8;
+        ((uint8_t *)Key)[d8] |= tk << m8;
+        if(Current == KeySize / BDBT_set_BitPerNode - 1){
+          Output = nnr;
+          return 1;
+        }
+        tp = &ta[++Current];
+        tp->n = nnr;
+        tp->k = 0;
       }
-      if(this->Current == 0){
+      if(Current == 0){
         return 0;
       }
-      --this->Current;
+      --Current;
       goto gt_begin;
     }
   };
