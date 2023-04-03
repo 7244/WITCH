@@ -2,7 +2,7 @@
   #error ENDIAN needs to be defined
 #endif
 
-uint8_t *kp8 = (uint8_t *)Key;
+uint8_t *kp8;
 if constexpr(BitOrderMatters == true && ENDIAN == 1){
   kp8 = &((uint8_t *)Key)[KeySize / 8 - 1];
   kp8 -= KeyIndex / 8;
@@ -11,6 +11,7 @@ else{
   kp8 = (uint8_t *)Key;
   kp8 += KeyIndex / 8;
 }
+
 if constexpr(BeforeLast != 0){
   if(KeyIndex < BeforeLast){
     uint8_t m = KeyIndex % 8;
@@ -37,7 +38,7 @@ if constexpr(BeforeLast != 0){
   }
 }
 if constexpr(BeforeLast > 8){
-  while(KeyIndex != BeforeLast){
+  while(KeyIndex < BeforeLast){
     uint8_t Byte = *kp8;
     if constexpr(BitOrderMatters == true){
       Byte = ReverseKeyByte(Byte);

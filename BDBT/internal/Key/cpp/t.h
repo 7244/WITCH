@@ -19,7 +19,7 @@ while(
   KeySize_t m8;
   if constexpr(BitOrderMatters == true){
     d8 = (KeySize / 8 - 1) - (Current * BDBT_set_BitPerNode / 8);
-    m8 = 6 - Current * BDBT_set_BitPerNode % 8;
+    m8 = (8 - BDBT_set_BitPerNode) - Current * BDBT_set_BitPerNode % 8;
   }
   else{
     d8 = Current * BDBT_set_BitPerNode / 8;
