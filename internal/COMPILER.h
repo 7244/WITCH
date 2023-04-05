@@ -414,6 +414,16 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     #error ?
   #endif
 #endif
+/* byte, dst, size */
+#ifndef __MemorySet
+  #if defined(__compiler_clang) || defined(__compiler_gcc)
+    #define __MemorySet(byte, dst, size) __builtin_memset(dst, byte, size)
+  #elif defined(__compiler_msvc)
+    #define __MemorySet(byte, dst, size) memset(dst, byte, size)
+  #else
+    #error ?
+  #endif
+#endif
 
 #ifndef __abort
   #define __abort __abort

@@ -2,12 +2,12 @@ gt_begin:
 auto tp = &ta[Current];
 while(
   LowHigh == 1 ?
-  tp->k != (uint8_t)-1 :
+  tp->k != (KeyNodeIterator_t)-1 :
   tp->k < _BDBT_set_ElementPerNode
 ){
   _BDBT_BP(Node_t) *Node = _BDBT_BP(GetNodeByReference)(list, tp->n);
 
-  uint8_t tk = tp->k;
+  KeyNodeIterator_t tk = tp->k;
   LowHigh == 1 ? --tp->k : ++tp->k;
 
   _BDBT_BP(NodeReference_t) nnr = Node->n[tk];

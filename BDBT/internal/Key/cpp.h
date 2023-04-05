@@ -10,6 +10,15 @@ struct _BDBT_P(Key_t){
     >
   >KeySize_t;
 
+  typedef std::conditional_t<
+    _BDBT_set_ElementPerNode <= 0xff,
+    uint8_t,
+      std::conditional_t<_BDBT_set_ElementPerNode <= 0xffff,
+      uint16_t,
+      uint32_t
+    >
+  >KeyNodeIterator_t;
+
   static constexpr KeySize_t BeforeLast = KeySize - 8;
 
   uint8_t ReverseKeyByte(uint8_t p){
@@ -74,7 +83,7 @@ struct _BDBT_P(Key_t){
     KeySize_t Current;
     struct{
       _BDBT_BP(NodeReference_t) n;
-      uint8_t k;
+      KeyNodeIterator_t k;
     }ta[KeySize / BDBT_set_BitPerNode];
 
     _BDBT_BP(NodeReference_t) Output;
