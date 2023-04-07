@@ -1,7 +1,6 @@
 /* object */
 
 struct TraverseObject_t{
-  ShapeEnum_t ShapeEnum;
   ShapeID_t ShapeID;
   struct{
     uint32_t ShapeIndex;
@@ -21,9 +20,7 @@ bool TraverseObject_loop(
     return false;
   }
 
-  auto ShapeData = &((ShapeData_t *)ObjectData->ShapeList.ptr)[TraverseObject->priv.ShapeIndex];
-  TraverseObject->ShapeEnum = ShapeData->ShapeEnum;
-  TraverseObject->ShapeID = ShapeData->ShapeID;
+  TraverseObject->ShapeID = *(ShapeID_t *)&TraverseObject->priv.ShapeIndex;
 
   TraverseObject->priv.ShapeIndex++;
   return true;
