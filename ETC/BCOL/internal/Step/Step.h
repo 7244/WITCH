@@ -6,8 +6,9 @@ void Step(
     this->ObjectList.StartSafeNext(ObjectID);
     auto ObjectData = this->GetObjectData(ObjectID);
 
-    /* bad */
+    /* bad way */
     if(ObjectData->Flag & ObjectFlag::Constant){
+      ObjectID = this->ObjectList.EndSafeNext();
       continue;
     }
 
