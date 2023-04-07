@@ -237,6 +237,9 @@ _f WantedCollisionRequesters = 0;
             ShapeEnum_t::Circle,
             ShapeID_,
             &Contact);
+          if(ObjectList.CheckSafeNext(0) != ObjectID){
+            goto gt_Object0Unlinked;
+          }
           if(Contact.Flag & Contact_Shape_Flag::EnableContact); else{
             break;
           };
@@ -276,6 +279,9 @@ _f WantedCollisionRequesters = 0;
             ShapeEnum_t::Rectangle,
             ShapeID_,
             &Contact);
+          if(ObjectList.CheckSafeNext(0) != ObjectID){
+            goto gt_Object0Unlinked;
+          }
           if(Contact.Flag & Contact_Shape_Flag::EnableContact); else{
             break;
           };
