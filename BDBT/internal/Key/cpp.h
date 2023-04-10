@@ -1,14 +1,16 @@
-template <uintptr_t KeySize, bool BitOrderMatters = false>
+template <uintptr_t _KeySize, bool BitOrderMatters = false>
 struct _BDBT_P(Key_t){
 
   typedef std::conditional_t<
-    KeySize <= 0xff,
+    _KeySize <= 0xff,
     uint8_t,
-      std::conditional_t<KeySize <= 0xffff,
+      std::conditional_t<_KeySize <= 0xffff,
       uint16_t,
       uint32_t
     >
   >KeySize_t;
+
+  static constexpr KeySize_t KeySize = _KeySize;
 
   typedef std::conditional_t<
     _BDBT_set_ElementPerNode <= 0xff,
