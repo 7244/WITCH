@@ -63,10 +63,10 @@ typedef void *(*_ETC_VEDC_Decoder_GetUnique_cb)(
   ETC_VEDC_Decoder_UniqueType UniqueType);
 typedef void (*_ETC_VEDC_Decoder_Close_cb)(
   void **DecoderData);
-typedef sint32_t (*_ETC_VEDC_Decoder_Write_cb)(
+typedef sintptr_t (*_ETC_VEDC_Decoder_Write_cb)(
   void **DecoderData,
   uint8_t *Data,
-  uint32_t Size);
+  uintptr_t Size);
 typedef bool (*_ETC_VEDC_Decoder_IsReadable_cb)(
   void **DecoderData);
 typedef bool (*_ETC_VEDC_Decoder_IsReadType_cb)(
@@ -218,11 +218,11 @@ ETC_VEDC_Decoder_Close(
   di->Close_cb(&Decoder->DecoderData);
 }
 
-sint32_t
+sintptr_t
 ETC_VEDC_Decoder_Write(
   ETC_VEDC_Decoder_t *Decoder,
   uint8_t *Data,
-  uint32_t Size
+  uintptr_t Size
 ){
   _ETC_VEDC_DecoderInfo *di = &_ETC_VEDC_DecoderList[Decoder->DecoderID];
   return di->Write_cb(&Decoder->DecoderData, Data, Size);

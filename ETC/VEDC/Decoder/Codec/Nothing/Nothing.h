@@ -17,12 +17,12 @@ void _ETC_VEDC_Decoder_Codec_Nothing_Close(
 ){
 }
 
-sint32_t _ETC_VEDC_Decoder_Codec_Nothing_Write(
+sintptr_t _ETC_VEDC_Decoder_Codec_Nothing_Write(
   void **DecoderData,
   uint8_t *Data,
-  uint32_t Size
+  uintptr_t Size
 ){
-  return 0;
+  return Size;
 }
 
 bool _ETC_VEDC_Decoder_Codec_Nothing_IsReadable(

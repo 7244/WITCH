@@ -64,10 +64,10 @@ void _ETC_VEDC_Decoder_Codec_OpenH264_Close(
   A_resize(Decoder, 0);
 }
 
-sint32_t _ETC_VEDC_Decoder_Codec_OpenH264_Write(
+sintptr_t _ETC_VEDC_Decoder_Codec_OpenH264_Write(
   void **DecoderData,
   uint8_t *Data,
-  uint32_t Size
+  uintptr_t Size
 ){
   _ETC_VEDC_Decoder_Codec_OpenH264_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_OpenH264_Decoder_t *)*DecoderData;
 
@@ -78,7 +78,7 @@ sint32_t _ETC_VEDC_Decoder_Codec_OpenH264_Write(
     Decoder->wrd.Data,
     &Decoder->wrd.BufferInfo);
 
-  return 0;
+  return Size;
 }
 
 bool _ETC_VEDC_Decoder_Codec_OpenH264_IsReadable(

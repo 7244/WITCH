@@ -198,10 +198,10 @@ void _ETC_VEDC_Decoder_Codec_cuvid_Close(
   A_resize(Decoder, 0);
 }
 
-sint32_t _ETC_VEDC_Decoder_Codec_cuvid_Write(
+sintptr_t _ETC_VEDC_Decoder_Codec_cuvid_Write(
   void **DecoderData,
   uint8_t *Data,
-  uint32_t Size
+  uintptr_t Size
 ){
   _ETC_VEDC_Decoder_Codec_cuvid_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_cuvid_Decoder_t *)*DecoderData;
 
@@ -212,10 +212,10 @@ sint32_t _ETC_VEDC_Decoder_Codec_cuvid_Write(
   pkt.timestamp = 0;
   CUresult r = cuvidParseVideoData(Decoder->Parser, &pkt);
   if(r != CUDA_SUCCESS){
-    return -1;
+    return -ETC_VEDC_Decoder_Error_DecoderError;
   }
 
-  return 0;
+  return Size;
 }
 
 bool _ETC_VEDC_Decoder_Codec_cuvid_IsReadable(
