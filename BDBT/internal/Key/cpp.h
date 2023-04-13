@@ -119,7 +119,7 @@ struct _BDBT_P(Key_t){
     t
     (
       _BDBT_BP(t) *list,
-      void *Key,
+      void *Key
     ){
       #include "cpp/t.h"
     }
