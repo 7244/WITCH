@@ -436,3 +436,26 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     #endif
   }
 #endif
+
+#ifndef lstd_defastruct
+  using lstd_current_type = void;
+  #define lstd_defastruct(name, inside) \
+    struct CONCAT(name,_t){ \
+      using lstd_parent_type = lstd_current_type; \
+      using lstd_current_type = CONCAT(name,_t); \
+      struct lstd_parent_t{ \
+        auto* operator->(){ \
+          auto current = OFFSETLESS(this, CONCAT(name,_t), lstd_parent); \
+          return OFFSETLESS(current, lstd_parent_type, name); \
+        } \
+      }lstd_parent; \
+      inside \
+    }name;
+#endif
+#ifndef lstd_defstruct
+  #define lstd_defstruct(type_name, inside) \
+    struct type_name{ \
+      using lstd_current_type = type_name; \
+      inside \
+    };
+#endif

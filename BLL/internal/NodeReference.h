@@ -25,9 +25,20 @@ BLL_StructBegin(_P(NodeReference_t))
     }
 
     /* set invalid constant */
-    void sic(){
-      *this = _P(gnric)();
-    }
+    struct sic_t{
+      void operator()(){
+        auto nr = OFFSETLESS(this, _P(NodeReference_t), sic);
+        *nr = _P(gnric)();
+      }
+      sic_t(){
+        (*this)();
+      }
+      sic_t(bool p){}
+    }sic{
+      #ifndef BLL_set_CPP_nrsic
+        false
+      #endif
+    };
     /* is invalid constant */
     /* check _BLL_POFTWBIT(inric) at rest.h for more info */
     bool iic(){
