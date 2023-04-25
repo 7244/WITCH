@@ -12,8 +12,12 @@
     #include <stacktrace>
 
     void _PR_DumpTrace() {
+      #if __cplusplus >= 202004L
       std::stacktrace st;
       std::cout << st.current();
+      #else
+      std::cout << "failed to print stacktrace";
+      #endif
     }
   #else
     #include <stdio.h>
