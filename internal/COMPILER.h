@@ -453,11 +453,9 @@ uint32_t LOG64(uint64_t num, uint8_t base){
     }name;
 #endif
 #ifndef lstd_defstruct
-  #define lstd_defstruct(type_name, ...) \
+  #define lstd_defstruct(type_name) \
     struct type_name{ \
-      using lstd_current_type = type_name; \
-      __VA_ARGS__ \
-    };
+      using lstd_current_type = type_name;
 #endif
 
 #define lstd_preprocessor_get_argn(p0, p1, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, n, ...) n
