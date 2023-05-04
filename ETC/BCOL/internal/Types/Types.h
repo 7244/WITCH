@@ -89,8 +89,27 @@ struct __ETC_BCOL_P(t){
       constexpr static uint32_t EnableContact = 0x01;
     };
 
+    typedef void (*PreSolveAfter_Shape_cb_t)(
+      __ETC_BCOL_P(t) *,
+      ObjectID_t,
+      ShapeEnum_t,
+      ShapeID_t,
+      ObjectID_t,
+      ShapeEnum_t,
+      ShapeID_t
+    );
+
     struct Contact_Shape_t{
-      uint32_t Flag;
+      uint32_t Flag = Contact_Shape_Flag::EnableContact;
+      PreSolveAfter_Shape_cb_t AfterCB = [](
+        __ETC_BCOL_P(t) *,
+        ObjectID_t,
+        ShapeEnum_t,
+        ShapeID_t,
+        ObjectID_t,
+        ShapeEnum_t,
+        ShapeID_t
+      ){};
     };
 
     typedef void (*PreSolve_Shape_cb_t)(

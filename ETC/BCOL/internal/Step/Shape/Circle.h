@@ -226,7 +226,7 @@ _f WantedCollisionRequesters = 0;
             break;
           }
 
-          Contact_Shape_t Contact;
+          Contact_Shape_t Contact[2];
           this->PreSolve_Shape_cb(
             this,
             ObjectID0,
@@ -235,7 +235,35 @@ _f WantedCollisionRequesters = 0;
             ObjectID1,
             ShapeEnum_t::Circle,
             ShapeID_,
-            &Contact);
+            &Contact[0]);
+          this->PreSolve_Shape_cb(
+            this,
+            ObjectID1,
+            ShapeEnum_t::Circle,
+            ShapeID_,
+            ObjectID0,
+            ShapeEnum_t::Circle,
+            ShapeData->ShapeID,
+            &Contact[1]);
+
+          Contact[0].AfterCB(
+            this,
+            ObjectID0,
+            ShapeEnum_t::Circle,
+            ShapeData->ShapeID,
+            ObjectID1,
+            ShapeEnum_t::Circle,
+            ShapeID_
+          );
+          Contact[1].AfterCB(
+            this,
+            ObjectID1,
+            ShapeEnum_t::Circle,
+            ShapeID_,
+            ObjectID0,
+            ShapeEnum_t::Circle,
+            ShapeData->ShapeID
+          );
           if(ObjectList.CheckSafeNext(1) != ObjectID0){
             this->ObjectList.EndSafeNext();
             goto gt_Object0Unlinked;
@@ -243,7 +271,7 @@ _f WantedCollisionRequesters = 0;
           if(ObjectList.CheckSafeNext(0) != ObjectID1){
             goto gt_Object1_Circle_Unlinked;
           }
-          if(Contact.Flag & Contact_Shape_Flag::EnableContact); else{
+          if(Contact[0].Flag & Contact[1].Flag & Contact_Shape_Flag::EnableContact); else{
             break;
           };
 
