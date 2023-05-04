@@ -69,6 +69,8 @@ struct __ETC_BCOL_P(t){
 
   struct ShapeData_t{
     ShapeEnum_t ShapeEnum;
+
+    /* TODO why we have ShapeID here? */
     ShapeID_t ShapeID;
   };
 
@@ -76,6 +78,12 @@ struct __ETC_BCOL_P(t){
   #include _WITCH_PATH(ETC/BCOL/internal/Types/Shape/Rectangle/Types.h)
 
   #include _WITCH_PATH(ETC/BCOL/internal/Types/Object.h)
+
+  struct ShapeInfoPack_t{
+    ObjectID_t ObjectID;
+    ShapeEnum_t ShapeEnum;
+    ShapeID_t ShapeID;
+  };
 
   #if ETC_BCOL_set_SupportGrid == 1
     #include _WITCH_PATH(ETC/BCOL/internal/Types/Grid.h)
@@ -91,35 +99,23 @@ struct __ETC_BCOL_P(t){
 
     typedef void (*PreSolveAfter_Shape_cb_t)(
       __ETC_BCOL_P(t) *,
-      ObjectID_t,
-      ShapeEnum_t,
-      ShapeID_t,
-      ObjectID_t,
-      ShapeEnum_t,
-      ShapeID_t
+      const ShapeInfoPack_t *,
+      const ShapeInfoPack_t *
     );
 
     struct Contact_Shape_t{
       uint32_t Flag = Contact_Shape_Flag::EnableContact;
       PreSolveAfter_Shape_cb_t AfterCB = [](
         __ETC_BCOL_P(t) *,
-        ObjectID_t,
-        ShapeEnum_t,
-        ShapeID_t,
-        ObjectID_t,
-        ShapeEnum_t,
-        ShapeID_t
+        const ShapeInfoPack_t *,
+        const ShapeInfoPack_t *
       ){};
     };
 
     typedef void (*PreSolve_Shape_cb_t)(
       __ETC_BCOL_P(t) *,
-      ObjectID_t,
-      ShapeEnum_t,
-      ShapeID_t,
-      ObjectID_t,
-      ShapeEnum_t,
-      ShapeID_t,
+      const ShapeInfoPack_t *,
+      const ShapeInfoPack_t *,
       Contact_Shape_t *
     );
 

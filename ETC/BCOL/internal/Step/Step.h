@@ -1,14 +1,17 @@
 void Step(
   _f delta
 ){
-  ObjectID_t ObjectID0 = this->ObjectList.GetNodeFirst();
-  while(ObjectID0 != this->ObjectList.dst){
-    this->ObjectList.StartSafeNext(ObjectID0);
-    auto ObjectData0 = this->GetObjectData(ObjectID0);
+  ShapeInfoPack_t sip0;
+  sip0.ObjectID = this->ObjectList.GetNodeFirst();
+  while(sip0.ObjectID != this->ObjectList.dst){
+    this->ObjectList.StartSafeNext(sip0.ObjectID);
+
+    /* TODO can pointer invalidated by future user callbacks that adds objects? */
+    auto ObjectData0 = this->GetObjectData(sip0.ObjectID);
 
     /* bad way */
     if(ObjectData0->Flag & ObjectFlag::Constant){
-      ObjectID0 = this->ObjectList.EndSafeNext();
+      sip0.ObjectID = this->ObjectList.EndSafeNext();
       continue;
     }
 
@@ -24,10 +27,9 @@ void Step(
     _vf WantedObjectDirection = 0;
     _f WantedObjectCollisionRequesters = 0;
 
-    for(uint32_t ShapeID0 = 0; ShapeID0 < ObjectData0->ShapeList.Current; ShapeID0++){
-      auto ShapeData = &((ShapeData_t *)ObjectData0->ShapeList.ptr)[ShapeID0];
-
-      switch(ShapeData->ShapeEnum){
+    for(sip0.ShapeID.ID = 0; sip0.ShapeID.ID < ObjectData0->ShapeList.Current; sip0.ShapeID.ID++){
+      sip0.ShapeEnum = ((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeEnum;
+      switch(sip0.ShapeEnum){
         case ShapeEnum_t::Circle:{
           #include _WITCH_PATH(ETC/BCOL/internal/Step/Shape/Circle.h)
         }
@@ -70,7 +72,7 @@ void Step(
     }
 
     gt_Object0Unlinked:
-    ObjectID0 = this->ObjectList.EndSafeNext();
+    sip0.ObjectID = this->ObjectList.EndSafeNext();
   }
 
   #if ETC_BCOL_set_StepNumber == 1

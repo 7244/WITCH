@@ -8,9 +8,7 @@ struct Contact_Grid_t{
 
 typedef void (*PreSolve_Grid_cb_t)(
   __ETC_BCOL_P(t) *,
-  ObjectID_t,
-  ShapeEnum_t,
-  ShapeID_t,
+  const ShapeInfoPack_t *,
   _vsi32 /* Grid */,
   Contact_Grid_t *
 );
@@ -32,9 +30,7 @@ typedef void (*PreSolve_Grid_cb_t)(
 
   typedef void (*PostSolve_Grid_cb_t)(
     __ETC_BCOL_P(t) *,
-    ObjectID_t,
-    ShapeEnum_t,
-    ShapeID_t,
+    const ShapeInfoPack_t *,
     _vsi32 /* Grid */,
     ContactResult_Grid_t *
   );

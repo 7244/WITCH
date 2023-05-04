@@ -1,31 +1,3 @@
-/* object */
-
-struct TraverseObject_t{
-  ShapeID_t ShapeID;
-  struct{
-    uint32_t ShapeIndex;
-  }priv;
-};
-
-void TraverseObject_init(TraverseObject_t *TraverseObject){
-  TraverseObject->priv.ShapeIndex = 0;
-}
-
-bool TraverseObject_loop(
-  ObjectID_t ObjectID,
-  TraverseObject_t *TraverseObject
-){
-  auto ObjectData = this->GetObjectData(ObjectID);
-  if(TraverseObject->priv.ShapeIndex == ObjectData->ShapeList.Current){
-    return false;
-  }
-
-  TraverseObject->ShapeID = *(ShapeID_t *)&TraverseObject->priv.ShapeIndex;
-
-  TraverseObject->priv.ShapeIndex++;
-  return true;
-}
-
 /* objects */
 
 struct TraverseObjects_t{

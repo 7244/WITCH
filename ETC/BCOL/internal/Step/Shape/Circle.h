@@ -1,4 +1,4 @@
-auto CircleData = this->ShapeData_Circle_Get(ShapeData->ShapeID);
+auto CircleData = ShapeData_Circle_Get(((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeID);
 
 _vf NewPosition = NewObjectPosition + CircleData->Position;
 
@@ -22,12 +22,10 @@ _f WantedCollisionRequesters = 0;
       Contact.Flag = 0;
       this->PreSolve_Grid_cb(
         this,
-        ObjectID0,
-        ShapeEnum_t::Circle,
-        ShapeData->ShapeID,
+        &sip0,
         {CircleGridX, CircleMiddleGridY},
         &Contact);
-      if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+      if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
         goto gt_Object0Unlinked;
       }
       if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
@@ -53,12 +51,10 @@ _f WantedCollisionRequesters = 0;
       #ifdef ETC_BCOL_set_PostSolve_Grid
         this->PostSolve_Grid_cb(
           this,
-          ObjectID0,
-          ShapeEnum_t::Circle,
-          ShapeData->ShapeID,
+          &sip0,
           {CircleGridX, CircleMiddleGridY},
           &ContactResult);
-        if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+        if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
           goto gt_Object0Unlinked;
         }
       #endif
@@ -85,12 +81,10 @@ _f WantedCollisionRequesters = 0;
         Contact_Grid_t Contact;
         this->PreSolve_Grid_cb(
           this,
-          ObjectID0,
-          ShapeEnum_t::Circle,
-          ShapeData->ShapeID,
+          &sip0,
           {CircleGridX, CircleGridY},
           &Contact);
-        if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+        if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
           goto gt_Object0Unlinked;
         }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
@@ -116,12 +110,10 @@ _f WantedCollisionRequesters = 0;
         #ifdef ETC_BCOL_set_PostSolve_Grid
           this->PostSolve_Grid_cb(
             this,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
+            &sip0,
             {CircleGridX, CircleGridY},
             &ContactResult);
-          if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+          if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
             goto gt_Object0Unlinked;
           }
         #endif
@@ -149,12 +141,10 @@ _f WantedCollisionRequesters = 0;
         Contact_Grid_t Contact;
         this->PreSolve_Grid_cb(
           this,
-          ObjectID0,
-          ShapeEnum_t::Circle,
-          ShapeData->ShapeID,
+          &sip0,
           {CircleGridX, CircleGridY},
           &Contact);
-        if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+        if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
           goto gt_Object0Unlinked;
         }
         if(Contact.Flag & Contact_Grid_Flag::EnableContact); else{
@@ -180,12 +170,10 @@ _f WantedCollisionRequesters = 0;
         #ifdef ETC_BCOL_set_PostSolve_Grid
           this->PostSolve_Grid_cb(
             this,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
+            &sip0,
             {CircleGridX, CircleGridY},
             &ContactResult);
-          if(this->ObjectList.CheckSafeNext(0) != ObjectID0){
+          if(this->ObjectList.CheckSafeNext(0) != sip0.ObjectID){
             goto gt_Object0Unlinked;
           }
         #endif
@@ -199,29 +187,28 @@ _f WantedCollisionRequesters = 0;
 #endif
 
 #if ETC_BCOL_set_DynamicToDynamic == 1
-  ObjectID_t ObjectID1 = this->ObjectList.GetNodeFirst();
-  while(ObjectID1 != this->ObjectList.dst){
-    this->ObjectList.StartSafeNext(ObjectID1);
-    auto ObjectData1 = this->GetObjectData(ObjectID1);
-    if(ObjectID1 == ObjectID0){
+  ShapeInfoPack_t sip1;
+  sip1.ObjectID = this->ObjectList.GetNodeFirst();
+  while(sip1.ObjectID != this->ObjectList.dst){
+    this->ObjectList.StartSafeNext(sip1.ObjectID);
+    auto ObjectData1 = this->GetObjectData(sip1.ObjectID);
+    if(sip1.ObjectID == sip0.ObjectID){
       goto gt_Object1_Circle_Unlinked;
     }
 
-    TraverseObject_t TraverseObject_;
-    this->TraverseObject_init(&TraverseObject_);
-    while(this->TraverseObject_loop(ObjectID1, &TraverseObject_)){
-      auto ShapeID_ = TraverseObject_.ShapeID;
-      auto ShapeData_ = this->GetObject_ShapeData(ObjectID1, ShapeID_);
+    for(sip1.ShapeID.ID = 0; sip1.ShapeID.ID < ObjectData1->ShapeList.Current; sip1.ShapeID.ID++){
+      auto ShapeData1 = this->GetObject_ShapeData(sip1.ObjectID, sip1.ShapeID);
+      sip1.ShapeEnum = ShapeData1->ShapeEnum;
 
-      switch(ShapeData_->ShapeEnum){
+      switch(sip1.ShapeEnum){
         case ShapeEnum_t::Circle:{
-          auto CircleData_ = this->ShapeData_Circle_Get(ShapeData_->ShapeID);
+          auto CircleData1 = this->ShapeData_Circle_Get(ShapeData1->ShapeID);
 
-          _vf WorldPosition = ObjectData1->Position + CircleData_->Position;
+          _vf WorldPosition = ObjectData1->Position + CircleData1->Position;
 
           _vf Difference = NewPosition - WorldPosition;
           _f Hypotenuse = Difference.hypotenuse();
-          _f CombinedSize = CircleData->Size + CircleData_->Size;
+          _f CombinedSize = CircleData->Size + CircleData1->Size;
           if(Hypotenuse >= CombinedSize){
             break;
           }
@@ -229,46 +216,30 @@ _f WantedCollisionRequesters = 0;
           Contact_Shape_t Contact[2];
           this->PreSolve_Shape_cb(
             this,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
-            ObjectID1,
-            ShapeEnum_t::Circle,
-            ShapeID_,
+            &sip0,
+            &sip1,
             &Contact[0]);
           this->PreSolve_Shape_cb(
             this,
-            ObjectID1,
-            ShapeEnum_t::Circle,
-            ShapeID_,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
+            &sip1,
+            &sip0,
             &Contact[1]);
 
           Contact[0].AfterCB(
             this,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
-            ObjectID1,
-            ShapeEnum_t::Circle,
-            ShapeID_
+            &sip0,
+            &sip1
           );
           Contact[1].AfterCB(
             this,
-            ObjectID1,
-            ShapeEnum_t::Circle,
-            ShapeID_,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID
+            &sip1,
+            &sip0
           );
-          if(ObjectList.CheckSafeNext(1) != ObjectID0){
+          if(ObjectList.CheckSafeNext(1) != sip0.ObjectID){
             this->ObjectList.EndSafeNext();
             goto gt_Object0Unlinked;
           }
-          if(ObjectList.CheckSafeNext(0) != ObjectID1){
+          if(ObjectList.CheckSafeNext(0) != sip1.ObjectID){
             goto gt_Object1_Circle_Unlinked;
           }
           if(Contact[0].Flag & Contact[1].Flag & Contact_Shape_Flag::EnableContact); else{
@@ -284,7 +255,7 @@ _f WantedCollisionRequesters = 0;
           break;
         }
         case ShapeEnum_t::Rectangle:{
-          auto RectangleData_ = this->ShapeData_Rectangle_Get(ShapeData_->ShapeID);
+          auto RectangleData_ = this->ShapeData_Rectangle_Get(ShapeData1->ShapeID);
 
           _vf WorldPosition = ObjectData1->Position + RectangleData_->Position;
 
@@ -303,18 +274,14 @@ _f WantedCollisionRequesters = 0;
           Contact_Shape_t Contact;
           this->PreSolve_Shape_cb(
             this,
-            ObjectID0,
-            ShapeEnum_t::Circle,
-            ShapeData->ShapeID,
-            ObjectID1,
-            ShapeEnum_t::Rectangle,
-            ShapeID_,
+            &sip0,
+            &sip1,
             &Contact);
-          if(ObjectList.CheckSafeNext(1) != ObjectID0){
+          if(ObjectList.CheckSafeNext(1) != sip0.ObjectID){
             this->ObjectList.EndSafeNext();
             goto gt_Object0Unlinked;
           }
-          if(ObjectList.CheckSafeNext(0) != ObjectID1){
+          if(ObjectList.CheckSafeNext(0) != sip1.ObjectID){
             goto gt_Object1_Circle_Unlinked;
           }
           if(Contact.Flag & Contact_Shape_Flag::EnableContact); else{
@@ -342,7 +309,7 @@ _f WantedCollisionRequesters = 0;
     }
 
     gt_Object1_Circle_Unlinked:
-    ObjectID1 = this->ObjectList.EndSafeNext();
+    sip1.ObjectID = this->ObjectList.EndSafeNext();
   }
 #endif
 
