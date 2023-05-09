@@ -486,3 +486,20 @@ uint32_t LOG64(uint64_t num, uint8_t base){
   #define _lstd_preprocessor_combine_every_2_start(n, ...) CONCAT(_lstd_preprocessor_combine_every_2_,n(__VA_ARGS__))
   #define lstd_preprocessor_combine_every_2(...) _lstd_preprocessor_combine_every_2_start(lstd_preprocessor_get_arg_count(__VA_ARGS__), __VA_ARGS__)
 #endif
+
+auto& lstd_variadic_get_first(auto& f, auto&&... r){
+  return f;
+}
+
+auto& _lstd_variadic_get_last(auto &p0, auto &p1, auto p2){
+  return p2;
+}
+auto& _lstd_variadic_get_last(auto &p0, auto &p1){
+  return p1;
+}
+auto& _lstd_variadic_get_last(auto &p0){
+  return p0;
+}
+auto& lstd_variadic_get_last(auto&&... args){
+  return _lstd_variadic_get_last(args...);
+}
