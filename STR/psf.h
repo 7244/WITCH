@@ -16,7 +16,7 @@
       (ref_m i)++; \
       break; \
     default: \
-      if(!STR_ischar_float(str[ref_m i])) \
+      if(!STR_ischar_BeginOfFloat(str[ref_m i])) \
         return 0; \
       sign = 1; \
   }
@@ -116,6 +116,9 @@ f32_t STR_psf32_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
   after:;
   f32_t div = 10;
   for((*i)++; *i < size; (*i)++){
+    if(!STR_ischar_digit(str[*i])){
+      break;
+    }
     res += (f32_t)(str[*i] - '0') / div;
     div *= 10;
   }
@@ -136,6 +139,9 @@ f64_t STR_psf64_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
   after:;
   f64_t div = 10;
   for((*i)++; *i < size; (*i)++){
+    if(!STR_ischar_digit(str[*i])){
+      break;
+    }
     res += (f64_t)(str[*i] - '0') / div;
     div *= 10;
   }

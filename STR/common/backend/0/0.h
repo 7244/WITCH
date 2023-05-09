@@ -100,7 +100,7 @@ bool STR_ischars_hex(const uint8_t c, const uintptr_t i){
   return STR_ischar_hexdigit(c);
 }
 
-bool STR_ischar_float(const uint8_t c){
+bool STR_ischar_BeginOfFloat(const uint8_t c){
   switch(c){
     case '.':
     case '+':case '-':
