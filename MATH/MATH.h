@@ -156,3 +156,9 @@ void MATH_NormalResolve_f32(
   *oDirectionY = kY * Multipler;
   *oDirectionX = kX * Multipler;
 }
+
+void MATH_CirclePackCircle(uint32_t Count, uint32_t Current, f32_t *r, f32_t *px, f32_t *py){
+  *r = Count;
+  *px = -(f32_t)(Count - 1) + Current * 2;
+  *py = 0;
+}
