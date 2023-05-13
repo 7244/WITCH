@@ -31,11 +31,15 @@ BLL_StructBegin(_P(NodeReference_t))
         *nr = _P(gnric)();
       }
       #if BLL_set_CPP_nrsic == 1
-        sic_t(){
+        sic_t(bool p){
           (*this)();
         }
       #endif
-    }sic;
+    }sic
+      #if BLL_set_CPP_nrsic == 1
+        (false)
+      #endif
+    ;
     /* is invalid constant */
     /* check _BLL_POFTWBIT(inric) at rest.h for more info */
     bool iic(){
