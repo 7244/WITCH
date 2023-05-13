@@ -9,10 +9,11 @@
     static _P(NodeReference_t) _P(_NodeReference_Next)(_P(NodeReference_t) *, _P(t) *);
     static _P(NodeReference_t) _P(_NodeReference_Prev)(_P(NodeReference_t) *, _P(t) *);
     static _P(NodeReference_t) _P(gnric)();
+    static void _P(snric)(_P(NodeReference_t) *);
   #endif
 #endif
 
-
+#pragma pack(push, 1)
 BLL_StructBegin(_P(NodeReference_t))
   BLL_set_type_node NRI;
 
@@ -25,21 +26,21 @@ BLL_StructBegin(_P(NodeReference_t))
     }
 
     /* set invalid constant */
-    struct sic_t{
-      void operator()(){
-        auto nr = OFFSETLESS(this, _P(NodeReference_t), sic);
-        *nr = _P(gnric)();
+    void sic(){
+      _P(snric)(this);
+    }
+
+    #if BLL_set_CPP_nrsic == 1
+      _P(NodeReference_t)(){
+        sic();
       }
-      #if BLL_set_CPP_nrsic == 1
-        sic_t(bool p){
-          (*this)();
-        }
-      #endif
-    }sic
-      #if BLL_set_CPP_nrsic == 1
-        (false)
-      #endif
-    ;
+    #else
+      _P(NodeReference_t)() = default;
+      _P(NodeReference_t)(bool p){
+        sic();
+      }
+    #endif
+  
     /* is invalid constant */
     /* check _BLL_POFTWBIT(inric) at rest.h for more info */
     bool iic(){
@@ -53,11 +54,22 @@ BLL_StructBegin(_P(NodeReference_t))
   #endif
 
   #ifdef BLL_set_NodeReference_Overload_Declare
-    _P(NodeReference_t)() = default;
     BLL_set_NodeReference_Overload_Declare
   #endif
 BLL_StructEnd(_P(NodeReference_t))
+#pragma pack(pop)
 
+__cta(sizeof(_P(NodeReference_t)) == sizeof(BLL_set_type_node));
+
+/* set node reference invalid constant */
+static
+void
+_P(snric)
+(
+  _P(NodeReference_t) *nr
+){
+  nr->NRI = (BLL_set_type_node)-1;
+}
 /* get node reference invalid constant */
 static
 _P(NodeReference_t)
@@ -65,7 +77,7 @@ _P(gnric)
 (
 ){
   _P(NodeReference_t) nr;
-  nr.NRI = (BLL_set_type_node)-1;
+  _P(snric)(&nr);
   return nr;
 }
 /* is node reference invalid constant */

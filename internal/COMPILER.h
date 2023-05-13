@@ -233,11 +233,15 @@ uint32_t LOG64(uint64_t num, uint8_t base){
 
 /* compile time assert */
 #ifndef __cta
-  /* taken from stackoverflow.com/a/3385694 */
-  #define __cta_static_assert(COND,MSG) typedef char __cta_##MSG[(!!(COND))*2-1]
-  #define __cta_3(X,L) __cta_static_assert(X,static_assertion_at_line_##L)
-  #define __cta_2(X,L) __cta_3(X,L)
-  #define __cta(X) __cta_2(X,__LINE__)
+  #if defined(WL_CPP)
+    #define __cta(X) static_assert(X)
+  #else
+    /* taken from stackoverflow.com/a/3385694 */
+    #define __cta_static_assert(COND,MSG) typedef char __cta_##MSG[(!!(COND))*2-1]
+    #define __cta_3(X,L) __cta_static_assert(X,static_assertion_at_line_##L)
+    #define __cta_2(X,L) __cta_3(X,L)
+    #define __cta(X) __cta_2(X,__LINE__)
+  #endif
 #endif
 
 #ifndef __empty_struct
