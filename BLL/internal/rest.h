@@ -50,7 +50,7 @@ BLL_StructBegin(_P(Node_t))
       #if BLL_set_Link == 0
         uint8_t _PaddingForNextRecycled[
           sizeof(_P(NodeData_t)) < sizeof(_P(NodeReference_t)) ?
-            sizeof(_P(NodeData_t)) - sizeof(_P(NodeReference_t)) :
+            sizeof(_P(NodeReference_t)) - sizeof(_P(NodeData_t)) :
             0
         ];
       #endif
