@@ -30,17 +30,12 @@ BLL_StructBegin(_P(NodeReference_t))
         auto nr = OFFSETLESS(this, _P(NodeReference_t), sic);
         *nr = _P(gnric)();
       }
-      #ifdef BLL_set_CPP_nrsic
+      #if BLL_set_CPP_nrsic == 1
         sic_t(){
           (*this)();
         }
-        sic_t(bool p){}
       #endif
-    }sic
-      #ifdef BLL_set_CPP_nrsic
-        {false}
-      #endif
-    ;
+    }sic;
     /* is invalid constant */
     /* check _BLL_POFTWBIT(inric) at rest.h for more info */
     bool iic(){

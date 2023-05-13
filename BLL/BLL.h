@@ -50,11 +50,15 @@
       #define BLL_set_CPP_Node_ConstructDestruct
     #endif
     #ifndef BLL_set_CPP_nrsic
-      #define BLL_set_CPP_nrsic
+      #define BLL_set_CPP_nrsic 1
     #endif
   #else
     #error ?
   #endif
+#endif
+
+#ifndef BLL_set_CPP_nrsic
+  #define BLL_set_CPP_nrsic 0
 #endif
 
 #ifndef BLL_set_AreWeInsideStruct
