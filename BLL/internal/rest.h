@@ -181,6 +181,9 @@ BLL_StructBegin(_P(t))
   #endif
 #if BLL_set_Language == 0
   BLL_StructEnd(_P(t))
+#else
+  using nd_t = _P(NodeData_t);
+  using nr_t = _P(NodeReference_t);
 #endif
 
 _BLL_SOFTWBIT
