@@ -337,8 +337,8 @@ bool _OpenExtraLine(
 
 bool
 _IsLineMembersFit(
-  uint32_t CharacterAmount,
-  uint32_t WidthAmount
+  uint32_t CharacterAmount, /* TOOD need type */
+  ETC_WED_set_WidthType WidthAmount
 ){
   if(CharacterAmount > this->LineCharacterLimit){
     return 0;
