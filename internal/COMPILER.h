@@ -441,27 +441,6 @@ uint32_t LOG64(uint64_t num, uint8_t base){
   }
 #endif
 
-#ifndef lstd_defastruct
-  using lstd_current_type = void;
-  #define lstd_defastruct(name, ...) \
-    struct CONCAT(name,_t){ \
-      using lstd_parent_type = lstd_current_type; \
-      using lstd_current_type = CONCAT(name,_t); \
-      struct lstd_parent_t{ \
-        auto* operator->(){ \
-          auto current = OFFSETLESS(this, CONCAT(name,_t), lstd_parent); \
-          return OFFSETLESS(current, lstd_parent_type, name); \
-        } \
-      }lstd_parent; \
-      __VA_ARGS__ \
-    }name;
-#endif
-#ifndef lstd_defstruct
-  #define lstd_defstruct(type_name) \
-    struct type_name{ \
-      using lstd_current_type = type_name;
-#endif
-
 #define lstd_preprocessor_get_argn(p0, p1, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, n, ...) n
 #define lstd_preprocessor_get_arg_count(...) EXPAND(lstd_preprocessor_get_argn(__VA_ARGS__, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 
@@ -491,19 +470,42 @@ uint32_t LOG64(uint64_t num, uint8_t base){
   #define lstd_preprocessor_combine_every_2(...) _lstd_preprocessor_combine_every_2_start(lstd_preprocessor_get_arg_count(__VA_ARGS__), __VA_ARGS__)
 #endif
 
-auto& lstd_variadic_get_first(auto& f, auto&&... r){
-  return f;
-}
+#ifdef WL_CPP
+  #ifndef lstd_defastruct
+    using lstd_current_type = void;
+    #define lstd_defastruct(name, ...) \
+      struct CONCAT(name,_t){ \
+        using lstd_parent_type = lstd_current_type; \
+        using lstd_current_type = CONCAT(name,_t); \
+        struct lstd_parent_t{ \
+          auto* operator->(){ \
+            auto current = OFFSETLESS(this, CONCAT(name,_t), lstd_parent); \
+            return OFFSETLESS(current, lstd_parent_type, name); \
+          } \
+        }lstd_parent; \
+        __VA_ARGS__ \
+      }name;
+  #endif
+  #ifndef lstd_defstruct
+    #define lstd_defstruct(type_name) \
+      struct type_name{ \
+        using lstd_current_type = type_name;
+  #endif
 
-auto& _lstd_variadic_get_last(auto &p0, auto &p1, auto p2){
-  return p2;
-}
-auto& _lstd_variadic_get_last(auto &p0, auto &p1){
-  return p1;
-}
-auto& _lstd_variadic_get_last(auto &p0){
-  return p0;
-}
-auto& lstd_variadic_get_last(auto&&... args){
-  return _lstd_variadic_get_last(args...);
-}
+  auto& lstd_variadic_get_first(auto& f, auto&&... r){
+    return f;
+  }
+
+  auto& _lstd_variadic_get_last(auto &p0, auto &p1, auto p2){
+    return p2;
+  }
+  auto& _lstd_variadic_get_last(auto &p0, auto &p1){
+    return p1;
+  }
+  auto& _lstd_variadic_get_last(auto &p0){
+    return p0;
+  }
+  auto& lstd_variadic_get_last(auto&&... args){
+    return _lstd_variadic_get_last(args...);
+  }
+#endif
