@@ -1,9 +1,9 @@
-enum{
+typedef enum{
   /*
     dynamic ptr. will be changed.
     layer must copy it to somewhere. or send it to next layer.
   */
-  NET_TCP_QueueType_DynamicPointer_e,
+  NET_TCP_QueueType_DynamicPointer,
 
   /*
     special ptr. special ptr that allocated by next layer alloc function.
@@ -11,13 +11,13 @@ enum{
     next layer able to add extra space to begin and end
     which can be used to add bookkeeping without new allocation.
   */
-  NET_TCP_QueueType_SpecialPointer_e,
+  NET_TCP_QueueType_SpecialPointer,
 
   /*
     same with specialptr but it has QueuerReference.
     when its consumed signer must be notified.
   */
-  NET_TCP_QueueType_SignedSpecialPointer_e,
+  NET_TCP_QueueType_SignedSpecialPointer,
 
   /*
     its only for read layer.
@@ -27,26 +27,32 @@ enum{
     and imagine that first extensions always deconstructs itself very fast (like socks4)
     that would cause alot allocate for per peer.
   */
-  NET_TCP_QueueType_PeerEvent_e,
+  NET_TCP_QueueType_PeerEvent,
 
   /*
     file description. cb needs to be called after file transfer is done.
   */
-  NET_TCP_QueueType_File_e,
+  NET_TCP_QueueType_File,
 
   /*
     CloseHard will be called if it goes to GodFather
     used for close peer after data is sent etc
   */
-  NET_TCP_QueueType_CloseIfGodFather_e,
+  NET_TCP_QueueType_CloseIfGodFather,
 
   /*
     close connection hardly.
     layer needs to close/free what it holds. then send it to next layer.
     sent from NET_TCP_CloseHard()
   */
-  NET_TCP_QueueType_CloseHard_e
-};
+  NET_TCP_QueueType_CloseHard,
+
+  /*
+    whoever (me) deleted this feature from tcp library must see deepest parts of hell
+    demons should insert their huge "forks" inside his ass till he screams "be soft"
+  */
+  /* NET_TCP_QueueType_CloseSoft */
+}NET_TCP_QueueType_t;
 
 typedef void (*NET_TCP_Queue_File_cb_t)(NET_TCP_peer_t *, IO_fd_t, sint32_t /* err */, void */* userdata */);
 
@@ -57,7 +63,9 @@ typedef union{
   }DynamicPointer;
   struct{
     void *ptr;
-    uintptr_t size;
+    uintptr_t DataIndex;
+    uintptr_t Size;
+    NET_TCP_SpecialPointer_cb cb;
   }SpecialPointer;
   struct{
     void *ptr;

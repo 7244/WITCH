@@ -228,7 +228,7 @@ _P(decode)
       uintptr_t From = *DataIndex;
       uintptr_t To = DataSize - From;
       uintptr_t findchru = MEM_findchru(&((uint8_t *)Data)[From], To, ' ');
-      (*DataIndex) += findchru + 1;
+      (*DataIndex) += findchru;
       if(findchru == To){
         if(findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
@@ -241,6 +241,7 @@ _P(decode)
         return _P(ResultType_NotEnoughData_e);
       }
       else{
+        (*DataIndex)++;
         decode->priv.StateData.head.result_head.v[0] = From;
         decode->priv.StateData.head.result_head.s[0] = findchru;
         decode->priv.State = 2;
@@ -280,7 +281,7 @@ _P(decode)
       uintptr_t From = *DataIndex;
       uintptr_t To = DataSize - From;
       uintptr_t findchru = MEM_findchru(&((uint8_t *)Data)[From], To, ' ');
-      (*DataIndex) += findchru + 1;
+      (*DataIndex) += findchru;
       if(findchru == To){
         {
           sint32_t r = _PP(decode_CopyToBuffer_02_04)(decode, Data, 1);
@@ -300,6 +301,7 @@ _P(decode)
         return _P(ResultType_NotEnoughData_e);
       }
       else{
+        (*DataIndex)++;
         decode->priv.StateData.head.result_head.v[1] = From;
         decode->priv.StateData.head.result_head.s[1] = findchru;
         decode->priv.State = 4;
@@ -341,7 +343,7 @@ _P(decode)
       uintptr_t From = *DataIndex;
       uintptr_t To = DataSize - From;
       uintptr_t findchru = MEM_findchru(&((uint8_t *)Data)[From], To, '\r');
-      (*DataIndex) += findchru + 1;
+      (*DataIndex) += findchru;
       if(findchru == To){
         {
           sint32_t r = _PP(decode_CopyToBuffer_02_04)(decode, Data, 2);
@@ -363,6 +365,7 @@ _P(decode)
         return _P(ResultType_NotEnoughData_e);
       }
       else{
+        (*DataIndex)++;
         decode->priv.StateData.head.result_head.v[2] = From;
         decode->priv.StateData.head.result_head.s[2] = findchru;
         decode->priv.State = 6;

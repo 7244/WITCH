@@ -7,7 +7,7 @@
 #if _PR_set_abort_print
   #include <signal.h>
 
-  #if defined(_MSC_VER) && !defined(__clang__)
+  #if defined(WL_CPP) && defined(_MSC_VER) && !defined(__clang__)
     #include <iostream>
     #include <stacktrace>
 

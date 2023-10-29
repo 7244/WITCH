@@ -67,6 +67,10 @@ typedef struct{
   NET_TCP_extinfo_t *info;
 }NET_TCP_ext_t;
 
+typedef struct NET_TCP_t NET_TCP_t;
+
+typedef void (*NET_TCP_SpecialPointer_cb)(NET_TCP_t *, NET_TCP_peer_t *, void *, uintptr_t);
+
 #include _WITCH_PATH(NET/TCP/internal/Queue.h)
 
 typedef NET_TCP_layerflag_t (*NET_TCP_cb_state_t)(
@@ -148,7 +152,7 @@ typedef struct{
 #if !NET_TCP_set_PadSocket
   #pragma pack(push, 1)
 #endif
-typedef struct{
+struct NET_TCP_t{
   EV_event_t ev; /* .sock */
 
   EV_t *listener;
@@ -188,7 +192,7 @@ typedef struct{
 
   NET_socket_t sock;
   NET_addr_t ssrcaddr;
-}NET_TCP_t;
+};
 #if !NET_TCP_set_PadSocket
   #pragma pack(pop)
 #endif

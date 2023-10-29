@@ -55,7 +55,9 @@
   #define WIN32_LEAN_AND_MEAN
   #define WIN64_LEAN_AND_MEAN
   #define _CRT_SECURE_NO_WARNINGS
-  #include <intrin.h>
+  #ifdef _MSC_VER
+    #include <intrin.h>
+  #endif
 #endif
 
 #if defined(WOS_UNIX) || defined(WOS_WINDOWS)

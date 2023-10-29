@@ -77,14 +77,20 @@ void _NET_TCP_close_peer_StateLoop(NET_TCP_t *tcp, NET_TCP_peer_t *peer){
   }
 }
 
+/* get socket from peer */
+NET_socket_t NET_TCP_gsfp(NET_TCP_peer_t *p){
+  NET_socket_t s;
+  EV_event_get_socket(&p->event, &s);
+  return s;
+}
+
 /* internal cleanup for peer */
 void _NET_TCP_close_peer(NET_TCP_peer_t *peer){
   _NET_TCP_QueuerList_Close(&peer->ReadQueuerList);
   _NET_TCP_QueuerList_Close(&peer->WriteQueuerList);
   VAS_close(&peer->queue);
   _NET_TCP_close_peer_StateLoop(peer->parent, peer);
-  NET_socket_t sock;
-  EV_event_get_socket(&peer->event, &sock);
+  NET_socket_t sock = NET_TCP_gsfp(peer);
   NET_close(&sock);
   A_resize(peer, 0);
 }
@@ -115,13 +121,13 @@ void _NET_TCP_CloseEstablished(NET_TCP_peer_t *peer){
   NET_TCP_read_loop(
     peer,
     NET_TCP_GetReadQueuerReferenceFirst(peer),
-    NET_TCP_QueueType_CloseHard_e,
+    NET_TCP_QueueType_CloseHard,
     &Queue
   );
   NET_TCP_write_loop(
     peer,
     NET_TCP_GetWriteQueuerReferenceFirst(peer),
-    NET_TCP_QueueType_CloseHard_e,
+    NET_TCP_QueueType_CloseHard,
     &Queue
   );
 
@@ -330,8 +336,7 @@ void _NET_TCP_EVConnectTimer_cb(EV_t *listener, EV_timer_t *timer){
   EV_event_stop(listener, &ConnectTimer->peer->event);
   NET_TCP_StopConnectTimer(listener, tcp, ConnectTimer->peer);
   _NET_TCP_close_peer_StateLoop(tcp, ConnectTimer->peer);
-  NET_socket_t peer_socket;
-  EV_event_get_socket(&ConnectTimer->peer->event, &peer_socket);
+  NET_socket_t peer_socket = NET_TCP_gsfp(ConnectTimer->peer);
   NET_close(&peer_socket);
   A_resize(ConnectTimer->peer, 0);
 
@@ -347,8 +352,7 @@ void _NET_TCP_CalculateConnectTimer(EV_t *listener, NET_TCP_t *tcp){
   if(now >= ConnectTimer->NextTime){
     EV_event_stop(listener, &ConnectTimer->peer->event);
     _NET_TCP_close_peer_StateLoop(tcp, ConnectTimer->peer);
-    NET_socket_t peer_socket;
-    EV_event_get_socket(&ConnectTimer->peer->event, &peer_socket);
+    NET_socket_t peer_socket = NET_TCP_gsfp(ConnectTimer->peer);
     NET_close(&peer_socket);
     A_resize(ConnectTimer->peer, 0);
     VAS_unlink(&tcp->ConnectTimerList, node);
@@ -403,8 +407,7 @@ void _NET_TCP_connect_CB(EV_t *listener, EV_event_t *event, uint32_t flag){
   EV_event_stop(listener, event);
   NET_TCP_StopConnectTimer(listener, tcp, peer);
 
-  NET_socket_t sock;
-  EV_event_get_socket(event, &sock);
+  NET_socket_t sock = NET_TCP_gsfp(peer);
   sint32_t err;
   if(NET_getsockopt(&sock, SOL_SOCKET, SO_ERROR, &err) != 0){
     PR_abort();
@@ -424,16 +427,18 @@ void _NET_TCP_connect_CB(EV_t *listener, EV_event_t *event, uint32_t flag){
   NET_TCP_StateLoop(peer);
 }
 
+void _NET_TCP_CloseConnect(NET_TCP_t *tcp, NET_TCP_peer_t *peer){
+  EV_t *listener = tcp->listener;
+  EV_event_stop(listener, &peer->event);
+  NET_TCP_StopConnectTimer(listener, tcp, peer);
+  NET_socket_t sock = NET_TCP_gsfp(peer);
+  NET_close(&sock);
+  A_resize(peer, 0);
+}
+
 void NET_TCP_CloseHard_MayConnecting(NET_TCP_peer_t *peer){
   if(EV_event_get_cb(&peer->event) == _NET_TCP_connect_CB){
-    NET_TCP_t *tcp = peer->parent;
-    EV_t *listener = tcp->listener;
-    EV_event_stop(listener, &peer->event);
-    NET_TCP_StopConnectTimer(listener, tcp, peer);
-    NET_socket_t sock;
-    EV_event_get_socket(&peer->event, &sock);
-    NET_close(&sock);
-    A_resize(peer, 0);
+    _NET_TCP_CloseConnect(peer->parent, peer);
   }
   else{
     _NET_TCP_CloseEstablished(peer);
@@ -442,6 +447,24 @@ void NET_TCP_CloseHard_MayConnecting(NET_TCP_peer_t *peer){
 
 void NET_TCP_CloseHard(NET_TCP_peer_t *peer){
   _NET_TCP_CloseEstablished(peer);
+}
+void NET_TCP_CloseSoft(NET_TCP_peer_t *peer){
+  NET_TCP_Queue_t Queue;
+  NET_TCP_write_loop(
+    peer,
+    NET_TCP_GetWriteQueuerReferenceFirst(peer),
+    NET_TCP_QueueType_CloseIfGodFather,
+    &Queue
+  );
+}
+
+void NET_TCP_CloseSoft_MayConnecting(NET_TCP_peer_t *peer){
+  if(EV_event_get_cb(&peer->event) == _NET_TCP_connect_CB){
+    _NET_TCP_CloseConnect(peer->parent, peer);
+  }
+  else{
+    NET_TCP_CloseSoft(peer);
+  }
 }
 
 sint32_t _NET_TCP_connect(
@@ -563,7 +586,6 @@ sint32_t NET_TCP_connect_ThreadSafe(
 }
 
 sint32_t NET_TCP_MakePeerNoDelay(NET_TCP_peer_t *peer){
-  NET_socket_t peer_socket;
-  EV_event_get_socket(&peer->event, &peer_socket);
+  NET_socket_t peer_socket = NET_TCP_gsfp(peer);
   return NET_setsockopt(&peer_socket, IPPROTO_TCP, TCP_NODELAY, 1);
 }

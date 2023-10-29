@@ -13,6 +13,7 @@ enum{
 typedef struct{
   uintptr_t index;
   uintptr_t size;
+  NET_TCP_SpecialPointer_cb cb;
 }_SpecialPointer_t;
 #define _SignedSpecialPointer_t _NET_TCP_GodFather_SignedSpecialPointer_t
 typedef struct{
@@ -104,6 +105,9 @@ void _NET_TCP_write_godfather_queue(EV_t *listener, NET_TCP_peer_t *peer){
         SpecialPointer->index += len;
         if(SpecialPointer->index != SpecialPointer->size){
           return;
+        }
+        if(SpecialPointer->cb != NULL){
+          SpecialPointer->cb(tcp, peer, ptr, SpecialPointer->size);
         }
         A_resize(SpecialPointer, 0);
         if(NET_TCP_EXT_write_del(peer, QueuerReference)){
@@ -211,13 +215,13 @@ uint32_t _NET_TCP_GodFatherWriteFirst(
   NET_TCP_Queue_t *Queue
 ){
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:
-    case NET_TCP_QueueType_SpecialPointer_e:
-    case NET_TCP_QueueType_SignedSpecialPointer_e:
-    case NET_TCP_QueueType_PeerEvent_e:
-    case NET_TCP_QueueType_File_e:
-    case NET_TCP_QueueType_CloseIfGodFather_e:
-    case NET_TCP_QueueType_CloseHard_e:
+    case NET_TCP_QueueType_DynamicPointer:
+    case NET_TCP_QueueType_SpecialPointer:
+    case NET_TCP_QueueType_SignedSpecialPointer:
+    case NET_TCP_QueueType_PeerEvent:
+    case NET_TCP_QueueType_File:
+    case NET_TCP_QueueType_CloseIfGodFather:
+    case NET_TCP_QueueType_CloseHard:
     {
       return NET_TCP_EXT_pass_e;
     }
@@ -235,7 +239,7 @@ uint32_t _NET_TCP_GodFatherWriteLast(
   NET_TCP_t *tcp = peer->parent;
   EV_t *listener = tcp->listener;
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:{
+    case NET_TCP_QueueType_DynamicPointer:{
       NET_TCP_QueueElement_t QueueElement;
       QueueElement.t = _SpecialPointer_e;
       void *ptr = Queue->DynamicPointer.ptr;
@@ -244,27 +248,27 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       _SpecialPointer_t *SpecialPointer = (_SpecialPointer_t *)QueueElement.tdata;
       SpecialPointer->index = 0;
       SpecialPointer->size = size;
+      SpecialPointer->cb = NULL;
       MEM_copy(ptr, QueueElement.tdata + sizeof(_SpecialPointer_t), size);
       if(NET_TCP_EXT_write_add(peer, QueuerReference, &QueueElement)){
         EV_ev_flag_add(listener, &peer->event, EV_WRITE);
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SpecialPointer_e:{
+    case NET_TCP_QueueType_SpecialPointer:{
       NET_TCP_QueueElement_t QueueElement;
       QueueElement.t = _SpecialPointer_e;
-      void *ptr = Queue->SpecialPointer.ptr;
-      uintptr_t size = Queue->SpecialPointer.size;
-      QueueElement.tdata = (uint8_t *)ptr - sizeof(_SpecialPointer_t);
+      QueueElement.tdata = (uint8_t *)Queue->SpecialPointer.ptr - sizeof(_SpecialPointer_t);
       _SpecialPointer_t *SpecialPointer = (_SpecialPointer_t *)QueueElement.tdata;
-      SpecialPointer->index = 0;
-      SpecialPointer->size = size;
+      SpecialPointer->index = Queue->SpecialPointer.DataIndex;
+      SpecialPointer->size = Queue->SpecialPointer.Size;
+      SpecialPointer->cb = Queue->SpecialPointer.cb;
       if(NET_TCP_EXT_write_add(peer, QueuerReference, &QueueElement)){
         EV_ev_flag_add(listener, &peer->event, EV_WRITE);
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SignedSpecialPointer_e:{
+    case NET_TCP_QueueType_SignedSpecialPointer:{
       void *ptr = Queue->SignedSpecialPointer.ptr;
       uintptr_t size = Queue->SignedSpecialPointer.size;
       NET_TCP_QueuerReference_t SignerQueuerReference = Queue->SignedSpecialPointer.SignerNode;
@@ -282,11 +286,11 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_PeerEvent_e:{
+    case NET_TCP_QueueType_PeerEvent:{
       PR_abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_File_e:{
+    case NET_TCP_QueueType_File:{
       NET_TCP_QueueElement_t QueueElement;
       QueueElement.t = _ReadyFile_e;
       QueueElement.tdata = A_resize(0, sizeof(_ReadyFile_t));
@@ -313,7 +317,7 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_CloseIfGodFather_e:{
+    case NET_TCP_QueueType_CloseIfGodFather:{
       NET_TCP_QueueElement_t QueueElement;
       QueueElement.t = _CloseIfGodFather_e;
       if(NET_TCP_EXT_write_add(peer, QueuerReference, &QueueElement)){
@@ -322,7 +326,7 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_CloseHard_e:{
+    case NET_TCP_QueueType_CloseHard:{
       _NET_TCP_GodFatherWriteLast_ClearQueue(listener, tcp, peer, QueuerReference);
       return NET_TCP_EXT_PeerIsClosed_e;
     }

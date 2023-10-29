@@ -10,12 +10,12 @@ uint32_t _NET_TCP_GodFatherReadFirst(
   NET_TCP_Queue_t *Queue
 ){
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:
-    case NET_TCP_QueueType_SpecialPointer_e:
-    case NET_TCP_QueueType_SignedSpecialPointer_e:
-    case NET_TCP_QueueType_PeerEvent_e:
-    case NET_TCP_QueueType_File_e:
-    case NET_TCP_QueueType_CloseHard_e:
+    case NET_TCP_QueueType_DynamicPointer:
+    case NET_TCP_QueueType_SpecialPointer:
+    case NET_TCP_QueueType_SignedSpecialPointer:
+    case NET_TCP_QueueType_PeerEvent:
+    case NET_TCP_QueueType_File:
+    case NET_TCP_QueueType_CloseHard:
     {
       return NET_TCP_EXT_pass_e;
     }
@@ -31,25 +31,25 @@ uint32_t _NET_TCP_GodFatherReadLast(
   NET_TCP_Queue_t *Queue
 ){
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:{
+    case NET_TCP_QueueType_DynamicPointer:{
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SpecialPointer_e:{
+    case NET_TCP_QueueType_SpecialPointer:{
       PR_abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SignedSpecialPointer_e:{
+    case NET_TCP_QueueType_SignedSpecialPointer:{
       PR_abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_PeerEvent_e:{
+    case NET_TCP_QueueType_PeerEvent:{
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_File_e:{
+    case NET_TCP_QueueType_File:{
       PR_abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_CloseHard_e:{
+    case NET_TCP_QueueType_CloseHard:{
       return NET_TCP_EXT_dontgo_e;
     }
   }
@@ -62,7 +62,7 @@ void _NET_TCP_GodFatherRead_evcb(EV_t *listener, EV_event_t *event, uint32_t evf
     NET_TCP_read_loop(
       peer,
       NET_TCP_GetReadQueuerReferenceFirst(peer),
-      NET_TCP_QueueType_PeerEvent_e,
+      NET_TCP_QueueType_PeerEvent,
       &Queue
     );
   }while(0);
