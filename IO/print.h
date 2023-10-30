@@ -3,12 +3,12 @@
 #include _WITCH_PATH(IO/IO.h)
 #include _WITCH_PATH(STR/ttcc.h)
 
-bool _IO_vprint_buf(STR_ttcc_t *ttcc){
+static bool _IO_vprint_buf(STR_ttcc_t *ttcc){
   IO_write((IO_fd_t *)ttcc->arg, ttcc->ptr, ttcc->c);
   ttcc->c = 0;
   return 0;
 }
-bool IO_vprint(const IO_fd_t *outfd, const char *format, va_list argv){
+static bool IO_vprint(const IO_fd_t *outfd, const char *format, va_list argv){
   uint8_t buf[4096];
   STR_ttcc_t ttcc;
   ttcc.ptr = buf;
@@ -24,7 +24,7 @@ bool IO_vprint(const IO_fd_t *outfd, const char *format, va_list argv){
   }
   return 0;
 }
-bool IO_print(const IO_fd_t *outfd, const char *format, ...){
+static bool IO_print(const IO_fd_t *outfd, const char *format, ...){
   va_list argv;
   va_start(argv, format);
   bool r = IO_vprint(outfd, format, argv);

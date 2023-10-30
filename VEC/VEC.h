@@ -8,7 +8,7 @@ typedef struct{
   uint8_t *ptr;
   A_resize_t resize;
 }VEC_t;
-void VEC_init(VEC_t *vec, uintptr_t size, A_resize_t resize){
+static void VEC_init(VEC_t *vec, uintptr_t size, A_resize_t resize){
   vec->Current = 0;
   vec->Possible = 0;
   vec->Type = size;
@@ -17,26 +17,26 @@ void VEC_init(VEC_t *vec, uintptr_t size, A_resize_t resize){
   vec->resize = resize;
 }
 
-void VEC_reserve(VEC_t *vec, uintptr_t Amount){
+static void VEC_reserve(VEC_t *vec, uintptr_t Amount){
   vec->Possible = Amount;
   vec->ptr = vec->resize(vec->ptr, vec->Possible * vec->Type);
 }
 
-void _VEC_handle(VEC_t *vec){
+static void _VEC_handle(VEC_t *vec){
   vec->Possible = vec->Current + vec->Buffer;
   vec->ptr = vec->resize(vec->ptr, vec->Possible * vec->Type);
 }
-void VEC_handle(VEC_t *vec){
+static void VEC_handle(VEC_t *vec){
   if(vec->Current >= vec->Possible){
     _VEC_handle(vec);
   }
 }
-void VEC_handle0(VEC_t *vec, uintptr_t amount){
+static void VEC_handle0(VEC_t *vec, uintptr_t amount){
   vec->Current += amount;
   VEC_handle(vec);
 }
 
-void VEC_dupe(VEC_t *src, VEC_t *dst){
+static void VEC_dupe(VEC_t *src, VEC_t *dst){
   dst->Current = src->Current;
   dst->Possible = 0;
   dst->Type = src->Type;
@@ -47,7 +47,7 @@ void VEC_dupe(VEC_t *src, VEC_t *dst){
   MEM_copy(src->ptr, dst->ptr, dst->Current * dst->Type);
 }
 
-void VEC_free(VEC_t *vec){
+static void VEC_free(VEC_t *vec){
   vec->resize(vec->ptr, 0);
   vec->Current = 0;
   vec->Possible = 0;
@@ -59,10 +59,10 @@ typedef struct{
   uintptr_t size;
   uint8_t _step;
 }VEC_export_t;
-void VEC_export_init(VEC_export_t *arg){
+static void VEC_export_init(VEC_export_t *arg){
   arg->_step = 0;
 }
-bool VEC_export(VEC_export_t *arg, const VEC_t *vec){
+static bool VEC_export(VEC_export_t *arg, const VEC_t *vec){
   switch(arg->_step){
     case 0:{
       arg->ptr = (const uint8_t *)&vec->Current;
@@ -91,10 +91,10 @@ typedef struct{
   uintptr_t size;
   uint8_t _step;
 }VEC_import_t;
-void VEC_import_init(VEC_import_t *arg){
+static void VEC_import_init(VEC_import_t *arg){
   arg->_step = 0;
 }
-bool VEC_import(VEC_import_t *arg, VEC_t *vec){
+static bool VEC_import(VEC_import_t *arg, VEC_t *vec){
   switch(arg->_step){
     case 0:{
       arg->ptr = (uint8_t *)&vec->Possible;

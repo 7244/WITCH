@@ -188,7 +188,7 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #define RSIGN(_m) \
   ((_m) * SIGN(_m))
 
-uint32_t LOG32(uintptr_t num, uint8_t base){
+static uint32_t LOG32(uintptr_t num, uint8_t base){
   uint32_t log = 0;
   while(num){
     num /= base;
@@ -196,19 +196,17 @@ uint32_t LOG32(uintptr_t num, uint8_t base){
   }
   return log;
 }
-#define LOG32(num_m, base_m) \
-  LOG32((uintptr_t)(num_m), (uint8_t)(base_m))
-uint32_t LOG64(uint64_t num, uint8_t base){
-  uint32_t log = 0;
+static uint64_t LOG64(uint64_t num, uint8_t base){
+  uint64_t log = 0;
   while(num){
     num /= base;
     log++;
   }
   return log;
 }
-#define LOG64(num_m, base_m) \
-  LOG64((uint64_t)(num_m), (uint8_t)(base_m))
-#define LOG CONCAT(LOG, SYSTEM_BIT)
+static uintptr_t LOG(uintptr_t num, uint8_t base){
+  return CONCAT(LOG, SYSTEM_BIT)(num, base);
+}
 
 #ifndef OFFSETLESS
   #define OFFSETLESS(ptr_m, t_m, d_m) \
@@ -431,7 +429,7 @@ uint32_t LOG64(uint64_t num, uint8_t base){
 
 #ifndef __abort
   #define __abort __abort
-  void __abort(){
+  static void __abort(){
     #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
       /* write to kernel owned address from userside. should guarantee crash. */
       *(uintptr_t *)(1 << SYSTEM_BIT - 1) = 0;

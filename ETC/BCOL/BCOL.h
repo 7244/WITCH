@@ -35,7 +35,7 @@
   #error ?
 #endif
 
-#include _WITCH_PATH(ETC/BCOL/internal/rest.h)
+#include "internal/rest.h"
 
 #ifndef ETC_BCOL_set_PostSolve_Grid_CollisionNormal
   #undef ETC_BCOL_set_PostSolve_Grid_CollisionNormal

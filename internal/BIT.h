@@ -53,7 +53,7 @@
   }
 #endif
 
-uint8_t CTZ32(uint32_t x){
+static uint8_t CTZ32(uint32_t x){
   #if defined(__GNUC__)
     return __builtin_ctzl(x);
   #elif defined(_MSC_VER)
@@ -66,7 +66,7 @@ uint8_t CTZ32(uint32_t x){
     }
   #endif
 }
-uint8_t CTZ64(uint64_t x){
+static uint8_t CTZ64(uint64_t x){
   #if defined(__GNUC__)
     return __builtin_ctzll(x);
   #elif defined(_MSC_VER)
@@ -91,10 +91,10 @@ uint8_t CTZ64(uint64_t x){
   #define byteswap32(_m) _byteswap_ulong(_m)
   #define byteswap64(_m) _byteswap_uint64(_m)
 #else
-  uint16_t byteswap16(uint16_t v){
+  static uint16_t byteswap16(uint16_t v){
     return (v >> 8) | (v << 8);
   }
-  uint32_t byteswap32(uint32_t v){
+  static uint32_t byteswap32(uint32_t v){
     return 
       ((v >> 24) & 0x000000ff) |
       ((v >> 8 ) & 0x0000ff00) |
@@ -102,7 +102,7 @@ uint8_t CTZ64(uint64_t x){
       ((v << 24) & 0xff000000)
     ;
   }
-  uint64_t byteswap64(uint64_t v){
+  static uint64_t byteswap64(uint64_t v){
     return 
       ((v >> 56) & 0x00000000000000ff) |
       ((v >> 48) & 0x000000000000ff00) |
@@ -132,20 +132,20 @@ uint8_t CTZ64(uint64_t x){
   #define e1swap64(_m) (_m)
 #endif
 
-uint8_t bitswap8(uint8_t v){
+static uint8_t bitswap8(uint8_t v){
   v = (v & 0xf0) >> 4 | (v & 0x0f) << 4;
   v = (v & 0xcc) >> 2 | (v & 0x33) << 2;
   v = (v & 0xaa) >> 1 | (v & 0x55) << 1;
   return v;
 }
-uint16_t bitswap16(uint16_t v){
+static uint16_t bitswap16(uint16_t v){
   v = byteswap16(v);
   uint8_t *n = (uint8_t *)&v;
   n[0] = bitswap8(n[0]);
   n[1] = bitswap8(n[1]);
   return v;
 }
-uint32_t bitswap32(uint32_t v){
+static uint32_t bitswap32(uint32_t v){
   v = byteswap32(v);
   uint8_t *n = (uint8_t *)&v;
   n[0] = bitswap8(n[0]);
@@ -154,7 +154,7 @@ uint32_t bitswap32(uint32_t v){
   n[3] = bitswap8(n[3]);
   return v;
 }
-uint64_t bitswap64(uint64_t v){
+static uint64_t bitswap64(uint64_t v){
   v = byteswap64(v);
   uint8_t *n = (uint8_t *)&v;
   n[0] = bitswap8(n[0]);

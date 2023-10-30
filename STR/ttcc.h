@@ -16,7 +16,7 @@ struct STR_ttcc_t{
   void *arg;
 }; /* type that can call */
 
-bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const uint8_t padchar, bool firstdatafirstaspad, const uint8_t *data, uintptr_t size){
+static bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const uint8_t padchar, bool firstdatafirstaspad, const uint8_t *data, uintptr_t size){
   if(pad <= size){
     pad = 0;
     goto gt;
@@ -67,7 +67,7 @@ bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const uint8_
   return 0;
 }
 
-bool STR_vFSttcc(STR_ttcc_t *ttcc, const char *cstr, va_list argv){
+static bool STR_vFSttcc(STR_ttcc_t *ttcc, const char *cstr, va_list argv){
   const char *cstr_end = (const char *)MEM_cstrep(cstr);
 
   while(cstr < cstr_end){
@@ -278,15 +278,11 @@ bool STR_vFSttcc(STR_ttcc_t *ttcc, const char *cstr, va_list argv){
   }
   return 0;
 }
-#define STR_vFSttcc(ttcc_m, cstr_begin_m, argv_m) \
-  STR_vFSttcc((STR_ttcc_t *)(ttcc_m), (const char *)(cstr_begin_m), argv_m)
 
-bool STR_FSttcc(STR_ttcc_t *ttcc, const char *cstr_begin, ...){
+static bool STR_FSttcc(STR_ttcc_t *ttcc, const char *cstr_begin, ...){
   va_list argv;
   va_start(argv, cstr_begin);
   bool r = STR_vFSttcc(ttcc, cstr_begin, argv);
   va_end(argv);
   return r;
 }
-#define STR_FSttcc(ttcc_m, cstr_begin_m, ...) \
-  STR_FSttcc((STR_ttcc_t *)(ttcc_m), (const char *)(cstr_begin_m), ##__VA_ARGS__)

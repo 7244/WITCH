@@ -16,7 +16,7 @@
     #include <unistd.h>
     #include <sys/prctl.h>
 
-    void _PR_DumpTrace(){
+    static void _PR_DumpTrace(){
       char pid_buf[30];
       sprintf(pid_buf, "%d", getpid());
       char name_buf[512];
@@ -35,7 +35,7 @@
   #endif
 #endif
 
-void PR_exit(uint32_t num) {
+static void PR_exit(uint32_t num) {
   #if defined(WOS_UNIX_LINUX)
     syscall1(__NR_exit_group, num);
   #elif defined(WOS_UNIX_BSD)
@@ -46,7 +46,7 @@ void PR_exit(uint32_t num) {
 
 #if _PR_set_abort_print
   #if WITCH_LIBC > 0
-    void PR_abort(void) {
+    static void PR_abort(void) {
       printf("[PR] PR_abort() is called\n");
       _PR_DumpTrace();
       exit(1);
@@ -65,7 +65,7 @@ typedef struct{
   sint32_t id;
 }PR_PID_t;
 
-sint32_t PR_fork(PR_PID_t *pid){
+static sint32_t PR_fork(PR_PID_t *pid){
   sint32_t r = syscall0(__NR_fork);
   if(r < 0){
     return r;
@@ -74,14 +74,14 @@ sint32_t PR_fork(PR_PID_t *pid){
   return 0;
 }
 
-bool PR_IsPIDParent(PR_PID_t *pid){
+static bool PR_IsPIDParent(PR_PID_t *pid){
   return pid->id != 0;
 }
-bool PR_IsPIDChild(PR_PID_t *pid){
+static bool PR_IsPIDChild(PR_PID_t *pid){
   return pid->id == 0;
 }
 
-sint32_t PR_exec(const char *PathName, const char **arg, char * const *envp, uint32_t flag){
+static sint32_t PR_exec(const char *PathName, const char **arg, char * const *envp, uint32_t flag){
   return syscall3(
     __NR_execve,
     (uintptr_t)PathName,
@@ -91,7 +91,7 @@ sint32_t PR_exec(const char *PathName, const char **arg, char * const *envp, uin
 
 typedef siginfo_t PR_WaitPIDRV_t;
 
-sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t flag){
+static sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t flag){
   return syscall5(
     __NR_waitid,
     P_PID,

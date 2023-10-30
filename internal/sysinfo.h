@@ -12,30 +12,22 @@
   #if defined(WOS_UNIX) && WITCH_LIBC
     #include _WITCH_PATH(PR/PR.h)
     #include <unistd.h>
-    uint32_t _WITCH_num_online_cpus;
-    PRE{
+    static uint32_t WITCH_num_online_cpus(void){
       sint32_t ret = sysconf(_SC_NPROCESSORS_ONLN);
       if(ret < 0){
         PR_abort();
       }
-      _WITCH_num_online_cpus = ret;
-    }
-    uint32_t WITCH_num_online_cpus(void){
-      return _WITCH_num_online_cpus;
+      return ret;
     }
   #elif defined(WOS_WINDOWS)
     #include _WITCH_PATH(include/windows/windows.h)
-    uint32_t _WITCH_num_online_cpus;
-    PRE{
+    static uint32_t WITCH_num_online_cpus(void){
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
-      _WITCH_num_online_cpus = sysinfo.dwNumberOfProcessors;
-    }
-    uint32_t WITCH_num_online_cpus(void){
-      return _WITCH_num_online_cpus;
+      return sysinfo.dwNumberOfProcessors;
     }
   #elif defined(WITCH_PLATFORM_linux_kernel_module)
-    uint32_t WITCH_num_online_cpus(void){
+    static uint32_t WITCH_num_online_cpus(void){
       return num_online_cpus();
     }
   #else

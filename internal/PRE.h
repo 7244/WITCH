@@ -2,7 +2,7 @@
 
 #if defined(__GNUC__) || defined(WOS_UNIX)
   #define PRE \
-    void __attribute__((constructor))CONCAT(_PRE_main, __COUNTER__)()
+    static void __attribute__((constructor))CONCAT(_PRE_main, __COUNTER__)()
 #elif defined(WOS_WINDOWS)
   #if WL_CPP
     #define _PRE_DEEP2(f) \

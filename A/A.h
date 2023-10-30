@@ -13,7 +13,7 @@ typedef uint8_t *(*A_resize_t)(void *ptr, uintptr_t size);
 #ifndef A_set_buffer
   #define A_set_buffer 512
 #endif
-uintptr_t _A_calculate_buffer(uintptr_t size){
+static uintptr_t _A_calculate_buffer(uintptr_t size){
   uintptr_t r = A_set_buffer / size;
   if(!r){
     return 1;
@@ -21,7 +21,7 @@ uintptr_t _A_calculate_buffer(uintptr_t size){
   return r;
 }
 
-uint8_t *A_resize(void *ptr, uintptr_t size){
+static uint8_t *A_resize(void *ptr, uintptr_t size){
   #if WITCH_LIBC
     if(ptr){
       if(size){
