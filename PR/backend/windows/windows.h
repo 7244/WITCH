@@ -11,7 +11,7 @@
     #include <iostream>
     #include <stacktrace>
 
-    void _PR_DumpTrace() {
+    static void _PR_DumpTrace() {
       #if __cplusplus >= 202004L
       std::stacktrace st;
       std::cout << st.current();
@@ -27,7 +27,7 @@
       #pragma comment(lib, "Dbghelp.lib")
     #endif
 
-    void _PR_DumpTrace() {
+    static void _PR_DumpTrace() {
       uint16_t i;
       uint16_t frames;
       void *stack[0xff];
@@ -65,7 +65,7 @@
     }
   #endif
 
-  void _PR_SignalCatcher(int signal) {
+  static void _PR_SignalCatcher(int signal) {
     if (signal == SIGINT) {
       return;
     }
@@ -80,18 +80,18 @@
   }
 #endif
 
-void PR_exit(uint32_t num){
+static void PR_exit(uint32_t num){
   exit(num);
 }
 
 #if _PR_set_abort_print
-  void PR_abort(void) {
+  static void PR_abort(void) {
     printf("[PR] PR_abort() is called\n");
     _PR_DumpTrace();
     PR_exit(1);
   }
 #else
-  void PR_abort(void) {
+  static void PR_abort(void) {
     PR_exit(1);
   }
 #endif
