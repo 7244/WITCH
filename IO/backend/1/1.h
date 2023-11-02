@@ -312,6 +312,9 @@ IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
       if(!PeekConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
         PR_abort();
       }
+      if (numRead < 1) {//keep carefully
+        return 0;
+      }
       if(record.EventType != KEY_EVENT){
         if(!ReadConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
           PR_abort();
