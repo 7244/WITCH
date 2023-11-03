@@ -305,6 +305,7 @@ IO_off_t IO_ltell(const IO_fd_t *fd){
 }
 
 IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
+  static uint32_t _IO_stdin_size = 0;
   switch(_IO_get_fd(fd)){
     case _IO_fd_tty_e:{
       INPUT_RECORD record;
@@ -349,14 +350,26 @@ IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
         return 0;
       }
       WideCharToMultiByte(CP_UTF8, 0, &record.Event.KeyEvent.uChar.UnicodeChar, 1, (LPSTR)data, size,  NULL, NULL);
+      // backspace
       if(record.Event.KeyEvent.uChar.UnicodeChar == 0x08){
+        if (_IO_stdin_size == 0) {
+          return 0;
+        }
+        --_IO_stdin_size;
+
         uint8_t stdout_buffer[3] = {0x08, ' ', 0x08};
+
         int r = _write(1, stdout_buffer, 3);
         if(r == -1){
           PR_abort();
         }
       }
       else{
+        ++_IO_stdin_size;
+        // enter
+        if (strchr((char*)data, '\r') != 0) {
+          _IO_stdin_size = 0;
+        }
         int r = _write(1, data, end);
         if(r == -1){
           PR_abort();
