@@ -48,11 +48,11 @@ typedef struct{
   HANDLE handle;
 }IO_dirfd_t;
 
-void IO_fd_set(IO_fd_t *fd, sint32_t description){
+static void IO_fd_set(IO_fd_t *fd, sint32_t description){
   fd->fd = description;
 }
 
-sint32_t IO_getpath(const IO_dirfd_t *dirfd, uint8_t *path){
+static sint32_t IO_getpath(const IO_dirfd_t *dirfd, uint8_t *path){
   if(GetFinalPathNameByHandleA(dirfd->handle, (LPSTR)path, PATH_MAX, 0) < 0){
     return -1;
   }
@@ -61,17 +61,17 @@ sint32_t IO_getpath(const IO_dirfd_t *dirfd, uint8_t *path){
 
 typedef struct __stat64 IO_stat_t;
 
-sint32_t IO_stat(const void *path, IO_stat_t *s){
+static sint32_t IO_stat(const void *path, IO_stat_t *s){
   if(_stat64((const char *)path, s) < 0){
     return -errno;
   }
   return 0;
 }
-sint32_t IO_fstat(const IO_fd_t *fd, IO_stat_t *s){
+static sint32_t IO_fstat(const IO_fd_t *fd, IO_stat_t *s){
   return _fstat64(fd->fd, s);
 }
 
-IO_off_t IO_stat_GetSizeInBytes(IO_stat_t *s){
+static IO_off_t IO_stat_GetSizeInBytes(IO_stat_t *s){
   return s->st_size;
 }
 
@@ -81,8 +81,8 @@ enum{
   _IO_fd_file_e,
   _IO_fd_socket_e
 };
-uint8_t *_IO_fd_nodes;
-void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
+inline uint8_t *_IO_fd_nodes;
+static void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
   if(fd->fd >= IO_set_fd_limit){
     PR_abort();
   }
@@ -98,7 +98,7 @@ void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
   }
   _IO_fd_nodes[fd->fd] = type;
 }
-uint8_t _IO_get_fd(const IO_fd_t *fd){
+static uint8_t _IO_get_fd(const IO_fd_t *fd){
   if(fd->fd >= IO_set_fd_limit){
     PR_abort();
   }
@@ -107,7 +107,8 @@ uint8_t _IO_get_fd(const IO_fd_t *fd){
   }
   return _IO_fd_nodes[fd->fd];
 }
-PRE{
+// TODO fix PRE - this is new PRE called from somewhere
+inline bool fffff(){
   _IO_fd_nodes = A_resize(0, IO_set_fd_limit);
   MEM_set(_IO_fd_unknown_e, _IO_fd_nodes, IO_set_fd_limit);
   IO_fd_t fd;
@@ -117,6 +118,7 @@ PRE{
   _IO_assign_fd(&fd, _IO_fd_tty_e);
   IO_fd_set(&fd, STDERR_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
+  return 0;
 }
 
 bool IO_safepath(const char *path){
@@ -249,7 +251,7 @@ bool IO_pipe(IO_fd_t *fds, IO_pipe_Flag Flag){
   }
 }
 
-sint32_t IO_open(const void *path, uint32_t flag, IO_fd_t *fd){
+static sint32_t IO_open(const void *path, uint32_t flag, IO_fd_t *fd){
   sint32_t description = _open((const char *)path, flag | _O_BINARY, _S_IREAD | _S_IWRITE);
   if(description >= 0){
     fd->fd = description;
@@ -260,7 +262,7 @@ sint32_t IO_open(const void *path, uint32_t flag, IO_fd_t *fd){
   return -errno;
 }
 
-sint32_t IO_openat(const IO_dirfd_t *dirfd, const void *path, uint32_t flag, IO_fd_t *fd){
+static sint32_t IO_openat(const IO_dirfd_t *dirfd, const void *path, uint32_t flag, IO_fd_t *fd){
   uint8_t ppath[PATH_MAX + 1];
   if(IO_getpath(dirfd, ppath)){
     return -1;
@@ -270,7 +272,7 @@ sint32_t IO_openat(const IO_dirfd_t *dirfd, const void *path, uint32_t flag, IO_
   return IO_open(spath, flag, fd);
 }
 
-sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *ppath, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
+static sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *ppath, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
   const char *path = (const char *)ppath;
   char npath[PATH_MAX];
   MEM_copy(path, npath, pathsize);
@@ -278,7 +280,7 @@ sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *ppath, uintptr_t pathsi
   return IO_openat(dirfd, npath, flag, fd);
 }
 
-sint32_t IO_close(const IO_fd_t *fd){
+static sint32_t IO_close(const IO_fd_t *fd){
   sint32_t err = _close(fd->fd);
   if(err >= 0){
     _IO_assign_fd(fd, _IO_fd_unknown_e);
@@ -286,7 +288,7 @@ sint32_t IO_close(const IO_fd_t *fd){
   return err;
 }
 
-sint32_t IO_truncate(const IO_fd_t *fd, IO_off_t size){
+static sint32_t IO_truncate(const IO_fd_t *fd, IO_off_t size){
   HANDLE h = (HANDLE)_get_osfhandle(fd->fd);
   if(SetFileValidData(h, size)){
     return 0;
@@ -296,15 +298,15 @@ sint32_t IO_truncate(const IO_fd_t *fd, IO_off_t size){
   }
 }
 
-IO_off_t IO_lseek(const IO_fd_t *fd, IO_off_t isize, int state){
+static IO_off_t IO_lseek(const IO_fd_t *fd, IO_off_t isize, int state){
   return _lseeki64(fd->fd, isize, state);
 }
 
-IO_off_t IO_ltell(const IO_fd_t *fd){
+static IO_off_t IO_ltell(const IO_fd_t *fd){
   return _telli64(fd->fd);
 }
 
-IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
+static IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
   static uint32_t _IO_stdin_size = 0;
   switch(_IO_get_fd(fd)){
     case _IO_fd_tty_e:{
@@ -410,7 +412,7 @@ IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
   }
 }
 
-IO_ssize_t IO_pread(const IO_fd_t *fd, void *data, IO_off_t isize, IO_size_t nsize){
+static IO_ssize_t IO_pread(const IO_fd_t *fd, void *data, IO_off_t isize, IO_size_t nsize){
   IO_off_t current = IO_ltell(fd);
   if(current < 0){
     return -1;
@@ -438,7 +440,7 @@ IO_ssize_t IO_pread(const IO_fd_t *fd, void *data, IO_off_t isize, IO_size_t nsi
   return len;
 }
 
-IO_ssize_t IO_write(const IO_fd_t *fd, const void *data, IO_size_t size){
+static IO_ssize_t IO_write(const IO_fd_t *fd, const void *data, IO_size_t size){
   switch(_IO_get_fd(fd)){
     case _IO_fd_tty_e:
     case _IO_fd_file_e:{
@@ -471,7 +473,7 @@ IO_ssize_t IO_write(const IO_fd_t *fd, const void *data, IO_size_t size){
   }
 }
 
-IO_off_t IO_sendfile(const IO_fd_t *in, const IO_fd_t *out, IO_off_t isize, IO_off_t nsize){
+static IO_off_t IO_sendfile(const IO_fd_t *in, const IO_fd_t *out, IO_off_t isize, IO_off_t nsize){
   uint8_t data[PAGE_SIZE];
   IO_size_t datalen = nsize < sizeof(data) ? nsize : sizeof(data);
   IO_ssize_t readlen = IO_pread(in, data, isize, datalen);
@@ -485,18 +487,18 @@ IO_off_t IO_sendfile(const IO_fd_t *in, const IO_fd_t *out, IO_off_t isize, IO_o
   return writelen;
 }
 
-sint32_t IO_rename(const void *src, const void *dst){
+static sint32_t IO_rename(const void *src, const void *dst){
   if(MoveFileExA((LPCSTR)src, (LPCSTR)dst, MOVEFILE_REPLACE_EXISTING)){
     return 0;
   }
   return -1;
 }
 
-sint32_t IO_access(const void *path){
+static sint32_t IO_access(const void *path){
   PR_abort();
   return -1;
 }
 
-bool IO_IsPathExists(const void *path){
+static bool IO_IsPathExists(const void *path){
   return GetFileAttributes((LPCSTR)path) != INVALID_FILE_ATTRIBUTES;
 }

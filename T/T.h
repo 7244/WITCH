@@ -47,8 +47,8 @@ uint64_t T_rdtsc(void){
 }
 
 #if defined(WOS_WINDOWS)
-uint64_t _T_time_freqi;
-f64_t    _T_time_freqf;
+inline uint64_t _T_time_freqi;
+inline f64_t    _T_time_freqf;
 PRE{
   LARGE_INTEGER t;
   if(QueryPerformanceFrequency(&t) == 0){
@@ -59,7 +59,7 @@ PRE{
 }
 #endif
 
-uint64_t T_nowi(void){
+static uint64_t T_nowi(void){
   #if defined(WOS_UNIX) && WITCH_LIBC
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);

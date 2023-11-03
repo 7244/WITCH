@@ -24,7 +24,7 @@ typedef struct{
   IO_dirfd_t fd;
 }FS_dir_t;
 
-sint32_t _FS_dir_creat(const void *path){
+static sint32_t _FS_dir_creat(const void *path){
   /* TODO not tested in any archicture */
   return syscall2(__NR_mkdir, (uintptr_t)path, S_IRWXU);
 }
@@ -134,7 +134,7 @@ typedef struct{
   };
 }FS_file_t;
 
-void FS_file_getfd(FS_file_t *file, IO_fd_t *fd){
+static void FS_file_getfd(FS_file_t *file, IO_fd_t *fd){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       *fd = file->FileSystem.fd;
@@ -265,7 +265,7 @@ sint32_t FS_file_rename(FS_file_t *file, const void *path){
   }
 }
 
-sint32_t FS_file_open(const void *path, FS_file_t *file, uint32_t flag){
+static sint32_t FS_file_open(const void *path, FS_file_t *file, uint32_t flag){
   file->Type = _FS_file_FileSystem_e;
   return IO_open(path, flag, &file->FileSystem.fd);
 }
@@ -327,7 +327,7 @@ void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
   }
 }
 
-FS_ssize_t FS_file_read(FS_file_t *file, void *data, FS_size_t size){
+static FS_ssize_t FS_file_read(FS_file_t *file, void *data, FS_size_t size){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       return IO_read(&file->FileSystem.fd, data, size);
@@ -356,7 +356,7 @@ FS_ssize_t FS_file_write(FS_file_t *file, const void *data, FS_size_t size){
   }
 }
 
-sint32_t FS_file_close(FS_file_t *file){
+static sint32_t FS_file_close(FS_file_t *file){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       return IO_close(&file->FileSystem.fd);

@@ -64,18 +64,18 @@ struct freebsd11_stat{
 };
 typedef struct freebsd11_stat IO_stat_t;
 
-sint32_t IO_stat(const void *path, IO_stat_t *s){
+static sint32_t IO_stat(const void *path, IO_stat_t *s){
   return -syscall2_noerr(SYS_freebsd11_stat, path, s);
 }
-sint32_t IO_fstat(IO_fd_t fd, IO_stat_t *s){
+static sint32_t IO_fstat(IO_fd_t fd, IO_stat_t *s){
   return -syscall2_noerr(SYS_freebsd11_fstat, fd, s);
 }
 
-IO_off_t IO_stat_GetSizeInBytes(IO_stat_t *s){
+static IO_off_t IO_stat_GetSizeInBytes(IO_stat_t *s){
   return s->st_size;
 }
 
-bool IO_safepath(const char *path){
+static bool IO_safepath(const char *path){
   bool check = 1;
   while(*path){
     if(check && *path == '.'){
@@ -87,7 +87,7 @@ bool IO_safepath(const char *path){
   return 1;
 }
 
-bool IO_safepathn(const uint8_t *path, uintptr_t size){
+static bool IO_safepathn(const uint8_t *path, uintptr_t size){
   bool check = 1;
   for(uintptr_t i = 0; i < size; i++){
     if(check && path[i] == '.'){
@@ -98,11 +98,11 @@ bool IO_safepathn(const uint8_t *path, uintptr_t size){
   return 1;
 }
 
-sint32_t IO_pipe(IO_fd_t *fds, uint32_t flag){
+static sint32_t IO_pipe(IO_fd_t *fds, uint32_t flag){
   return -syscall2_noerr(SYS_pipe2, fds, flag);
 }
 
-IO_fd_t IO_open(const char *path, uint32_t flag){
+static IO_fd_t IO_open(const char *path, uint32_t flag){
   bool carry;
   sint32_t r = syscall3_carry(&carry, SYS_open, path, flag, __S_IREAD | __S_IWRITE);
   if(carry){
@@ -111,7 +111,7 @@ IO_fd_t IO_open(const char *path, uint32_t flag){
   return r;
 }
 
-IO_fd_t IO_openat(IO_dirfd_t fd, const char *path, uint32_t flag){
+static IO_fd_t IO_openat(IO_dirfd_t fd, const char *path, uint32_t flag){
   bool carry;
   sint32_t r = syscall4_carry(&carry, SYS_openat, fd, path, flag, __S_IREAD | __S_IWRITE);
   if(carry){
@@ -120,7 +120,7 @@ IO_fd_t IO_openat(IO_dirfd_t fd, const char *path, uint32_t flag){
   return r;
 }
 
-IO_fd_t IO_openatn(IO_dirfd_t fd, const void *ppath, uintptr_t pathsize, int flag){
+static IO_fd_t IO_openatn(IO_dirfd_t fd, const void *ppath, uintptr_t pathsize, int flag){
   const char *path = (const char *)ppath;
   char npath[PATH_MAX];
   MEM_copy(path, npath, pathsize);
@@ -128,11 +128,11 @@ IO_fd_t IO_openatn(IO_dirfd_t fd, const void *ppath, uintptr_t pathsize, int fla
   return IO_openat(fd, npath, flag);
 }
 
-sint32_t IO_close(IO_fd_t fd){
+static sint32_t IO_close(IO_fd_t fd){
   return -syscall1_noerr(SYS_close, fd);
 }
 
-sint32_t IO_truncate(IO_fd_t fd, IO_off_t size){
+static sint32_t IO_truncate(IO_fd_t fd, IO_off_t size){
   #if SYSTEM_BYTE == 8
     return -syscall2_noerr(SYS_ftruncate, fd, size);
   #elif SYSTEM_BYTE == 4
@@ -143,7 +143,7 @@ sint32_t IO_truncate(IO_fd_t fd, IO_off_t size){
   #endif
 }
 
-IO_off_t IO_lseek(IO_fd_t fd, IO_off_t isize, sint32_t state){
+static IO_off_t IO_lseek(IO_fd_t fd, IO_off_t isize, sint32_t state){
   #if SYSTEM_BYTE == 8
     bool carry;
     sintptr_t r = syscall3_carry(&carry, SYS_lseek, fd, isize, state);
@@ -169,7 +169,7 @@ IO_off_t IO_ltell(IO_fd_t fd){
   return IO_lseek(fd, 0, SEEK_CUR);
 }
 
-IO_ssize_t IO_write(IO_fd_t fd, const void *data, IO_size_t size){
+static IO_ssize_t IO_write(IO_fd_t fd, const void *data, IO_size_t size){
   bool carry;
   IO_ssize_t r = syscall3_carry(&carry, SYS_write, fd, data, size);
   if(carry){
@@ -180,7 +180,7 @@ IO_ssize_t IO_write(IO_fd_t fd, const void *data, IO_size_t size){
   }
   return r;
 }
-IO_ssize_t IO_read(IO_fd_t fd, void *data, IO_size_t size){
+static IO_ssize_t IO_read(IO_fd_t fd, void *data, IO_size_t size){
   bool carry;
   IO_ssize_t r = syscall3_carry(&carry, SYS_read, fd, data, size);
   if(carry){
@@ -195,7 +195,7 @@ IO_ssize_t IO_read(IO_fd_t fd, void *data, IO_size_t size){
   return r;
 }
 
-IO_ssize_t IO_pread(IO_fd_t fd, void *data, IO_off_t isize, IO_size_t nsize){
+static IO_ssize_t IO_pread(IO_fd_t fd, void *data, IO_off_t isize, IO_size_t nsize){
   IO_ssize_t r;
   bool carry;
   #if SYSTEM_BYTE == 8
@@ -218,7 +218,7 @@ IO_ssize_t IO_pread(IO_fd_t fd, void *data, IO_off_t isize, IO_size_t nsize){
   return r;
 }
 
-IO_off_t IO_sendfile(IO_fd_t in, IO_fd_t out, IO_off_t isize, IO_off_t nsize){
+static IO_off_t IO_sendfile(IO_fd_t in, IO_fd_t out, IO_off_t isize, IO_off_t nsize){
   #if SYSTEM_BYTE == 4
     nsize = nsize > 0xffffffff ? 0xffffffff : nsize;
   #endif
@@ -233,10 +233,10 @@ IO_off_t IO_sendfile(IO_fd_t in, IO_fd_t out, IO_off_t isize, IO_off_t nsize){
   }
 }
 
-sint32_t IO_rename(const void *src, const void *dst){
+static sint32_t IO_rename(const void *src, const void *dst){
   return -syscall2_noerr(SYS_rename, src, dst);
 }
 
-sint32_t IO_access(const void *path){
+static sint32_t IO_access(const void *path){
   return -syscall2_noerr(SYS_access, path, F_OK);
 }
