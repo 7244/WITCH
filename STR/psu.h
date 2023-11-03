@@ -31,7 +31,7 @@ static uint64_t STR_psu64_iguess(const void *str, uintptr_t *i){
   return res;
 }
 static uintptr_t STR_psu_iguess(const void *str, uintptr_t *i){
-  return CONCAT(STR_psu, _iguess)(str, i);
+  return CONCAT3(STR_psu, SYSTEM_BIT, _iguess)(str, i);
 }
 
 static uint32_t STR_psu32_i(const void *str, uintptr_t *i, const uintptr_t size){
