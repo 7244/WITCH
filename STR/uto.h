@@ -69,5 +69,5 @@ static bool STR_uto64_wise(uint64_t v, const uint8_t base, const uintptr_t seek,
   return 0;
 }
 static bool STR_uto_wise(uint64_t v, const uint8_t base, const uintptr_t seek, uint8_t *data){
-  return CONCAT(STR_uto, _wise)(v, base, seek, data);
+  return CONCAT3(STR_uto, SYSTEM_BIT, _wise)(v, base, seek, data);
 }
