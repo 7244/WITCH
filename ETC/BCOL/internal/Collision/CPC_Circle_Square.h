@@ -12,21 +12,21 @@ void CPC_Circle_Square(
     _vf Corner = SPp0 - p1Size;
     _f Divider = fan::math::sqrt(Corner.y * Corner.y + Corner.x * Corner.x);
     _vf CircleOffset = Corner / Divider;
-    *op0 = p1 + fan::copysign(CircleOffset * p0Size + p1Size, Sp0);
-    *oDirection = fan::copysign(CircleOffset, Sp0);
+    *op0 = p1 + fan::vec2(CircleOffset * p0Size + p1Size).copysign(Sp0);
+    *oDirection = fan::vec2(CircleOffset).copysign(Sp0);
   }
   else{
     if(SPp0.x <= p1Size){
-      op0->y = p1.y + fan::copysign(p1Size + p0Size, Sp0.y);
+      op0->y = p1.y + fan::math::copysign(p1Size + p0Size, Sp0.y);
       op0->x = p0.x;
-      oDirection->y = fan::copysign(1, Sp0.y);
+      oDirection->y = fan::math::copysign(1, Sp0.y);
       oDirection->x = 0;
     }
     else if(SPp0.y <= p1Size){
       op0->y = p0.y;
-      op0->x = p1.x + fan::copysign(p1Size + p0Size, Sp0.x);
+      op0->x = p1.x + fan::math::copysign(p1Size + p0Size, Sp0.x);
       oDirection->y = 0;
-      oDirection->x = fan::copysign(1, Sp0.x);
+      oDirection->x = fan::math::copysign(1, Sp0.x);
     }
   }
 }

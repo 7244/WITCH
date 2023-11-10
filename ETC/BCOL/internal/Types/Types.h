@@ -1,6 +1,6 @@
 struct __ETC_BCOL_P(t){
-  typedef fan::_vec2<uint32_t> _vui32;
-  typedef fan::_vec2<sint32_t> _vsi32;
+  typedef fan::vec2_wrap_t<uint32_t> _vui32;
+  typedef fan::vec2_wrap_t<sint32_t> _vsi32;
   #if ETC_BCOL_set_PreferredFloatSize == 32
     typedef f32_t _f;
     typedef fan::vec2 _vf;

@@ -207,7 +207,7 @@ _f WantedCollisionRequesters = 0;
           _vf WorldPosition = ObjectData1->Position + CircleData1->Position;
 
           _vf Difference = NewPosition - WorldPosition;
-          _f Hypotenuse = Difference.hypotenuse();
+          _f Hypotenuse = Difference.length();
           _f CombinedSize = CircleData->Size + CircleData1->Size;
           if(Hypotenuse >= CombinedSize){
             break;

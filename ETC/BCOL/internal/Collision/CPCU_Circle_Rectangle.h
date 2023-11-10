@@ -61,22 +61,22 @@ void CPCU_Circle_Rectangle_Solve(
 ){
   switch(Data->Stage){
     case 0:{
-      *op0 = p1 + fan::copysign(p1Size + Data->StageData.Corner.CircleOffset * p0Size, Data->Sp0);
-      *oDirection = fan::copysign(Data->StageData.Corner.CircleOffset, Data->Sp0);
+      *op0 = p1 + fan::vec2(p1Size + Data->StageData.Corner.CircleOffset * p0Size).copysign(Data->Sp0);
+      *oDirection = fan::vec2(Data->StageData.Corner.CircleOffset).copysign(Data->Sp0);
       break;
     }
     case 1:{
       if(Data->StageData.Side.SPp0.x <= p1Size.x){
-        op0->y = p1.y + fan::copysign(p1Size.y + p0Size, Data->Sp0.y);
+        op0->y = p1.y + fan::math::copysign(p1Size.y + p0Size, Data->Sp0.y);
         op0->x = p0.x;
-        oDirection->y = fan::copysign(1, Data->Sp0.y);
+        oDirection->y = fan::math::copysign(1, Data->Sp0.y);
         oDirection->x = 0;
       }
       else if(Data->StageData.Side.SPp0.y <= p1Size.y){
         op0->y = p0.y;
-        op0->x = p1.x + fan::copysign(p1Size.x + p0Size, Data->Sp0.x);
+        op0->x = p1.x + fan::math::copysign(p1Size.x + p0Size, Data->Sp0.x);
         oDirection->y = 0;
-        oDirection->x = fan::copysign(1, Data->Sp0.x);
+        oDirection->x = fan::math::copysign(1, Data->Sp0.x);
       }
       break;
     }
