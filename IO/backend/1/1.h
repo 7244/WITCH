@@ -81,7 +81,7 @@ enum{
   _IO_fd_file_e,
   _IO_fd_socket_e
 };
-inline uint8_t *_IO_fd_nodes;
+static uint8_t *_IO_fd_nodes = nullptr;
 static void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
   if(fd->fd >= IO_set_fd_limit){
     PR_abort();
@@ -107,8 +107,7 @@ static uint8_t _IO_get_fd(const IO_fd_t *fd){
   }
   return _IO_fd_nodes[fd->fd];
 }
-// TODO fix PRE - this is new PRE called from somewhere
-inline bool fffff(){
+static void IO_init(){
   _IO_fd_nodes = A_resize(0, IO_set_fd_limit);
   MEM_set(_IO_fd_unknown_e, _IO_fd_nodes, IO_set_fd_limit);
   IO_fd_t fd;
@@ -118,7 +117,6 @@ inline bool fffff(){
   _IO_assign_fd(&fd, _IO_fd_tty_e);
   IO_fd_set(&fd, STDERR_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
-  return 0;
 }
 
 bool IO_safepath(const char *path){

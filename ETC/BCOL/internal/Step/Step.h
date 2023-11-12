@@ -44,11 +44,11 @@ void Step(
 
       _vf DirectionAverage = WantedObjectDirection / WantedObjectCollisionRequesters;
 
-      _f VelocityHypotenuse = ObjectData0->Velocity.hypotenuse();
+      _f VelocityHypotenuse = ObjectData0->Velocity.length();
       if(VelocityHypotenuse != 0){
         _vf VelocityNormal = ObjectData0->Velocity / VelocityHypotenuse;
 
-        _vf CollidedVelocity = fan::math::reflect(VelocityNormal, DirectionAverage);
+        _vf CollidedVelocity = VelocityNormal.reflect(DirectionAverage);
 
         ObjectData0->Velocity = CollidedVelocity * VelocityHypotenuse;
 
