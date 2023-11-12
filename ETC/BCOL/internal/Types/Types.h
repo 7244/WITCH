@@ -74,10 +74,10 @@ struct __ETC_BCOL_P(t){
     ShapeID_t ShapeID;
   };
 
-  #include _WITCH_PATH(ETC/BCOL/internal/Types/Shape/Circle/Types.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/Types/Shape/Rectangle/Types.h)
+  #include "Shape/Circle/Types.h"
+  #include "Shape/Rectangle/Types.h"
 
-  #include _WITCH_PATH(ETC/BCOL/internal/Types/Object.h)
+  #include "Object.h"
 
   struct ShapeInfoPack_t{
     ObjectID_t ObjectID;
@@ -86,7 +86,7 @@ struct __ETC_BCOL_P(t){
   };
 
   #if ETC_BCOL_set_SupportGrid == 1
-    #include _WITCH_PATH(ETC/BCOL/internal/Types/Grid.h)
+    #include "Grid.h"
   #endif
 
   ShapeList_Circle_t ShapeList_Circle;
@@ -146,16 +146,16 @@ struct __ETC_BCOL_P(t){
     uint64_t StepNumber;
   #endif
 
-  #include _WITCH_PATH(ETC/BCOL/internal/Collision/Collision.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/Object.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/BaseFunctions.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/Traverse.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/Shape/Shape.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/ObjectShape.h)
+  #include "../Collision/Collision.h"
+  #include "../Object.h"
+  #include "../BaseFunctions.h"
+  #include "../Traverse.h"
+  #include "../Shape/Shape.h"
+  #include "../ObjectShape.h"
   #if ETC_BCOL_set_SupportGrid == 1
-    #include _WITCH_PATH(ETC/BCOL/internal/Grid.h)
+    #include "../Grid.h"
   #endif
-  #include _WITCH_PATH(ETC/BCOL/internal/Step/Step.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/CompiledShapes.h)
-  #include _WITCH_PATH(ETC/BCOL/internal/ImportHM.h)
+  #include "../Step/Step.h"
+  #include "../CompiledShapes.h"
+  #include "../ImportHM.h"
 };

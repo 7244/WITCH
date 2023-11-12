@@ -31,10 +31,10 @@ void Step(
       sip0.ShapeEnum = ((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeEnum;
       switch(sip0.ShapeEnum){
         case ShapeEnum_t::Circle:{
-          #include _WITCH_PATH(ETC/BCOL/internal/Step/Shape/Circle.h)
+          #include "Shape/Circle.h"
         }
         case ShapeEnum_t::Rectangle:{
-          #include _WITCH_PATH(ETC/BCOL/internal/Step/Shape/Rectangle.h)
+          #include "Shape/Rectangle.h"
         }
       }
     }

@@ -11,5 +11,5 @@ void AddShapeToObject(
   ObjectData->ShapeList.Current++;
 }
 
-#include _WITCH_PATH(ETC/BCOL/internal/Shape/Circle/Circle.h)
-#include _WITCH_PATH(ETC/BCOL/internal/Shape/Rectangle/Rectangle.h)
+#include "Circle/Circle.h"
+#include "Rectangle/Rectangle.h"
