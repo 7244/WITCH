@@ -28,7 +28,7 @@ struct ObjectData_t{
 #define BLL_set_Language 1
 #define BLL_set_type_node uint32_t
 #define BLL_set_NodeDataType ObjectData_t
-#include _WITCH_PATH(BLL/BLL.h)
+#include ETC_BCOL_Include(BLL/BLL.h)
 
 typedef ObjectList_NodeReference_t ObjectID_t;
 

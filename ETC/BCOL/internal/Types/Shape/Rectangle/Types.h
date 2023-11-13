@@ -14,4 +14,4 @@ struct ShapeData_Rectangle_t{
   }
 #define BLL_set_type_node uint32_t
 #define BLL_set_NodeDataType ShapeData_Rectangle_t
-#include _WITCH_PATH(BLL/BLL.h)
+#include ETC_BCOL_Include(BLL/BLL.h)

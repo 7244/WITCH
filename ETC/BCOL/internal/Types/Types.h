@@ -1,52 +1,10 @@
 struct __ETC_BCOL_P(t){
-  typedef fan::vec2_wrap_t<uint32_t> _vui32;
-  typedef fan::vec2_wrap_t<sint32_t> _vsi32;
-  #if ETC_BCOL_set_PreferredFloatSize == 32
-    typedef f32_t _f;
-    typedef fan::vec2 _vf;
-    /*
-    __pfloat __floorf(__pfloat p0){ return MATH_floor_f32(p0); }
-    __pfloat __sin(__pfloat p0){ return MATH_sin_32(p0); }
-    __pfloat __cos(__pfloat p0){ return MATH_cos_32(p0); }
-    __pfloat __atan2(__pfloat p0, __pfloat p1){ return MATH_atan2_f32(p0, p1); }
-    __pfloat __sqrt(__pfloat p0){ return MATH_sqrt_32(p0); }
-    __pfloat __absf(__pfloat p0){ return MATH_abs_f32(p0); }
-    __pfloat __hypotenuse(__pfloat p0, __pfloat p1){ return MATH_hypotenuse_f32(p0, p1); }
-    void __NormalResolve(
-      __pfloat p0, __pfloat p1,
-      __pfloat p2, __pfloat p3,
-      __pfloat p4,
-      __pfloat *p5, __pfloat *p6
-      ){ MATH_NormalResolve_f32(p0, p1, p2, p3, p4, p5, p6); }
-    __pfloat __dot2(
-      __pfloat p0, __pfloat p1,
-      __pfloat p2, __pfloat p3
-      ){ return MATH_dot2_f32(p0, p1, p2, p3); }
-    __pfloat __copysignf(__pfloat p0, __pfloat p1){ return MATH_copysign_f32(p0, p1); }
-    */
-  #elif ETC_BCOL_set_PreferredFloatSize == 64
-    typedef f64_t __pfloat;
-    __pfloat __floorf(__pfloat p0){ return MATH_floor_f64(p0); }
-    __pfloat __sin(__pfloat p0){ return MATH_sin_64(p0); }
-    __pfloat __cos(__pfloat p0){ return MATH_cos_64(p0); }
-    __pfloat __atan2(__pfloat p0, __pfloat p1){ return MATH_atan2_f64(p0, p1); }
-    __pfloat __sqrt(__pfloat p0){ return MATH_sqrt_64(p0); }
-    __pfloat __absf(__pfloat p0){ return MATH_abs_f64(p0); }
-    __pfloat __hypotenuse(__pfloat p0, __pfloat p1){ return MATH_hypotenuse_f64(p0, p1); }
-    void __NormalResolve(
-      __pfloat p0, __pfloat p1,
-      __pfloat p2, __pfloat p3,
-      __pfloat p4,
-      __pfloat *p5, __pfloat *p6
-      ){ MATH_NormalResolve_f64(p0, p1, p2, p3, p4, p5, p6); }
-    __pfloat __dot2(
-      __pfloat p0, __pfloat p1,
-      __pfloat p2, __pfloat p3
-      ){ return MATH_dot2_f64(p0, p1, p2, p3); }
-    __pfloat __copysignf(__pfloat p0, __pfloat p1){ return MATH_copysign_f64(p0, p1); }
-  #else
-    #error ?
-  #endif
+  typedef CONCAT3(f,ETC_BCOL_set_PreferredFloatSize,_t) _f;
+  typedef CONCAT3(uint,ETC_BCOL_set_PreferredFloatSize,_t) _ui;
+  typedef CONCAT3(sint,ETC_BCOL_set_PreferredFloatSize,_t) _si;
+  typedef fan::vec_wrap_t<ETC_BCOL_set_Dimension, _f> _vf;
+  typedef fan::vec_wrap_t<ETC_BCOL_set_Dimension, uint32_t> _vui32;
+  typedef fan::vec_wrap_t<ETC_BCOL_set_Dimension, sint32_t> _vsi32;
 
   typedef uint32_t ShapeID_ID_t;
 

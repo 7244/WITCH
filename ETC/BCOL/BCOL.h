@@ -1,6 +1,9 @@
 #ifndef ETC_BCOL_set_prefix
   #error ifndef ETC_BCOL_set_prefix
 #endif
+#ifndef ETC_BCOL_set_Dimension
+  #error ETC_BCOL_set_Dimension needs to be defined.
+#endif
 #ifndef ETC_BCOL_set_PreferredFloatSize
   #define ETC_BCOL_set_PreferredFloatSize 32
 #endif
@@ -68,4 +71,5 @@
 #ifdef ETC_BCOL_set_IncludePath
   #undef ETC_BCOL_set_IncludePath
 #endif
+#undef ETC_BCOL_set_Dimension
 #undef ETC_BCOL_set_prefix
