@@ -1,4 +1,4 @@
-auto RectangleData = ShapeData_Rectangle_Get(((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeID);
+auto RectangleData = ShapeData_Rectangle_Get(ObjectData0->ShapeList.ptr[sip0.ShapeID.ID].ShapeID);
 
 _vf NewPosition = NewObjectPosition + RectangleData->Position;
 

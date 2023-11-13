@@ -74,6 +74,11 @@ struct __ETC_BCOL_P(t){
     ShapeID_t ShapeID;
   };
 
+  #define BVEC_set_prefix ShapeList
+  #define BVEC_set_NodeType uint32_t
+  #define BVEC_set_NodeData ShapeData_t
+  #include ETC_BCOL_Include(BVEC/BVEC.h)
+
   #include "Shape/Circle/Types.h"
   #include "Shape/Rectangle/Types.h"
 

@@ -1,5 +1,3 @@
-#include _WITCH_PATH(A/A.h)
-#include _WITCH_PATH(VEC/VEC.h)
 #include _WITCH_PATH(MATH/MATH.h)
 
 #define __ETC_BCOL_P(p0) CONCAT3(ETC_BCOL_set_prefix, _, p0)

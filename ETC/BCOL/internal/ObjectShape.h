@@ -3,7 +3,7 @@ void RecycleObject(
 ){
   auto ObjectData = &this->ObjectList[ObjectID];
   for(uint32_t i = 0; i < ObjectData->ShapeList.Current; i++){
-    auto ShapeData = &((ShapeData_t *)ObjectData->ShapeList.ptr)[i];
+    auto ShapeData = &ObjectData->ShapeList.ptr[i];
     switch(ShapeData->ShapeEnum){
       case ShapeEnum_t::Circle:{
         this->UnlinkRecycleOrphanShape_Circle(ShapeData->ShapeID);
@@ -15,6 +15,6 @@ void RecycleObject(
       }
     }
   }
-  VEC_free(&ObjectData->ShapeList);
+  ShapeList_Close(&ObjectData->ShapeList);
   this->ObjectList.Recycle(ObjectID);
 }

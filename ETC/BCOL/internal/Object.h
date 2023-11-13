@@ -4,7 +4,7 @@ ObjectData_t *GetObjectData(ObjectID_t ObjectID){
 
 ShapeData_t *GetObject_ShapeData(ObjectID_t ObjectID, ShapeID_t ShapeID){
   auto ObjectData = this->GetObjectData(ObjectID);
-  return &((ShapeData_t *)ObjectData->ShapeList.ptr)[ShapeID.ID];
+  return &ObjectData->ShapeList.ptr[ShapeID.ID];
 }
 
 void UnlinkObject(ObjectID_t ObjectID){
@@ -22,7 +22,7 @@ ObjectID_t NewObject(ObjectProperties_t *ObjectProperties, uint32_t Flag){
 
   ObjectData->Position = ObjectProperties->Position;
 
-  VEC_init(&ObjectData->ShapeList, sizeof(ShapeData_t), A_resize);
+  SHapeList_Open(&ObjectData->ShapeList);
 
   #if ETC_BCOL_set_StoreExtraDataInsideObject == 1
     ObjectData->ExtraData = ObjectProperties->ExtraData;

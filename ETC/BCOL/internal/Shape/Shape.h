@@ -4,11 +4,10 @@ void AddShapeToObject(
   ShapeID_t ShapeID
 ){
   auto ObjectData = this->GetObjectData(ObjectID);
-  VEC_handle(&ObjectData->ShapeList);
-  auto ShapeData = &((ShapeData_t *)ObjectData->ShapeList.ptr)[ObjectData->ShapeList.Current];
+  ShapeList_AddEmpty(&ObjectData->ShapeList, 1);
+  auto ShapeData = &ObjectData->ShapeList.ptr[ObjectData->ShapeList.Current - 1];
   ShapeData->ShapeEnum = ShapeEnum;
   ShapeData->ShapeID = ShapeID;
-  ObjectData->ShapeList.Current++;
 }
 
 #include "Circle/Circle.h"

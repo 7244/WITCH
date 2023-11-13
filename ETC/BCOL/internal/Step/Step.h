@@ -28,7 +28,7 @@ void Step(
     _f WantedObjectCollisionRequesters = 0;
 
     for(sip0.ShapeID.ID = 0; sip0.ShapeID.ID < ObjectData0->ShapeList.Current; sip0.ShapeID.ID++){
-      sip0.ShapeEnum = ((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeEnum;
+      sip0.ShapeEnum = ObjectData0->ShapeList.ptr[sip0.ShapeID.ID].ShapeEnum;
       switch(sip0.ShapeEnum){
         case ShapeEnum_t::Circle:{
           #include "Shape/Circle.h"

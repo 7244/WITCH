@@ -1,4 +1,4 @@
-auto CircleData = ShapeData_Circle_Get(((ShapeData_t *)ObjectData0->ShapeList.ptr)[sip0.ShapeID.ID].ShapeID);
+auto CircleData = ShapeData_Circle_Get(ObjectData0->ShapeList.ptr[sip0.ShapeID.ID].ShapeID);
 
 _vf NewPosition = NewObjectPosition + CircleData->Position;
 

@@ -20,6 +20,12 @@
   #define ETC_BCOL_set_StepNumber 0
 #endif
 
+#if defined(ETC_BCOL_set_IncludePath)
+  #define ETC_BCOL_Include(p) <ETC_BCOL_set_IncludePath/p>
+#else
+  #error ?
+#endif
+
 #if ETC_BCOL_set_StoreExtraDataInsideObject == 0
 #elif ETC_BCOL_set_StoreExtraDataInsideObject == 1
   #ifndef ETC_BCOL_set_ExtraDataInsideObject
@@ -49,6 +55,7 @@
 #ifndef ETC_BCOL_set_ConstantFriction
   #undef ETC_BCOL_set_ConstantFriction
 #endif
+#undef ETC_BCOL_Include
 #undef ETC_BCOL_set_StepNumber
 #undef ETC_BCOL_set_DynamicToDynamic
 #undef ETC_BCOL_set_DynamicDeltaFunction
@@ -58,4 +65,7 @@
   #undef ETC_BCOL_set_ExtraDataInsideObject
 #endif
 #undef ETC_BCOL_set_PreferredFloatSize
+#ifdef ETC_BCOL_set_IncludePath
+  #undef ETC_BCOL_set_IncludePath
+#endif
 #undef ETC_BCOL_set_prefix

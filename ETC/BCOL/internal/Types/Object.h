@@ -15,7 +15,7 @@ struct ObjectData_t{
 
   _vf Velocity;
 
-  VEC_t ShapeList; /* __ETC_BCOL_PP(ShapeData_t) */
+  ShapeList_t ShapeList;
 
   #if ETC_BCOL_set_StoreExtraDataInsideObject == 1
     ObjectExtraData_t ExtraData;
