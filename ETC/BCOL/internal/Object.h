@@ -22,7 +22,7 @@ ObjectID_t NewObject(ObjectProperties_t *ObjectProperties, uint32_t Flag){
 
   ObjectData->Position = ObjectProperties->Position;
 
-  SHapeList_Open(&ObjectData->ShapeList);
+  ShapeList_Open(&ObjectData->ShapeList);
 
   #if ETC_BCOL_set_StoreExtraDataInsideObject == 1
     ObjectData->ExtraData = ObjectProperties->ExtraData;
