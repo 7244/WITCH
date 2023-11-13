@@ -22,7 +22,6 @@ BDBT_StructEnd(_BDBT_P(Node_t))
   #pragma pack(pop)
 #endif
 
-#define BVEC_set_BaseLibrary BDBT_set_BaseLibrary
 #define BVEC_set_prefix _BDBT_P(_NodeList)
 #define BVEC_set_NodeType BDBT_set_type_node
 #define BVEC_set_NodeData _BDBT_P(Node_t)
