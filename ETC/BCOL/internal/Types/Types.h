@@ -6,6 +6,8 @@ struct __ETC_BCOL_P(t){
   typedef fan::vec_wrap_t<ETC_BCOL_set_Dimension, uint32_t> _vui32;
   typedef fan::vec_wrap_t<ETC_BCOL_set_Dimension, sint32_t> _vsi32;
 
+  #include "../Math.h"
+
   typedef uint32_t ShapeID_ID_t;
 
   struct ShapeID_t{

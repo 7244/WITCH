@@ -54,14 +54,14 @@ void Step(
 
         #if defined(ETC_BCOL_set_ConstantFriction) || defined(ETC_BCOL_set_ConstantBumpFriction)
           _f ForceThroughNormal = fan::math::dot2(DirectionAverage, VelocityNormal);
-          ForceThroughNormal = fan::math::abs(ForceThroughNormal) * VelocityHypotenuse;
+          ForceThroughNormal = abs(ForceThroughNormal) * VelocityHypotenuse;
         #endif
         #ifdef ETC_BCOL_set_ConstantFriction
           ObjectData0->Velocity /= ForceThroughNormal * ETC_BCOL_set_ConstantFriction * delta + 1;
         #endif
         #ifdef ETC_BCOL_set_ConstantBumpFriction
           ObjectData0->Velocity -= fan::math::copysign(
-            fan::math::min(fan::math::abs(ObjectData0->Velocity),
+            min(abs(ObjectData0->Velocity),
             ForceThroughNormal * ETC_BCOL_set_ConstantBumpFriction * delta),
             ObjectData0->Velocity);
         #endif
