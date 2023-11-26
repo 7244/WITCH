@@ -36,9 +36,6 @@
     #endif
   #endif
 
-  #ifdef __END_DECLS
-    #error WITCH.h must include first
-  #endif
   #if defined(_FILE_OFFSET_BITS)
     #if _FILE_OFFSET_BITS != 64
       #error ?

@@ -34,6 +34,12 @@
 #pragma pack(pop)
 
 #define BLL_set_prefix _MAP_P(_List)
+#ifdef WITCH_set_UseUninitialisedValues
+  #define BLL_set_UseUninitialisedValues WITCH_set_UseUninitialisedValues
+#else
+  #define BLL_set_UseUninitialisedValues 0
+#endif
+#define BLL_set_Language 0
 #define BLL_set_type_node _MAP_P(_nri_t)
 #define BLL_set_NodeDataType _MAP_P(_nd_t)
 #include <WITCH/BLL/BLL.h>

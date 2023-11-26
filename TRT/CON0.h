@@ -15,7 +15,7 @@ private:
   #include <WITCH/TRT/BME/BME.h>
   Cond_t m_Cond;
 
-  uint8_t m_Count;
+  uint8_t m_Count = Count;
 
 public:
 
