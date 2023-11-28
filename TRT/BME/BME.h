@@ -47,6 +47,13 @@
   #define TRT_BME_set_MutexType 0
 #endif
 
+#ifndef TRT_BME_set_LockValue
+  #define TRT_BME_set_LockValue 0
+#endif
+#if TRT_BME_set_LockValue != 0 && TRT_BME_set_LockValue != 1
+  #error ?
+#endif
+
 #define _TRT_BME_P(p) CONCAT3(TRT_BME_set_Prefix,_,p)
 
 #if TRT_BME_set_StructFormat == 0
@@ -98,6 +105,7 @@
 #ifdef TRT_BME_set_Conditional
   #undef TRT_BME_set_Conditional
 #endif
+#undef TRT_BME_set_LockValue
 #undef TRT_BME_set_MutexType
 #undef TRT_BME_set_Backend
 #undef TRT_BME_set_Abort

@@ -60,7 +60,11 @@ TRT_BME_StructBegin(_TRT_BME_P(t))
 #endif
 
 _TRT_BME_SOFTWBIT
-void
+#if TRT_BME_set_LockValue == 0
+  void
+#else
+  bool
+#endif
 _TRT_BME_POFTWBIT(Lock)(
   _TRT_BME_DTFF
 ){
@@ -70,13 +74,23 @@ _TRT_BME_POFTWBIT(Lock)(
       if(r != 0){
         TRT_BME_set_Abort();
       }
+      #if TRT_BME_set_LockValue == 1
+        return 0;
+      #endif
     #elif TRT_BME_set_MutexType == 1
       #if defined(__compiler_clang) || defined(__compiler_gcc)
         while(__sync_lock_test_and_set(&_TRT_BME_GetType->value, 1)){
-          while(_TRT_BME_GetType->value){
-            __builtin_ia32_pause();
-          }
+          #if TRT_BME_set_LockValue == 1
+            return 1;
+          #else
+            while(_TRT_BME_GetType->value){
+              __builtin_ia32_pause();
+            }
+          #endif
         }
+        #if TRT_BME_set_LockValue == 1
+          return 0;
+        #endif
       #elif defined(__x86_64__)
         __asm__ __volatile__(
           "mov $1, %%bl\n"
@@ -95,6 +109,9 @@ _TRT_BME_POFTWBIT(Lock)(
           : "c" (&_TRT_BME_GetType->value)
           : "al", "bl", "memory"
         );
+        #if TRT_BME_set_LockValue == 1
+          return 0;
+        #endif
       #else
         #error ?
       #endif
@@ -104,10 +121,18 @@ _TRT_BME_POFTWBIT(Lock)(
   #elif TRT_BME_set_Backend == 1
     #if TRT_BME_set_MutexType == 0
       EnterCriticalSection(&_TRT_BME_GetType->mutex);
+      #if TRT_BME_set_LockValue == 1
+        return 0;
+      #endif
     #elif TRT_BME_set_MutexType == 1
       while(InterlockedExchange(&_TRT_BME_GetType->value, 1) == 1){
-
+        #if TRT_BME_set_LockValue == 1
+          return 1;
+        #endif
       }
+      #if TRT_BME_set_LockValue == 1
+        return 0;
+      #endif
     #else
       #error ?
     #endif
