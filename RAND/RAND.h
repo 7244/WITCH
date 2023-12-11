@@ -5,7 +5,7 @@
 #ifdef WITCH_PRE_is_not_allowed
   uint32_t _RAND_seed = 0;
 #else
-  uint32_t _RAND_seed
+  uint32_t _RAND_seed;
   PRE{
     _RAND_seed = T_nowi();
   }
