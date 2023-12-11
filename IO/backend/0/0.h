@@ -60,7 +60,7 @@ typedef struct{
     signal(SIGPIPE, SIG_IGN);
   }
 #else
-  void IO_init(void){
+  static void IO_init(void){
     signal(SIGPIPE, SIG_IGN);
   }
 #endif

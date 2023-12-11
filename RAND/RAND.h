@@ -2,10 +2,14 @@
 
 #include _WITCH_PATH(T/T.h)
 
-uint32_t _RAND_seed;
-PRE{
-  _RAND_seed = T_nowi();
-}
+#ifdef WITCH_PRE_is_not_allowed
+  uint32_t _RAND_seed = 0;
+#else
+  uint32_t _RAND_seed
+  PRE{
+    _RAND_seed = T_nowi();
+  }
+#endif
 
 uint16_t RAND_soft_16(void){
   _RAND_seed = (_RAND_seed * 1103515245 + 12345) & 0x7fffffff;
