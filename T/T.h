@@ -16,7 +16,7 @@
   #endif
 #endif
 
-uint64_t T_rdtsc(void){
+static uint64_t T_rdtsc(void){
   #ifdef _MSC_VER
     return __rdtsc();
   #elif defined(__ARM_ARCH)
@@ -80,7 +80,7 @@ static uint64_t T_nowi(void){
 }
 
 #ifndef WITCH_float_is_disabled
-  f64_t T_nowf(void){
+  static f64_t T_nowf(void){
     #if defined(WOS_UNIX) && WITCH_LIBC
       struct timespec t;
       clock_gettime(CLOCK_MONOTONIC, &t);
@@ -105,7 +105,7 @@ typedef struct{
   uint32_t yr;
   uint8_t mo, d, w, hr, min, s;
 }T_date_t;
-bool T_date(T_date_t *date){
+static bool T_date(T_date_t *date){
   #if WITCH_LIBC
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);

@@ -71,12 +71,13 @@
     printf("[PR] _PR_SignalCatcher(%d)\n", signal);
     _PR_DumpTrace();
   }
-
+#if !defined(DWITCH_PRE_is_not_allowed)
   PRE{
     typedef void (*SignalHandlerPointer)(int);
     SignalHandlerPointer PreviousHandler;
     PreviousHandler = signal(SIGABRT, _PR_SignalCatcher);
   }
+#endif
 #endif
 
 static void PR_exit(uint32_t num){

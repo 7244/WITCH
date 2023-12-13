@@ -21,7 +21,7 @@
       sign = 1; \
   }
 
-sint32_t STR_pss32(const uint8_t *str, uintptr_t size){
+static sint32_t STR_pss32(const uint8_t *str, uintptr_t size){
   if(!size)
     return 0;
   uintptr_t i = 0;
@@ -32,7 +32,7 @@ sint32_t STR_pss32(const uint8_t *str, uintptr_t size){
 }
 #define STR_pss32(str_m, size_m) \
   STR_pss32((const uint8_t *)(str_m), (uintptr_t)(size_m))
-sint64_t STR_pss64(const uint8_t *str, uintptr_t size){
+static sint64_t STR_pss64(const uint8_t *str, uintptr_t size){
   if(!size)
     return 0;
   uintptr_t i = 0;
@@ -45,7 +45,7 @@ sint64_t STR_pss64(const uint8_t *str, uintptr_t size){
   STR_pss64((const uint8_t *)(str_m), (uintptr_t)(size_m))
 #define STR_pss CONCAT(STR_pss, SYSTEM_BIT)
 
-sint32_t STR_pss32_iguess(const uint8_t *str, uintptr_t *i){
+static sint32_t STR_pss32_iguess(const uint8_t *str, uintptr_t *i){
   common(32, *)
   for(; STR_ischar_digit(str[*i]); (*i)++)
     res = res * 10 + str[*i] - '0';
@@ -53,7 +53,7 @@ sint32_t STR_pss32_iguess(const uint8_t *str, uintptr_t *i){
 }
 #define STR_pss32_iguess(str_m, i_m) \
   STR_pss32_iguess((const uint8_t *)(str_m), (uintptr_t *)(i_m))
-sint64_t STR_pss64_iguess(const uint8_t *str, uintptr_t *i){
+static sint64_t STR_pss64_iguess(const uint8_t *str, uintptr_t *i){
   common(64, *)
   for(; STR_ischar_digit(str[*i]); (*i)++)
     res = res * 10 + str[*i] - '0';
@@ -63,7 +63,7 @@ sint64_t STR_pss64_iguess(const uint8_t *str, uintptr_t *i){
   STR_pss64_iguess((const uint8_t *)(str_m), (uintptr_t *)(i_m))
 #define STR_pss_iguess CONCAT3(STR_pss, SYSTEM_BIT, _iguess)
 
-sint32_t STR_pss32_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
+static sint32_t STR_pss32_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
   common(32, *)
   for(; *i < size; (*i)++){
     if(!STR_ischar_digit(str[*i]))
@@ -74,7 +74,7 @@ sint32_t STR_pss32_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
 }
 #define STR_pss32_i(str_m, i_m, size_m) \
   STR_pss32_i((const uint8_t *)(str_m), (uintptr_t *)(i_m), (const uintptr_t)(size_m))
-sint64_t STR_pss64_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
+static sint64_t STR_pss64_i(const uint8_t *str, uintptr_t *i, const uintptr_t size){
   common(64, *)
   for(; *i < size; (*i)++){
     if(!STR_ischar_digit(str[*i]))

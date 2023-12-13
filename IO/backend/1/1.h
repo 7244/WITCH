@@ -119,7 +119,7 @@ static void IO_init(){
   _IO_assign_fd(&fd, _IO_fd_tty_e);
 }
 
-bool IO_safepath(const char *path){
+static bool IO_safepath(const char *path){
   bool check = 1;
   while(*path){
     if(check && *path == '.'){
@@ -131,7 +131,7 @@ bool IO_safepath(const char *path){
   return 1;
 }
 
-bool IO_safepathn(const uint8_t *path, uintptr_t size){
+static bool IO_safepathn(const uint8_t *path, uintptr_t size){
   bool check = 1;
   for(uintptr_t i = 0; i < size; i++){
     if(check && path[i] == '.'){
@@ -142,7 +142,7 @@ bool IO_safepathn(const uint8_t *path, uintptr_t size){
   return 1;
 }
 
-bool IO_pipe(IO_fd_t *fds, IO_pipe_Flag Flag){
+static bool IO_pipe(IO_fd_t *fds, IO_pipe_Flag Flag){
   union{
     struct sockaddr_in inaddr;
     struct sockaddr addr;

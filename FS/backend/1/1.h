@@ -30,7 +30,7 @@ static sint32_t _FS_dir_creat(const void *path){
   return 0;
 }
 
-sint32_t FS_dir_open(const void *path, FS_dir_t *dir, uint32_t flag){
+static sint32_t FS_dir_open(const void *path, FS_dir_t *dir, uint32_t flag){
   uintptr_t npath = MEM_cstreu(path);
   if(npath >= PATH_MAX){
     return -ENAMETOOLONG;
@@ -73,7 +73,7 @@ sint32_t FS_dir_open(const void *path, FS_dir_t *dir, uint32_t flag){
   return 0;
 }
 
-sint32_t FS_dir_close(FS_dir_t *dir){
+static sint32_t FS_dir_close(FS_dir_t *dir){
   return 0;
 }
 
@@ -87,7 +87,7 @@ typedef struct{
     uint8_t _fr;
   #endif
 }FS_dir_traverse_t;
-uint8_t _FS_dir_traverse(FS_dir_t *dir, FS_dir_traverse_t *arg){
+static uint8_t _FS_dir_traverse(FS_dir_t *dir, FS_dir_traverse_t *arg){
   arg->dir = dir;
   uint8_t ppath[PATH_MAX + 1];
   if(IO_getpath(&arg->dir->dirfd, ppath)){
@@ -101,7 +101,7 @@ uint8_t _FS_dir_traverse(FS_dir_t *dir, FS_dir_traverse_t *arg){
   arg->_fr = 0;
   return 0;
 }
-uint8_t FS_dir_traverse(FS_dir_traverse_t *arg){
+static uint8_t FS_dir_traverse(FS_dir_traverse_t *arg){
   if(!arg->_fr){
     arg->_fr = 1;
     arg->name = arg->_fdFile.cFileName;
@@ -153,14 +153,14 @@ static void FS_file_getfd(FS_file_t *file, IO_fd_t *fd){
   }
 }
 
-sint32_t FS_unlink(const void *path, uint32_t flag){
+static sint32_t FS_unlink(const void *path, uint32_t flag){
   if(_unlink((const char *)path) == -1){
     return -errno;
   }
   return 0;
 }
 
-sint32_t FS_unlinkn(const void *path, uintptr_t pathsize, uint32_t flag){
+static sint32_t FS_unlinkn(const void *path, uintptr_t pathsize, uint32_t flag){
   uint8_t npath[PATH_MAX];
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
@@ -170,7 +170,7 @@ sint32_t FS_unlinkn(const void *path, uintptr_t pathsize, uint32_t flag){
   return FS_unlink(npath, flag);
 }
 
-sint32_t FS_unlinkat(FS_dir_t *dir, const void *path, uint32_t flag){
+static sint32_t FS_unlinkat(FS_dir_t *dir, const void *path, uint32_t flag){
   uint8_t ppath[PATH_MAX + 1];
   if(IO_getpath(&dir->dirfd, ppath)){
     return 1;
@@ -180,7 +180,7 @@ sint32_t FS_unlinkat(FS_dir_t *dir, const void *path, uint32_t flag){
   return FS_unlink(spath, flag);
 }
 
-sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize, uint32_t flag){
+static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize, uint32_t flag){
   uint8_t npath[PATH_MAX];
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
@@ -190,17 +190,17 @@ sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize, uint3
   return FS_unlinkat(dir, npath, flag);
 }
 
-sint32_t FS_file_opentmp(FS_file_t *file){
+static sint32_t FS_file_opentmp(FS_file_t *file){
   file->Type = _FS_file_Temporarily_e;
   file->Temporarily.Offset = 0;
   VEC_init(&file->Temporarily.vector, 1, A_resize);
   return 0;
 }
 
-bool _FS_file_rename_passpath(STR_ttcc_t *ttcc){
+static bool _FS_file_rename_passpath(STR_ttcc_t *ttcc){
   return 1;
 }
-void _FS_file_GetPathDirectory(const void *src, uintptr_t src_length, void *dst){
+static void _FS_file_GetPathDirectory(const void *src, uintptr_t src_length, void *dst){
   src_length--;
   while(src_length != (uintptr_t)-1){
     if(((uint8_t *)src)[src_length] == '/'){
@@ -212,7 +212,7 @@ void _FS_file_GetPathDirectory(const void *src, uintptr_t src_length, void *dst)
   }
   ((uint8_t *)dst)[0] = 0;
 }
-bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *dst){
+static bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *dst){
   uintptr_t src_i = src_length;
   src_i--;
   while(src_i != (uintptr_t)-1){
@@ -230,7 +230,7 @@ bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *dst){
   }
   return 1;
 }
-sint32_t FS_file_rename(FS_file_t *file, const void *path){
+static sint32_t FS_file_rename(FS_file_t *file, const void *path){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       PR_abort();
@@ -296,7 +296,7 @@ static sint32_t FS_file_open(const void *path, FS_file_t *file, uint32_t flag){
   return 0;
 }
 
-sint32_t FS_file_openn(const void *path, uintptr_t pathsize, FS_file_t *file, uint32_t flag){
+static sint32_t FS_file_openn(const void *path, uintptr_t pathsize, FS_file_t *file, uint32_t flag){
   uint8_t npath[PATH_MAX];
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
@@ -306,7 +306,7 @@ sint32_t FS_file_openn(const void *path, uintptr_t pathsize, FS_file_t *file, ui
   return FS_file_open(npath, file, flag);
 }
 
-sint32_t FS_file_openat(FS_dir_t *dir, const void *path, FS_file_t *file, uint32_t flag){
+static sint32_t FS_file_openat(FS_dir_t *dir, const void *path, FS_file_t *file, uint32_t flag){
   file->Type = _FS_file_FileSystem_e;
   sint32_t err = IO_openat(&dir->dirfd, path, flag, &file->FileSystem.fd);
   if(err){
@@ -315,7 +315,7 @@ sint32_t FS_file_openat(FS_dir_t *dir, const void *path, FS_file_t *file, uint32
   return 0;
 }
 
-sint32_t FS_file_openatn(FS_dir_t *dir, const void *path, uintptr_t pathsize, FS_file_t *file, uint32_t flag){
+static sint32_t FS_file_openatn(FS_dir_t *dir, const void *path, uintptr_t pathsize, FS_file_t *file, uint32_t flag){
   uint8_t npath[PATH_MAX];
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
@@ -331,7 +331,7 @@ enum{
   FS_file_seek_End = SEEK_END
 };
 
-void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
+static void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       PR_abort();
@@ -369,7 +369,7 @@ static FS_ssize_t FS_file_read(FS_file_t *file, void *data, FS_size_t size){
   }
 }
 
-FS_ssize_t FS_file_write(FS_file_t *file, const void *data, FS_size_t size){
+static FS_ssize_t FS_file_write(FS_file_t *file, const void *data, FS_size_t size){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
       return IO_write(&file->FileSystem.fd, data, size);
