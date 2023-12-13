@@ -55,15 +55,6 @@ typedef struct{
   sint32_t fd;
 }IO_dirfd_t;
 
-#ifndef WITCH_PRE_is_not_allowed
-  PRE{
-    signal(SIGPIPE, SIG_IGN);
-  }
-#else
-  static void IO_init(void){
-    signal(SIGPIPE, SIG_IGN);
-  }
-#endif
 
 static void IO_fd_set(IO_fd_t *fd, sint32_t description){
   fd->fd = description;
@@ -298,3 +289,8 @@ static void IO_munmap(void *addr, IO_size_t length){
     PR_abort();
   }
 }
+
+static void _IO_internal_open(){
+  signal(SIGPIPE, SIG_IGN);
+}
+static void _IO_internal_close(){}

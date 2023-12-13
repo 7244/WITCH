@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _WITCH_libdefine_IO
+#define _WITCH_libdefine_IO
 
 #ifndef IO_set_backend
   #if defined(WOS_UNIX_LINUX)
@@ -26,11 +27,24 @@ typedef enum{
 #endif
 
 #if IO_set_backend == 0
-  #include _WITCH_PATH(IO/backend/0/0.h)
+  #include "backend/0/0.h"
 #elif IO_set_backend == 1
-  #include _WITCH_PATH(IO/backend/1/1.h)
+  #include "backend/1/1.h"
 #elif IO_set_backend == 2
-  #include _WITCH_PATH(IO/backend/2/2.h)
+  #include "backend/2/2.h"
 #else
   #error ?
+#endif
+
+#ifdef _WITCH_libdefine_PlatformOpen
+  #error ?
+#endif
+
+#ifdef PRE
+  PRE{
+    _IO_internal_open();
+  }
+#endif
+/* TODO _IO_internal_close needs to be called if its automaticly possible */
+
 #endif

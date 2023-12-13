@@ -240,3 +240,6 @@ static sint32_t IO_rename(const void *src, const void *dst){
 static sint32_t IO_access(const void *path){
   return -syscall2_noerr(SYS_access, path, F_OK);
 }
+
+static void _IO_internal_open(){}
+static void _IO_internal_close(){}

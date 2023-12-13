@@ -8,7 +8,9 @@
 
 #include _WITCH_PATH(internal/WOS.h)
 #ifndef WITCH_PRE_is_not_allowed
-  #include _WITCH_PATH(internal/PRE.h)
+  #ifndef PRE
+    #include _WITCH_PATH(internal/PRE.h)
+  #endif
 #endif
 
 #ifndef __compiler

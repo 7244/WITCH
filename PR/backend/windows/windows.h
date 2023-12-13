@@ -65,19 +65,12 @@
   }
 
   static void _PR_SignalCatcher(int signal) {
-    if (signal == SIGINT) {
+    if(signal == SIGINT){
       return;
     }
     printf("[PR] _PR_SignalCatcher(%d)\n", signal);
     _PR_DumpTrace();
   }
-#if !defined(DWITCH_PRE_is_not_allowed)
-  PRE{
-    typedef void (*SignalHandlerPointer)(int);
-    SignalHandlerPointer PreviousHandler;
-    PreviousHandler = signal(SIGABRT, _PR_SignalCatcher);
-  }
-#endif
 #endif
 
 static void PR_exit(uint32_t num){
@@ -104,3 +97,12 @@ static void PR_exit(uint32_t num){
     PR_exit(1);
   }
 #endif
+
+static void _PR_internal_open(){
+  #if _PR_set_abort_print
+    typedef void (*SignalHandlerPointer)(int);
+    SignalHandlerPointer PreviousHandler;
+    PreviousHandler = signal(SIGABRT, _PR_SignalCatcher);
+  #endif
+}
+static void _PR_internal_close(){}

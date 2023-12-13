@@ -500,3 +500,6 @@ static sint32_t IO_access(const void *path){
 static bool IO_IsPathExists(const void *path){
   return GetFileAttributes((LPCSTR)path) != INVALID_FILE_ATTRIBUTES;
 }
+
+static void _IO_internal_open(){}
+static void _IO_internal_close(){}

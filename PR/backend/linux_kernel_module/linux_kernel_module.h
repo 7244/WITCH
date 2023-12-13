@@ -6,3 +6,6 @@ void PR_exit(uint32_t num) {
 void PR_abort(void) {
   panic("[PR] PR_abort()");
 }
+
+static void _PR_internal_open(){}
+static void _PR_internal_close(){}
