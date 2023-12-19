@@ -81,7 +81,7 @@ enum{
   _IO_fd_file_e,
   _IO_fd_socket_e
 };
-static uint8_t *_IO_fd_nodes = nullptr;
+static uint8_t *_IO_fd_nodes = NULL;
 static void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
   if(fd->fd >= IO_set_fd_limit){
     PR_abort();
@@ -106,17 +106,6 @@ static uint8_t _IO_get_fd(const IO_fd_t *fd){
     PR_abort();
   }
   return _IO_fd_nodes[fd->fd];
-}
-static void IO_init(){
-  _IO_fd_nodes = A_resize(0, IO_set_fd_limit);
-  MEM_set(_IO_fd_unknown_e, _IO_fd_nodes, IO_set_fd_limit);
-  IO_fd_t fd;
-  IO_fd_set(&fd, STDIN_FILENO);
-  _IO_assign_fd(&fd, _IO_fd_tty_e);
-  IO_fd_set(&fd, STDOUT_FILENO);
-  _IO_assign_fd(&fd, _IO_fd_tty_e);
-  IO_fd_set(&fd, STDERR_FILENO);
-  _IO_assign_fd(&fd, _IO_fd_tty_e);
 }
 
 static bool IO_safepath(const char *path){
@@ -501,5 +490,17 @@ static bool IO_IsPathExists(const void *path){
   return GetFileAttributes((LPCSTR)path) != INVALID_FILE_ATTRIBUTES;
 }
 
-static void _IO_internal_open(){}
-static void _IO_internal_close(){}
+static void _IO_internal_open(){
+  _IO_fd_nodes = A_resize(NULL, IO_set_fd_limit);
+  MEM_set(_IO_fd_unknown_e, _IO_fd_nodes, IO_set_fd_limit);
+  IO_fd_t fd;
+  IO_fd_set(&fd, STDIN_FILENO);
+  _IO_assign_fd(&fd, _IO_fd_tty_e);
+  IO_fd_set(&fd, STDOUT_FILENO);
+  _IO_assign_fd(&fd, _IO_fd_tty_e);
+  IO_fd_set(&fd, STDERR_FILENO);
+  _IO_assign_fd(&fd, _IO_fd_tty_e);
+}
+static void _IO_internal_close(){
+  A_resize(_IO_fd_nodes, NULL);
+}
