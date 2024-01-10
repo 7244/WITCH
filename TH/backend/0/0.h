@@ -27,6 +27,11 @@ static TH_id_t TH_open(void *f, void *p){
 static bool TH_close(TH_id_t id){
   return pthread_cancel(id) != 0;
 }
+static void TH_close_block(TH_id_t id){
+  if(pthread_cancel(id) != 0){
+    __abort();
+  }
+}
 
 typedef struct{
   pthread_mutex_t mutex;

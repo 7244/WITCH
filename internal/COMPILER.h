@@ -177,18 +177,30 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #define LITERAL(type_m, num_m) \
   (type_m)CONCAT(num_m, CONCAT(_LITERAL_, type_m))
 
-#define CLAMP(val, lo, hi) \
-  ((val) <= (lo) ? (lo) : (val) > (hi) ? (hi) : (val))
-#define ABS(num_m) \
-  ((num_m) < 0 ? -(num_m) : (num_m))
-#define FLOOR \
-  (f_t)(sintptr_t)
-#define FMOD(num_m, mod_m) \
-  ((num_m) - (FLOOR((num_m) / (mod_m)) * (mod_m)))
-#define SIGN(_m) \
-  (sintptr_t)(-(_m < 0) | (_m > 0))
-#define RSIGN(_m) \
-  ((_m) * SIGN(_m))
+#ifndef CLAMP
+  #define CLAMP(val, lo, hi) \
+    ((val) <= (lo) ? (lo) : (val) > (hi) ? (hi) : (val))
+#endif
+#ifndef ABS
+  #define ABS(num_m) \
+    ((num_m) < 0 ? -(num_m) : (num_m))
+#endif
+#ifndef FLOOR
+  #define FLOOR \
+    (f_t)(sintptr_t)
+#endif
+#ifndef FMOD
+  #define FMOD(num_m, mod_m) \
+    ((num_m) - (FLOOR((num_m) / (mod_m)) * (mod_m)))
+#endif
+#ifndef SIGN
+  #define SIGN(_m) \
+    (sintptr_t)(-(_m < 0) | (_m > 0))
+#endif
+#ifndef RSIGN
+  #define RSIGN(_m) \
+    ((_m) * SIGN(_m))
+#endif
 
 static uint32_t LOG32(uintptr_t num, uint8_t base){
   uint32_t log = 0;
