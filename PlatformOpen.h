@@ -24,4 +24,7 @@
   #ifdef _WITCH_libdefine_RAND
     _RAND_internal_open();
   #endif
+  #ifdef _WITCH_libdefine_T
+    _T_internal_open();
+  #endif
 #endif

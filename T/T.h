@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _WITCH_libdefine_T
+#define _WITCH_libdefine_T
 
 #include _WITCH_PATH(PR/PR.h)
 
@@ -47,16 +48,8 @@ static uint64_t T_rdtsc(void){
 }
 
 #if defined(WOS_WINDOWS)
-inline uint64_t _T_time_freqi;
-inline f64_t    _T_time_freqf;
-PRE{
-  LARGE_INTEGER t;
-  if(QueryPerformanceFrequency(&t) == 0){
-    PR_abort();
-  }
-  _T_time_freqi = 1000000000 / t.QuadPart;
-  _T_time_freqf = t.QuadPart;
-}
+  inline uint64_t _T_time_freqi;
+  inline f64_t    _T_time_freqf;
 #endif
 
 static uint64_t T_nowi(void){
@@ -124,3 +117,30 @@ static bool T_date(T_date_t *date){
     return 0;
   #endif
 }
+
+static void _T_internal_open(){
+  #if defined(WOS_WINDOWS)
+    LARGE_INTEGER t;
+    if(QueryPerformanceFrequency(&t) == 0){
+      PR_abort();
+    }
+    _T_time_freqi = 1000000000 / t.QuadPart;
+    _T_time_freqf = t.QuadPart;
+  #endif
+}
+static void _T_internal_close(){
+  
+}
+
+#ifdef _WITCH_libdefine_PlatformOpen
+  #error ?
+#endif
+
+#ifdef PRE
+  PRE{
+    _T_internal_open();
+  }
+#endif
+/* TODO _T_internal_close needs to be called if its automaticly possible */
+
+#endif
