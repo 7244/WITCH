@@ -11,6 +11,10 @@
     #undef _WITCH_libdefine_PlatformClose
   #endif
 
+  #ifdef _WITCH_libdefine_include_windows_winsock
+    _WITCH_include_windows_winsock_internal_open();
+  #endif
+
   #ifdef _WITCH_libdefine_PR
     _PR_internal_open();
   #endif
