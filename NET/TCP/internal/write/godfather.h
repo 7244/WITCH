@@ -106,9 +106,7 @@ void _NET_TCP_write_godfather_queue(EV_t *listener, NET_TCP_peer_t *peer){
         if(SpecialPointer->index != SpecialPointer->size){
           return;
         }
-        if(SpecialPointer->cb != NULL){
-          SpecialPointer->cb(tcp, peer, ptr, SpecialPointer->size);
-        }
+        SpecialPointer->cb(tcp, peer, ptr, SpecialPointer->size);
         A_resize(SpecialPointer, 0);
         if(NET_TCP_EXT_write_del(peer, QueuerReference)){
           EV_ev_flag_rm(listener, event, EV_WRITE);

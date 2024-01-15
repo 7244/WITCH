@@ -69,6 +69,10 @@ void _NET_TCP_TLS_tlscb(TLS_peer_t *tlspeer, uint32_t state, bool val){
   }
 }
 
+void _NET_TCP_TLS_SpecialPointer_FillerCB(NET_TCP_t *, NET_TCP_peer_t *, void *, uintptr_t){
+
+}
+
 void _NET_TCP_TLS_WriteIfoutread(
   NET_TCP_t *tcp,
   NET_TCP_peer_t *peer,
@@ -84,14 +88,16 @@ void _NET_TCP_TLS_WriteIfoutread(
   A_resize_t resize = NET_TCP_write_GetResize_SpecialPointer(tcp, peer, NextQueuerReference);
   uint8_t *ptr = resize(0, size);
   if(TLS_outread(tlspeer, ptr, size) != size){
-    PR_abort();
+    __abort();
   }
   NET_TCP_Queue_t wQueue;
   wQueue.SpecialPointer.ptr = ptr;
-  wQueue.SpecialPointer.size = size;
-  if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_SpecialPointer_e, &wQueue) != 0){
+  wQueue.SpecialPointer.DataIndex = 0;
+  wQueue.SpecialPointer.Size = size;
+  wQueue.SpecialPointer.cb = _NET_TCP_TLS_SpecialPointer_FillerCB;
+  if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_SpecialPointer, &wQueue) != 0){
     /* TODO enjoy dealing with it */
-    PR_abort();
+    __abort();
   }
 }
 uint32_t _NET_TCP_TLS_ChangeIfoutread(
@@ -111,11 +117,13 @@ uint32_t _NET_TCP_TLS_ChangeIfoutread(
   A_resize_t resize = NET_TCP_write_GetResize_SpecialPointer(tcp, peer, NextQueuerReference);
   uint8_t *ptr = resize(0, size);
   if(TLS_outread(tlspeer, ptr, size) != size){
-    PR_abort();
+    __abort();
   }
-  *type = NET_TCP_QueueType_SpecialPointer_e;
+  *type = NET_TCP_QueueType_SpecialPointer;
   Queue->SpecialPointer.ptr = ptr;
-  Queue->SpecialPointer.size = size;
+  Queue->SpecialPointer.DataIndex = 0;
+  Queue->SpecialPointer.Size = size;
+  Queue->SpecialPointer.cb = _NET_TCP_TLS_SpecialPointer_FillerCB;
   return 0;
 }
 void _NET_TCP_TLS_WriteSignedSpecialPointer(
@@ -134,16 +142,16 @@ void _NET_TCP_TLS_WriteSignedSpecialPointer(
   A_resize_t resize = NET_TCP_write_GetResize_SignedSpecialPointer(peer->parent, peer, NextQueuerReference);
   uint8_t *ptr = resize(0, size);
   if(TLS_outread(tlspeer, ptr, size) != size){
-    PR_abort();
+    __abort();
   }
   NET_TCP_Queue_t wQueue;
   wQueue.SignedSpecialPointer.ptr = ptr;
   wQueue.SignedSpecialPointer.size = size;
   wQueue.SignedSpecialPointer.SignerNode = QueuerReference;
   wQueue.SignedSpecialPointer.UniqueNumber = UniqueNumber;
-  if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_SignedSpecialPointer_e, &wQueue) != 0){
+  if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_SignedSpecialPointer, &wQueue) != 0){
     /* TODO enjoy */
-    PR_abort();
+    __abort();
   }
 }
 
@@ -196,7 +204,7 @@ uint32_t _NET_TCP_TLS_read_DynamicPointerLike(
     return NET_TCP_EXT_dontgo_e;
   }
   if(r != Size){
-    PR_abort();
+    __abort();
   }
   inreadsize_gt:;
   uint8_t Buffer[0x1000];
@@ -215,7 +223,7 @@ uint32_t _NET_TCP_TLS_read_DynamicPointerLike(
   NET_TCP_Queue_t rQueue;
   rQueue.DynamicPointer.ptr = Buffer;
   rQueue.DynamicPointer.size = AmountOfRead;
-  if(NET_TCP_read_loop(peer, NextQueuerReference, NET_TCP_QueueType_DynamicPointer_e, &rQueue) != 0){
+  if(NET_TCP_read_loop(peer, NextQueuerReference, NET_TCP_QueueType_DynamicPointer, &rQueue) != 0){
     return NET_TCP_EXT_PeerIsClosed_e;
   }
   goto inreadsize_gt;
@@ -230,7 +238,7 @@ uint32_t _NET_TCP_TLS_read(
   NET_TCP_Queue_t *Queue
 ){
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:{
+    case NET_TCP_QueueType_DynamicPointer:{
       return _NET_TCP_TLS_read_DynamicPointerLike(
         peer,
         sockdata,
@@ -240,15 +248,15 @@ uint32_t _NET_TCP_TLS_read(
         Queue->DynamicPointer.size
       );
     }
-    case NET_TCP_QueueType_SpecialPointer_e:{
-      PR_abort();
+    case NET_TCP_QueueType_SpecialPointer:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SignedSpecialPointer_e:{
-      PR_abort();
+    case NET_TCP_QueueType_SignedSpecialPointer:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_PeerEvent_e:{
+    case NET_TCP_QueueType_PeerEvent:{
       uint8_t Data[0x2000];
       IO_fd_t peer_fd;
       EV_event_get_fd(&peer->event, &peer_fd);
@@ -266,14 +274,14 @@ uint32_t _NET_TCP_TLS_read(
         Size
       );
     }
-    case NET_TCP_QueueType_File_e:{
-      PR_abort();
+    case NET_TCP_QueueType_File:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_CloseIfGodFather_e:{
+    case NET_TCP_QueueType_CloseIfGodFather:{
       return NET_TCP_EXT_pass_e;
     }
-    case NET_TCP_QueueType_CloseHard_e:{
+    case NET_TCP_QueueType_CloseHard:{
       return 0;
     }
   }
@@ -306,7 +314,7 @@ void _NET_TCP_TLS_ReadyFile_Finish(_ReadyFile_t *ReadyFile, sint32_t err){
         _SpecialPointer_t *SpecialPointer = (_SpecialPointer_t *)QueueElement->tdata;
         IO_ssize_t r = TLS_outwrite(&peerdata->tlspeer, ptr, SpecialPointer->size);
         if(r < 0){
-          PR_abort();
+          __abort();
         }
         _NET_TCP_TLS_WriteIfoutread(peer->parent, peer, QueuerReference, &peerdata->tlspeer);
         A_resize(SpecialPointer, 0);
@@ -341,9 +349,9 @@ void _NET_TCP_TLS_ReadyFile_Finish(_ReadyFile_t *ReadyFile, sint32_t err){
           peer,
           QueuerReference);
         NET_TCP_Queue_t wQueue;
-        if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_CloseIfGodFather_e, &wQueue) != 0){
+        if(NET_TCP_write_loop(peer, NextQueuerReference, NET_TCP_QueueType_CloseIfGodFather, &wQueue) != 0){
           /* TODO enjoy */
-          PR_abort();
+          __abort();
         }
         return;
       }
@@ -492,7 +500,7 @@ uint32_t _NET_TCP_TLS_write(
   NET_TCP_Queue_t *Queue
 ){
   switch(*type){
-    case NET_TCP_QueueType_DynamicPointer_e:{
+    case NET_TCP_QueueType_DynamicPointer:{
       uint8_t *ptr = (uint8_t *)Queue->DynamicPointer.ptr;
       uintptr_t size = Queue->DynamicPointer.size;
       if(!NET_TCP_EXT_write_is_active(peer, QueuerReference)){
@@ -515,19 +523,19 @@ uint32_t _NET_TCP_TLS_write(
         return _NET_TCP_TLS_ChangeIfoutread(peer->parent, peer, QueuerReference, tlspeer, type, Queue);
       }
     }
-    case NET_TCP_QueueType_SpecialPointer_e:{
-      PR_abort();
+    case NET_TCP_QueueType_SpecialPointer:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_SignedSpecialPointer_e:{
-      PR_abort();
+    case NET_TCP_QueueType_SignedSpecialPointer:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_PeerEvent_e:{
-      PR_abort();
+    case NET_TCP_QueueType_PeerEvent:{
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_File_e:{
+    case NET_TCP_QueueType_File:{
       if(!NET_TCP_EXT_write_is_active(peer, QueuerReference)){
         NET_TCP_QueueElement_t QueueElement;
         QueueElement.t = _NotReadyFile_e;
@@ -560,7 +568,7 @@ uint32_t _NET_TCP_TLS_write(
       }
       return NET_TCP_EXT_dontgo_e;
     }
-    case NET_TCP_QueueType_CloseIfGodFather_e:{
+    case NET_TCP_QueueType_CloseIfGodFather:{
       if(!NET_TCP_EXT_write_is_active(peer, QueuerReference)){
         NET_TCP_QueueElement_t QueueElement;
         QueueElement.t = _CloseIfGodFather_e;
@@ -571,7 +579,7 @@ uint32_t _NET_TCP_TLS_write(
         return 0;
       }
     }
-    case NET_TCP_QueueType_CloseHard_e:{
+    case NET_TCP_QueueType_CloseHard:{
       while(!NET_TCP_EXT_write_is_active(peer, QueuerReference)){
         NET_TCP_QueueElement_t *QueueElement;
         NET_TCP_EXT_write_get(peer, QueuerReference, &QueueElement);
