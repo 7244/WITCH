@@ -86,7 +86,7 @@ ETC_HTTP_pall_p(Parse)
   if(Parser->State == 0){
     sint32_t state = ETC_HTTP_pall_hp(_decode)(
       &Parser->h,
-      Data,
+      (void*)Data,
       DataSize,
       DataIndex,
       &ParsedData->HTTP);

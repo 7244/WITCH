@@ -2,6 +2,8 @@
   #error ifndef ETC_HTTP_chunked_set_prefix
 #endif
 
+#include _WITCH_PATH(STR/psh.h)
+
 #define ETC_HTTP_chunked_p(p0) CONCAT3(ETC_HTTP_chunked_set_prefix, _, p0)
 
 typedef enum{
