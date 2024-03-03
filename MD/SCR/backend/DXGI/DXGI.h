@@ -224,7 +224,7 @@ uint8_t *MD_SCR_read(MD_SCR_t *scr){
     else if (result != 0x887a0027) {
       MD_SCR_close(scr);
       scr->imDed = true;
-      std::cout << "DXGI bad errors:" << std::hex << result << '\n';
+//      std::cout << "DXGI bad errors:" << std::hex << result << '\n';
       return 0;
     }
     if(scr->map_result == S_OK){
