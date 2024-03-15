@@ -122,7 +122,7 @@
 
 #undef _BDBT_set_ElementPerNode
 #undef BDBT_set_BitPerNode
-#ifndef BDBT_set_CPP_ConstructDestruct
+#ifdef BDBT_set_CPP_ConstructDestruct
   #undef BDBT_set_CPP_ConstructDestruct
 #endif
 #undef BDBT_set_prefix
