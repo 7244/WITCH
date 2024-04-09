@@ -122,13 +122,13 @@ struct _BDBT_P(Key_t){
       uint8_t LowHigh = 2
     ){
       if(LowHigh == 0){
-        return i<0>(rnr);
+        i<0>(rnr);
       }
       else if(LowHigh == 1){
-        return i<1>(rnr);
+        i<1>(rnr);
       }
       else{
-        return i<>(rnr);
+        i<>(rnr);
       }
     }
 
