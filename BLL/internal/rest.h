@@ -164,8 +164,10 @@ BLL_StructBegin(_P(t))
     uint32_t NodeSize;
   #endif
   #if BLL_set_Link == 1
-    _P(NodeReference_t) src;
-    _P(NodeReference_t) dst;
+    #ifndef BLL_set_NoSentinel
+      _P(NodeReference_t) src;
+      _P(NodeReference_t) dst;
+    #endif
   #endif
   struct{
     _P(NodeReference_t) c;

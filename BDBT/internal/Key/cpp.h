@@ -1,16 +1,33 @@
-template <uintptr_t _KeySize, bool BitOrderMatters = false>
+template <
+  #if !defined(BDBT_set_KeySize)
+    uintptr_t _KeySize,
+  #endif
+  bool BitOrderMatters = false
+>
 struct _BDBT_P(Key_t){
 
-  typedef std::conditional_t<
-    _KeySize <= 0xff,
-    uint8_t,
-      std::conditional_t<_KeySize <= 0xffff,
-      uint16_t,
-      uint32_t
-    >
-  >KeySize_t;
+  #if !defined(BDBT_set_KeySize)
+    #define _BDBT_ksizeConstexpr constexpr
 
-  static constexpr KeySize_t KeySize = _KeySize;
+    typedef std::conditional_t<
+      _KeySize <= 0xff,
+      uint8_t,
+        std::conditional_t<_KeySize <= 0xffff,
+        uint16_t,
+        uint32_t
+      >
+    >KeySize_t;
+
+    #define KeySize (KeySize_t)_KeySize
+  #else
+    #define _BDBT_ksizeConstexpr
+
+    typedef uintptr_t KeySize_t;
+
+    #define KeySize KeySize
+  #endif
+
+  #define BeforeLast (KeySize - 8)
 
   typedef std::conditional_t<
     _BDBT_set_ElementPerNode <= 0xff,
@@ -20,8 +37,6 @@ struct _BDBT_P(Key_t){
       uint32_t
     >
   >KeyNodeIterator_t;
-
-  static constexpr KeySize_t BeforeLast = KeySize - 8;
 
   uint8_t ReverseKeyByte(uint8_t p){
     #if BDBT_set_BitPerNode == 1
@@ -45,6 +60,9 @@ struct _BDBT_P(Key_t){
   a
   (
     _BDBT_BP(t) *list,
+    #if defined(BDBT_set_KeySize)
+      KeySize_t KeySize,
+    #endif
     const void *Key,
     KeySize_t KeyIndex,
     _BDBT_BP(NodeReference_t) cnr,
@@ -58,6 +76,9 @@ struct _BDBT_P(Key_t){
   q
   (
     _BDBT_BP(t) *list,
+    #if defined(BDBT_set_KeySize)
+      KeySize_t KeySize,
+    #endif
     const void *Key,
     KeySize_t *KeyIndex,
     _BDBT_BP(NodeReference_t) *cnr
@@ -69,6 +90,9 @@ struct _BDBT_P(Key_t){
   _r
   (
     _BDBT_BP(t) *list,
+    #if defined(BDBT_set_KeySize)
+      KeySize_t KeySize,
+    #endif
     void *Key,
     _BDBT_BP(NodeReference_t) *cnr
   ){
@@ -78,29 +102,56 @@ struct _BDBT_P(Key_t){
   r
   (
     _BDBT_BP(t) *list,
+    #if defined(BDBT_set_KeySize)
+      KeySize_t KeySize,
+    #endif
     void *Key,
     _BDBT_BP(NodeReference_t) cnr
   ){
-    _r(list, Key, &cnr);
+    _r(
+      list,
+      #if defined(BDBT_set_KeySize)
+        KeySize,
+      #endif
+      Key,
+      &cnr
+    );
   }
   /* remove with info */
   KeySize_t
   rwi
   (
     _BDBT_BP(t) *list,
+    #if defined(BDBT_set_KeySize)
+      KeySize_t KeySize,
+    #endif
     void *Key,
     _BDBT_BP(NodeReference_t) *cnr
   ){
-    return _r(list, Key, cnr);
+    return _r(
+      list,
+      #if defined(BDBT_set_KeySize)
+        KeySize,
+      #endif
+      Key,
+      cnr
+    );
   }
 
   /* give 0 if you want to sort from low, 1 for high. */
   struct Traverse_t{
     KeySize_t Current;
-    struct{
+    struct ta_t{
       _BDBT_BP(NodeReference_t) n;
       KeyNodeIterator_t k;
-    }ta[KeySize / BDBT_set_BitPerNode];
+    };
+    #ifndef BDBT_set_KeySize
+      ta_t ta[KeySize / BDBT_set_BitPerNode];
+    #else
+      static uintptr_t GetTraverseArraySize(KeySize_t KeySize){
+        return KeySize / BDBT_set_BitPerNode;
+      }
+    #endif
 
     _BDBT_BP(NodeReference_t) Output;
 
@@ -109,6 +160,9 @@ struct _BDBT_P(Key_t){
     void
     i
     (
+      #if defined(BDBT_set_KeySize)
+        ta_t *ta,
+      #endif
       _BDBT_BP(NodeReference_t) rnr
     ){
       Current = 0;
@@ -118,17 +172,35 @@ struct _BDBT_P(Key_t){
     void
     i0
     (
+      #if defined(BDBT_set_KeySize)
+        ta_t *ta,
+      #endif
       _BDBT_BP(NodeReference_t) rnr,
       uint8_t LowHigh = 2
     ){
       if(LowHigh == 0){
-        return i<0>(rnr);
+        return i<0>(
+          #if defined(BDBT_set_KeySize)
+            ta,
+          #endif
+          rnr
+        );
       }
       else if(LowHigh == 1){
-        return i<1>(rnr);
+        return i<1>(
+          #if defined(BDBT_set_KeySize)
+            ta,
+          #endif
+          rnr
+        );
       }
       else{
-        return i<>(rnr);
+        return i<>(
+          #if defined(BDBT_set_KeySize)
+            ta,
+          #endif
+          rnr
+        );
       }
     }
 
@@ -138,6 +210,10 @@ struct _BDBT_P(Key_t){
     t
     (
       _BDBT_BP(t) *list,
+      #if defined(BDBT_set_KeySize)
+        ta_t *ta,
+        KeySize_t KeySize,
+      #endif
       void *Key
     ){
       #include "cpp/t.h"
@@ -146,18 +222,47 @@ struct _BDBT_P(Key_t){
     bool
     t0(
       _BDBT_BP(t) *list,
+      #if defined(BDBT_set_KeySize)
+        ta_t *ta,
+        KeySize_t KeySize,
+      #endif
       void *Key,
       uint8_t LowHigh = 2
     ){
       if(LowHigh == 0){
-        return t<0>(list, Key);
+        return t<0>(
+          list,
+          #if defined(BDBT_set_KeySize)
+            ta,
+            KeySize,
+          #endif
+          Key
+        );
       }
       else if(LowHigh == 1){
-        return t<1>(list, Key);
+        return t<1>(
+          list,
+          #if defined(BDBT_set_KeySize)
+            ta,
+            KeySize,
+          #endif
+          Key
+        );
       }
       else{
-        return t<>(list, Key);
+        return t<>(
+          list,
+          #if defined(BDBT_set_KeySize)
+            ta,
+            KeySize,
+          #endif
+          Key
+        );
       }
     }
   };
+
+  #undef BeforeLast
+  #undef KeySize
+  #undef _BDBT_ksizeConstexpr
 };

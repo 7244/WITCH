@@ -3,21 +3,17 @@
 #ifdef BDBT_set_declare_basic_types
   #error outdated setting. now it shipped with BDBT_set_declare_rest
 #endif
+#ifdef BDBT_set_Language
+  #error outdated setting. define BDBT_set_lc or BDBT_set_lcpp instead.
+#endif
+#ifdef BDBT_set_BaseLibrary
+  #error outdated setting. this is no longer here.
+#endif
 
 /* --- outdated --- */
 
-#ifndef BDBT_set_BaseLibrary
-  #define BDBT_set_BaseLibrary 0
-#endif
-
-#ifndef BDBT_set_Language
-  #if BDBT_set_BaseLibrary == 0
-    #define BDBT_set_Language 0
-  #elif BDBT_set_BaseLibrary == 1
-    #define BDBT_set_Language 1
-  #else
-    #error ?
-  #endif
+#if !defined(BDBT_set_lc) && !defined(BDBT_set_lcpp)
+  #error BDBT_set_lc or BDBT_set_lcpp needs to be defined
 #endif
 
 #ifndef BDBT_set_AreWeInsideStruct
@@ -28,9 +24,9 @@
   #error ifndef BDBT_set_prefix
 #endif
 #ifndef BDBT_set_StructFormat
-  #if BDBT_set_Language == 0
+  #if defined(BDBT_set_lc)
     #define BDBT_set_StructFormat 0
-  #elif BDBT_set_Language == 1
+  #elif defined(BDBT_set_lcpp)
     #define BDBT_set_StructFormat 1
   #else
     #error ?
@@ -59,10 +55,12 @@
   #define BDBT_set_ResizeListAfterClear 0
 #endif
 #ifndef BDBT_set_UseUninitialisedValues
-  #if BDBT_set_BaseLibrary == 0
+  #if defined(WITCH_set_UseUninitialisedValues)
     #define BDBT_set_UseUninitialisedValues WITCH_set_UseUninitialisedValues
-  #elif BDBT_set_BaseLibrary == 1
+  #elif defined(fan_use_uninitialized)
     #define BDBT_set_UseUninitialisedValues fan_use_uninitialized
+  #else
+    #define BDBT_set_UseUninitialisedValues 1
   #endif
 #endif
 #ifndef BDBT_set_type_node
@@ -84,10 +82,12 @@
   #error ?
 #endif
 
-#if BDBT_set_BaseLibrary == 0
+#if defined(_WITCH_PATH)
   #define _BDBT_INCLUDE _WITCH_PATH
-#elif BDBT_set_BaseLibrary == 1
+#elif defined(_FAN_PATH)
   #define _BDBT_INCLUDE _FAN_PATH
+#else
+  #define _BDBT_INCLUDE(p) <p>
 #endif
 
 #ifdef BDBT_set_base_prefix
@@ -141,4 +141,9 @@
   #undef BDBT_set_namespace
 #endif
 
-#undef BDBT_set_BaseLibrary
+#ifdef BDBT_set_lc
+  #undef BDBT_set_lc
+#endif
+#ifdef BDBT_set_lcpp
+  #undef BDBT_set_lcpp
+#endif
