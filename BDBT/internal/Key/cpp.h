@@ -179,7 +179,7 @@ struct _BDBT_P(Key_t){
       uint8_t LowHigh = 2
     ){
       if(LowHigh == 0){
-        return i<0>(
+        i<0>(
           #if defined(BDBT_set_KeySize)
             ta,
           #endif
@@ -187,7 +187,7 @@ struct _BDBT_P(Key_t){
         );
       }
       else if(LowHigh == 1){
-        return i<1>(
+        i<1>(
           #if defined(BDBT_set_KeySize)
             ta,
           #endif
@@ -195,7 +195,7 @@ struct _BDBT_P(Key_t){
         );
       }
       else{
-        return i<>(
+        i<>(
           #if defined(BDBT_set_KeySize)
             ta,
           #endif
