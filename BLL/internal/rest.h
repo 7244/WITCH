@@ -686,7 +686,7 @@ _BLL_POFTWBIT(NewNode)
 
   _BLL_SOFTWBIT
   bool
-  _BLL_POFTWBIT(IsNRSentienel)
+  _BLL_POFTWBIT(IsNRSentinel)
   (
     _BLL_DBLLTFFC
     _P(NodeReference_t) NR
@@ -743,7 +743,7 @@ _BLL_POFTWBIT(NewNode)
     _P(NodeReference_t) NodeReference
   ){
     #if BLL_set_debug_InvalidAction >= 1
-      if(_BLL_POFTWBIT(IsNRSentienel)(_BLL_PBLLTFFC NodeReference) == 1){
+      if(_BLL_POFTWBIT(IsNRSentinel)(_BLL_PBLLTFFC NodeReference) == 1){
         __abort();
       }
       if(_BLL_POFTWBIT(IsNodeReferenceRecycled)(_BLL_PBLLTFFC NodeReference) == 1){
@@ -916,7 +916,7 @@ BLL_StructBegin(_P(nrtra_t))
       #endif
 
       #if BLL_set_Link == 1
-        if(_BLL_nrtra_AP(IsNRSentienel)(_BLL_PIL0(_pList __ca__) _BLL_nrtra_G->nr) == true){
+        if(_BLL_nrtra_AP(IsNRSentinel)(_BLL_PIL0(_pList __ca__) _BLL_nrtra_G->nr) == true){
           continue;
         }
       #endif
