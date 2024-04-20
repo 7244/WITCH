@@ -420,6 +420,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+/* TODO make memorycopy dst src */
 /* src, dst, size */
 #ifndef __MemoryCopy
   #if defined(__compiler_clang) || defined(__compiler_gcc)
@@ -430,12 +431,23 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     #error ?
   #endif
 #endif
+/* TODO make memoryset dst src */
 /* byte, dst, size */
 #ifndef __MemorySet
   #if defined(__compiler_clang) || defined(__compiler_gcc)
     #define __MemorySet(byte, dst, size) __builtin_memset(dst, byte, size)
   #elif defined(__compiler_msvc)
     #define __MemorySet(byte, dst, size) memset(dst, byte, size)
+  #else
+    #error ?
+  #endif
+#endif
+
+#ifndef __MemoryMove
+  #if defined(__compiler_clang) || defined(__compiler_gcc)
+    #define __MemoryMove(dst, src, size) __builtin_memmove(dst, src, size)
+  #elif defined(__compiler_msvc)
+    #define __MemoryMove(dst, src, size) memmove(dst, src, size)
   #else
     #error ?
   #endif
