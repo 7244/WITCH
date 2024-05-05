@@ -1306,7 +1306,12 @@ _BLL_POFTWBIT(GetNodeReferenceData)
   #elif defined(_BLL_HaveConstantNodeData)
     return (_P(NodeData_t) *)&Node->data;
   #else
-    return (_P(NodeData_t) *)((uint8_t *)Node + sizeof(_P(Node_t)));
+    return (_P(NodeData_t) *)(
+      (uint8_t *)Node
+      #if BLL_set_Link == 1
+        + sizeof(_P(Node_t))
+      #endif
+    );
   #endif
 }
 
