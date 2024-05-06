@@ -1151,6 +1151,7 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
     #elif BLL_set_StoreFormat == 1
       _BLL_POFTWBIT(_StoreFormat1_CloseAllocatedBlocks)(_BLL_PBLLTFF);
       _BLL_GetList->BlockList.Current = 0;
+      _BLL_GetList->NodeCurrent = 0;
     #endif
   #else
     #if BLL_set_StoreFormat == 0
@@ -1163,6 +1164,7 @@ _BLL_POFTWBIT(Clear) /* TODO those 2 numbers in this function needs to be flexib
     #elif BLL_set_StoreFormat == 1
       _BLL_POFTWBIT(_StoreFormat1_CloseAllocatedBlocks)(_BLL_PBLLTFF);
       _P(_BlockList_ClearWithBuffer)(&_BLL_GetList->BlockList);
+      _BLL_GetList->NodeCurrent = 0;
     #endif
   #endif
 
