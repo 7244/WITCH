@@ -7,34 +7,30 @@ struct _ETC_WED_P(t){
   };
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _CharacterList
   #define BLL_set_declare_NodeReference 1
   #define BLL_set_declare_rest 0
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _CharacterList_NodeReference_t CharacterReference_t;
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _LineList
   #define BLL_set_declare_NodeReference 1
   #define BLL_set_declare_rest 0
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _LineList_NodeReference_t LineReference_t;
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _CursorList
   #define BLL_set_declare_NodeReference 1
   #define BLL_set_declare_rest 0
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _CursorList_NodeReference_t CursorReference_t;
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _CharacterList
   #define BLL_set_declare_NodeReference 0
@@ -44,11 +40,10 @@ struct _ETC_WED_P(t){
     CharacterData_t data; \
     CursorReference_t CursorReference;
   #define BLL_set_debug_InvalidAction ETC_WED_set_debug_InvalidCharacterAccess
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _CharacterList_NodeData_t _Character_t;
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _LineList
   #define BLL_set_declare_NodeReference 0
@@ -59,11 +54,10 @@ struct _ETC_WED_P(t){
     _CharacterList_t CharacterList;
   #define BLL_set_debug_InvalidAction ETC_WED_set_debug_InvalidLineAccess
   #define BLL_set_debug_InvalidAction_srcAccess 0
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _LineList_NodeData_t _Line_t;
 
   #define BLL_set_Language 1
-  #define BLL_set_BaseLibrary ETC_WED_set_BaseLibrary
   #define BLL_set_AreWeInsideStruct 1
   #define BLL_set_prefix _CursorList
   #define BLL_set_declare_NodeReference 0
@@ -83,7 +77,7 @@ struct _ETC_WED_P(t){
       }Selection; \
     };
   #define BLL_set_debug_InvalidAction ETC_WED_set_debug_InvalidCursorAccess
-  #include _ETC_WED_INCLUDE(BLL/BLL.h)
+  #include <BLL/BLL.h>
   typedef _CursorList_NodeData_t Cursor_t;
 
   struct ExportedCursor_t{

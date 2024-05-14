@@ -41,11 +41,7 @@ typedef struct{
 #define BLL_set_NodeData NET_TCP_Queuer_t data;
 #define BLL_set_IsNodeRecycled 1
 #define BLL_set_Language 0
-
-/* TODO use witch constant */
-#define BLL_set_UseUninitialisedValues 0
-
-#include _WITCH_PATH(BLL/BLL.h)
+#include <BLL/BLL.h>
 typedef _NET_TCP_QueuerList_NodeReference_t NET_TCP_QueuerReference_t;
 
 enum{

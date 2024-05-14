@@ -16,7 +16,7 @@
   #define BLL_set_type_node uint32_t
   #define BLL_set_NodeData \
     IO_fd_t PipeWrite;
-  #include _WITCH_PATH(BLL/BLL.h)
+  #include <BLL/BLL.h>
   _MD_Mice_ListenerList_t _MD_Mice_ListenerList;
   TH_mutex_t _MD_Mice_mutex;
   PRE{
