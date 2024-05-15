@@ -26,6 +26,16 @@
   #define __compiler
 #endif
 
+#ifndef __sanit
+  #if defined(__SANITIZE_ADDRESS__)
+    #define __sanit 1
+  #elif defined(__has_feature) && __has_feature(address_sanitizer)
+    #define __sanit 1
+  #else
+    #define __sanit 0
+  #endif
+#endif
+
 #ifndef ENDIAN
   #if defined(__BYTE_ORDER)
     #if __BYTE_ORDER == __BIG_ENDIAN

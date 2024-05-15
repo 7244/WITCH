@@ -190,7 +190,7 @@ NET_TCP_t *NET_TCP_alloc(EV_t *listener){
 
   MEM_set(0, tcp->op, sizeof(tcp->op));
 
-  #ifndef WITCH_set_UseUninitialisedValues
+  #if __sanit
     tcp->UniqueNumber = 0;
   #endif
 
