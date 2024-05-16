@@ -29,11 +29,19 @@
 #ifndef __sanit
   #if defined(__SANITIZE_ADDRESS__)
     #define __sanit 1
-  #elif defined(__has_feature) && __has_feature(address_sanitizer)
-    #define __sanit 1
-  #else
-    #define __sanit 0
   #endif
+#endif
+
+#ifndef __sanit
+  #if defined(__has_feature)
+    #if __has_feature(address_sanitizer)
+      #define __sanit 1
+    #endif
+  #endif
+#endif
+
+#ifndef __sanit
+  #define __sanit 0
 #endif
 
 #ifndef ENDIAN
