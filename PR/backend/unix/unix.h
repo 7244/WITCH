@@ -98,7 +98,7 @@ static sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t fl
     pid->id,
     (uintptr_t)WaitPIDRV,
     flag,
-    NULL);
+    (uintptr_t)NULL);
 }
 
 static void _PR_internal_open(){}

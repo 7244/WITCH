@@ -476,7 +476,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   static void __abort(){
     #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
       /* write to kernel owned address from userside. should guarantee crash. */
-      *(uintptr_t *)(1 << SYSTEM_BIT - 1) = 0;
+      *(uintptr_t *)((uintptr_t)1 << SYSTEM_BIT - 1) = 0;
     #else
       #error ?
     #endif

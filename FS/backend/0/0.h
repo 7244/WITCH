@@ -243,7 +243,7 @@ static sint32_t FS_file_rename(FS_file_t *file, const void *path){
       if(err){
         PR_abort();
       }
-      if(IO_write(
+      if((uintptr_t)IO_write(
         &fd,
         file->Temporarily.vector.ptr,
         file->Temporarily.vector.Current
