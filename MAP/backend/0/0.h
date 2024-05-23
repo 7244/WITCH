@@ -66,7 +66,7 @@ _MAP_P(QueryInput)(
   _MAP_P(nr_t) nr = _MAP_P(_List_GetNodeFirst)(&t->List);
   for(
     _MAP_P(_List_Node_t) *n;
-    !_MAP_P(_List_IsNodeReferenceEqual)(nr, t->List.dst);
+    !_MAP_P(_List_inre)(nr, t->List.dst);
     nr = n->NextNodeReference
   ){
     n = _MAP_P(_List_GetNodeByReference)(&t->List, nr);
@@ -83,7 +83,7 @@ _MAP_P(QueryInput)(
       break;
     }
   }
-  if(_MAP_P(_List_IsNodeReferenceEqual)(nr, t->List.dst)){
+  if(_MAP_P(_List_inre)(nr, t->List.dst)){
     return _MAP_P(_List_gnric)();
   }
   return nr;
@@ -164,14 +164,24 @@ _MAP_P(Remove)(
   typedef struct{
     _MAP_P(_List_NodeReference_t) nr;
   }_MAP_P(Iterate_t);
-  void _MAP_P(Iterate_Open)(_MAP_P(t) *t, _MAP_P(Iterate_t) *it){
+  void _MAP_P(Iterate_Open)(
+    _MAP_P(t) *t,
+    _MAP_P(Iterate_t) *it
+  ){
     it->nr = _MAP_P(_List_GetNodeFirst)(&t->List);
   }
-  void _MAP_P(Iterate_Close)(_MAP_P(t) *t, _MAP_P(Iterate_t) *it){
-    /* the soul who lost his path */
+  void _MAP_P(Iterate_Close)(
+    _MAP_P(t) *t,
+    _MAP_P(Iterate_t) *it
+  ){
+    /* ~soul who lost his path~ */
   }
-  MAP_set_OutputType *_MAP_P(Iterate)(_MAP_P(t) *t, _MAP_P(Iterate_t) *it, _MAP_b_GetInputParameter){
-    if(_MAP_P(_List_IsNodeReferenceEqual)(it->nr, t->List.dst)){
+  MAP_set_OutputType *_MAP_P(Iterate)(
+    _MAP_P(t) *t,
+    _MAP_P(Iterate_t) *it,
+    _MAP_b_GetInputParameter
+  ){
+    if(_MAP_P(_List_inre)(it->nr, t->List.dst)){
       return NULL;
     }
 
