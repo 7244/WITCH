@@ -72,7 +72,7 @@ _TRT_BME_POFTWBIT(Lock)(
     #if TRT_BME_set_MutexType == 0
       int r = pthread_mutex_lock(&_TRT_BME_GetType->mutex);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
       #if TRT_BME_set_LockValue == 1
         return 0;
@@ -147,7 +147,7 @@ _TRT_BME_POFTWBIT(Unlock)(
     #if TRT_BME_set_MutexType == 0
       int r = pthread_mutex_unlock(&_TRT_BME_GetType->mutex);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
     #elif TRT_BME_set_MutexType == 1
       #if defined(__compiler_clang) || defined(__compiler_gcc)
@@ -185,12 +185,12 @@ _TRT_BME_POFTWBIT(Unlock)(
     #if TRT_BME_set_Backend == 0
       int r = pthread_cond_wait(&_TRT_BME_GetType->cond, &_TRT_BME_GetType->mutex);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
     #elif TRT_BME_set_Backend == 1
       bool r = SleepConditionVariableCS(&_TRT_BME_GetType->cond, &_TRT_BME_GetType->mutex, INFINITE);
       if(r == 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
     #endif
   }
@@ -202,7 +202,7 @@ _TRT_BME_POFTWBIT(Unlock)(
     #if TRT_BME_set_Backend == 0
       int r = pthread_cond_signal(&_TRT_BME_GetType->cond);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
     #elif TRT_BME_set_Backend == 1
       WakeConditionVariable(&_TRT_BME_GetType->cond);
@@ -223,12 +223,12 @@ _TRT_BME_POFTWBIT(Unlock)(
       int r;
       r = pthread_mutex_init(&_TRT_BME_GetType->mutex, NULL);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
       #ifdef TRT_BME_set_Conditional
         r = pthread_cond_init(&_TRT_BME_GetType->cond, NULL);
         if(r != 0){
-          TRT_BME_set_Abort();
+          __abort();
         }
       #endif
     #elif TRT_BME_set_Backend == 1
@@ -247,12 +247,12 @@ _TRT_BME_POFTWBIT(Unlock)(
       int r;
       r = pthread_mutex_destroy(&_TRT_BME_GetType->mutex);
       if(r != 0){
-        TRT_BME_set_Abort();
+        __abort();
       }
       #ifdef TRT_BME_set_Conditional
         r = pthread_cond_destroy(&_TRT_BME_GetType->cond);
         if(r != 0){
-          TRT_BME_set_Abort();
+          __abort();
         }
       #endif
     #elif TRT_BME_set_Backend == 1

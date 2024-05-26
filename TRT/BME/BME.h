@@ -20,16 +20,6 @@
   #endif
 #endif
 
-#ifndef TRT_BME_set_Abort
-  #if defined(WITCH_CommonAbort)
-    #define TRT_BME_set_Abort WITCH_CommonAbort
-  #elif TRT_BME_set_Language == 1
-    #define TRT_BME_set_Abort() throw
-  #else
-    #define TRT_BME_set_Abort() assert(0)
-  #endif
-#endif
-
 /*
   0: linux
   1: windows, winapi
@@ -108,7 +98,6 @@
 #undef TRT_BME_set_LockValue
 #undef TRT_BME_set_MutexType
 #undef TRT_BME_set_Backend
-#undef TRT_BME_set_Abort
 #undef TRT_BME_set_StructFormat
 #undef TRT_BME_set_AreWeInsideStruct
 #undef TRT_BME_set_Language
