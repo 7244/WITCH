@@ -284,7 +284,7 @@ _STR_rscan_out_t _STR_rscan_apply_regex_any(const uint8_t *da, uintptr_t *dai, c
     }
     case _STR_rscan_type_float:{
       for(; *dai < dasize; (*dai)++){
-        if(STR_ischar_float(da[*dai]))
+        if(STR_ischar_BeginOfFloat(da[*dai]))
           break;
       }
       break;
