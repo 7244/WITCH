@@ -1,17 +1,10 @@
-arch witch supports:
-amd64
-i386
-arm/EABI
+# WITCH
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-kernel/os witch supports:
-linux
-windows
+WITCH is collection of developing libraries also provides standard defines and types.
 
-tested kernel/os arch:
-linux i386
-linux arm/EABI
-linux amd64
-windows amd64
+## Features
+- stdint.h like types. int32_t like types are not allowed in WITCH standard there is sint32_t instead. float and double are also not allowed, use f32_t f64_t f128_t instead.
 
-if your kernel/os arch is not in tested list report your experiences to author
-report your experiences if your kernel/os arch is in tested list too
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
