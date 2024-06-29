@@ -71,6 +71,7 @@ typedef struct{
 typedef struct NET_TCP_t NET_TCP_t;
 
 typedef void (*NET_TCP_SpecialPointer_cb)(NET_TCP_t *, NET_TCP_peer_t *, void *, uintptr_t);
+void NET_TCP_SpecialPointer_ecb(NET_TCP_t *, NET_TCP_peer_t *, void *, uintptr_t){}
 
 #include _WITCH_PATH(NET/TCP/internal/Queue.h)
 

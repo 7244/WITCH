@@ -1,5 +1,5 @@
 /* read godfather included first so lets declare it */
-void _NET_TCP_write_godfather_queue(EV_t *listener, NET_TCP_peer_t *peer);
+void _NET_TCP_write_godfather_queue(EV_t *, NET_TCP_peer_t *);
 
 uint32_t _NET_TCP_GodFatherReadFirst(
   NET_TCP_peer_t *peer,
