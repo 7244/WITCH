@@ -129,13 +129,11 @@
 
 #if WITCH_LIBC
   #include <stdint.h>
-  #define sintptr_t intptr_t
-  #define sint8_t int8_t
-  #define sint16_t int16_t
-  #define sint32_t int32_t
-  #define sint64_t int64_t
-  #define auint32_t uint32_t
-  #define asint32_t sint32_t
+  typedef intptr_t sintptr_t;
+  typedef int8_t sint8_t;
+  typedef int16_t sint16_t;
+  typedef int32_t sint32_t;
+  typedef int64_t sint64_t;
 #else
   #if SYSTEM_BIT == 64
     typedef signed long sintptr_t;
@@ -143,14 +141,12 @@
     typedef signed short sint16_t;
     typedef signed int sint32_t;
     typedef sintptr_t sint64_t;
-    typedef sint32_t asint32_t;
     #ifndef WITCH_unsigned_types_will_be_defined
       typedef unsigned long uintptr_t;
       typedef unsigned char uint8_t;
       typedef unsigned short uint16_t;
       typedef unsigned int uint32_t;
       typedef uintptr_t uint64_t;
-      typedef uint32_t auint32_t;
     #endif
   #elif SYSTEM_BIT == 32
     typedef signed long sintptr_t;
@@ -158,14 +154,12 @@
     typedef signed short sint16_t;
     typedef sintptr_t sint32_t;
     typedef signed long long sint64_t;
-    typedef sint32_t asint32_t;
     #ifndef WITCH_unsigned_types_will_be_defined
       typedef unsigned long uintptr_t;
       typedef unsigned char uint8_t;
       typedef unsigned short uint16_t;
       typedef uintptr_t uint32_t;
       typedef unsigned long long uint64_t;
-      typedef uint32_t auint32_t;
     #endif
   #else
     #error ?
