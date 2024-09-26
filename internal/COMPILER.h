@@ -104,8 +104,6 @@
   #endif
 #endif
 
-#define EMPTY
-#define NUL (1 - 1)
 #ifndef __ca__
   #define __ca__ ,
 #endif
