@@ -78,18 +78,6 @@
   #define arg_u32e(v) (v), (v) >> 32
 #endif
 
-#ifndef WITCH_LIBCPP
-  #if defined(__has_include)
-    #if __has_include(<iostream>)
-      #define WITCH_LIBCPP 1
-    #else
-      #define WITCH_LIBCPP 0
-    #endif
-  #else
-    #error define WITCH_LIBCPP
-  #endif
-#endif
-
 #ifndef __has_builtin
   #define __has_builtin(expr) 0
 #endif
@@ -121,11 +109,21 @@
 #elif defined(__i386__) || defined(__arm__)
   #define SYSTEM_BIT 32
   #define SYSTEM_BYTE 4
+#elif defined(__SIZEOF_POINTER__)
+  #if __SIZEOF_POINTER__ == 8
+    #define SYSTEM_BIT 64
+    #define SYSTEM_BYTE 8
+  #elif __SIZEOF_POINTER__ == 4
+    #define SYSTEM_BIT 32
+    #define SYSTEM_BYTE 4
+  #else
+    #error ?
+  #endif
 #else
-  #error failed to find platform
+  #error ?
 #endif
 
-#if WITCH_LIBC
+#if defined(__platform_libc)
   #include <stdint.h>
   typedef intptr_t sintptr_t;
   typedef int8_t sint8_t;

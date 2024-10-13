@@ -3,7 +3,7 @@
 
 #include _WITCH_PATH(PR/PR.h)
 
-#if WITCH_LIBC
+#if defined(__platform_libc)
   #include <time.h>
 #elif defined(WITCH_PLATFORM_linux_kernel_module)
   #include <linux/timekeeping.h>
@@ -37,13 +37,17 @@ static uint64_t T_rdtsc(void){
       PR_abort();
     #endif
   #elif SYSTEM_BIT == 32
+    /* TODO check cpuarch */
     uint64_t x;
     __asm__ volatile(".byte 0x0f, 0x31" : "=A"(x));
     return x;
   #elif SYSTEM_BIT == 64
+    /* TODO check cpuarch */
     uint32_t hi, lo;
     __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi));
     return ((uint64_t)lo) | (((uint64_t)hi) << 32);
+  #else
+    #error ?
   #endif
 }
 
@@ -53,7 +57,7 @@ static uint64_t T_rdtsc(void){
 #endif
 
 static uint64_t T_nowi(void){
-  #if defined(WOS_UNIX) && WITCH_LIBC
+  #if defined(WOS_UNIX) && defined(__platform_libc)
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
     return ((uint64_t)t.tv_sec * 1000000000) + t.tv_nsec;
@@ -74,7 +78,7 @@ static uint64_t T_nowi(void){
 
 #ifndef WITCH_float_is_disabled
   static f64_t T_nowf(void){
-    #if defined(WOS_UNIX) && WITCH_LIBC
+    #if defined(WOS_UNIX) && defined(__platform_libc)
       struct timespec t;
       clock_gettime(CLOCK_MONOTONIC, &t);
       return (f64_t)t.tv_sec + (f64_t)t.tv_nsec / 1000000000;
@@ -99,7 +103,7 @@ typedef struct{
   uint8_t mo, d, w, hr, min, s;
 }T_date_t;
 static bool T_date(T_date_t *date){
-  #if WITCH_LIBC
+  #if defined(__platform_libc)
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     if(!tm){
@@ -114,6 +118,7 @@ static bool T_date(T_date_t *date){
     date->s = tm->tm_sec;
     return 0;
   #else
+    /* TODO implement rest */
     return 0;
   #endif
 }

@@ -1,11 +1,13 @@
 #pragma once
 
-#if WITCH_LIBC == 1
+#if defined(__platform_libc)
   #include <signal.h>
 #else
+  /* TODO last time i tried this backend: it didnt work well */
+  /* i guess i need to learn signals raw-system-call-wise */
+
   #include _WITCH_PATH(include/syscall.h)
   #include <asm/signal.h>
-  /* TODO someone need to teach me signals */
   typedef void (*__sighandler_t)(int);
   typedef __sighandler_t sighandler_t;
   sighandler_t signal(sint32_t signum, sighandler_t handler){

@@ -1,8 +1,6 @@
 #pragma once
 
-#include _WITCH_PATH(PR/PR.h)
-
-#if WITCH_LIBC
+#if defined(__platform_libc)
   #include <malloc.h>
 #elif defined(WITCH_PLATFORM_linux_kernel_module)
   #include <linux/slab.h>
@@ -22,12 +20,12 @@ static uintptr_t _A_calculate_buffer(uintptr_t size){
 }
 
 static uint8_t *A_resize(void *ptr, uintptr_t size){
-  #if WITCH_LIBC
+  #if defined(__platform_libc)
     if(ptr){
       if(size){
         void *rptr = (void *)realloc(ptr, size);
         if(rptr == 0){
-          PR_abort();
+          __abort();
         }
         return (uint8_t *)rptr;
       }
@@ -40,7 +38,7 @@ static uint8_t *A_resize(void *ptr, uintptr_t size){
       if(size){
         void *rptr = (void *)malloc(size);
         if(rptr == 0){
-          PR_abort();
+          __abort();
         }
         return (uint8_t *)rptr;
       }
@@ -53,7 +51,7 @@ static uint8_t *A_resize(void *ptr, uintptr_t size){
       if(size){
         void *rptr = krealloc(ptr, size, GFP_KERNEL);
         if(rptr == 0){
-          PR_abort();
+          __abort();
         }
         return (uint8_t *)rptr;
       }
@@ -66,7 +64,7 @@ static uint8_t *A_resize(void *ptr, uintptr_t size){
       if(size){
         void *rptr = kmalloc(size, GFP_KERNEL);
         if(rptr == 0){
-          PR_abort();
+          __abort();
         }
         return (uint8_t *)rptr;
       }

@@ -9,7 +9,7 @@
 #if defined(_WITCH_num_online_cpus)
   #define WITCH_num_online_cpus() _WITCH_num_online_cpus
 #else
-  #if defined(WOS_UNIX) && WITCH_LIBC
+  #if defined(WOS_UNIX) && defined(__platform_libc)
     #include _WITCH_PATH(PR/PR.h)
     #include <unistd.h>
     static uint32_t WITCH_num_online_cpus(void){

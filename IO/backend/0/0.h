@@ -3,7 +3,7 @@
 #include _WITCH_PATH(include/syscall.h)
 #include _WITCH_PATH(include/signal.h)
 
-#if WITCH_LIBC
+#if defined(__platform_libc)
   /* we actually dont need this */
   /* but some retard standard libs need */
   #include <fcntl.h>

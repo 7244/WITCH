@@ -12,11 +12,12 @@ typedef IO_off_t FS_off_t;
 #include _WITCH_PATH(STR/ttcc.h)
 #include _WITCH_PATH(VEC/VEC.h)
 
-#if defined(WITCH_LIBC)
+/* TODO we are in linux backend but we check libc?? */
+#if defined(__platform_libc)
   #include <sys/stat.h>
 #endif
 
-/* TODO dont use this */
+/* TODO dont use this. its libc, not linux... */
 #include <dirent.h>
 
 typedef struct{

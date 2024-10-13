@@ -1,29 +1,53 @@
 #pragma once
 
-#if defined(WITCH_PLATFORM_linux_kernel_module)
-  #if defined(WITCH_LIBC)
-    #if WITCH_LIBC != 0
-      #error ?
+#ifndef __platform
+  #if defined(__linux__)
+    #define WOS_UNIX 1
+    #define WOS_UNIX_LINUX 1
+  #elif defined(__FreeBSD__)
+    #define WOS_UNIX 1
+    #define WOS_UNIX_BSD 1
+  #elif defined(_WIN32) || defined(_WIN64)
+    #define WOS_WINDOWS 1
+  #endif
+
+  #define __platform
+#endif
+
+#if defined(__platform)
+  /* TODO how to detect WITCH_PLATFORM_linux_kernel_module ? */
+  #if defined(WITCH_PLATFORM_linux_kernel_module)
+    #define WITCH_unsigned_types_will_be_defined
+  #else
+    #ifndef __platform_stdlib
+      #define __platform_stdlib
     #endif
   #endif
-  #define WITCH_LIBC 0
-  #define WITCH_unsigned_types_will_be_defined
-#elif defined(__linux__)
-  #define WOS_UNIX 1
-  #define WOS_UNIX_LINUX 1
-  #ifndef WITCH_LIBC
-    #define WITCH_LIBC 1
+#else
+  #ifndef __platform_stdlib
+    #define __platform_stdlib
   #endif
-#elif defined(__FreeBSD__)
-  #define WOS_UNIX 1
-  #define WOS_UNIX_BSD 1
-  #ifndef WITCH_LIBC
-    #define WITCH_LIBC 1
+#endif
+
+#ifdef __platform_nostdlib
+  #ifdef __platform_stdlib
+    #undef __platform_stdlib
   #endif
-#elif defined(_WIN32) || defined(_WIN64)
-  #define WOS_WINDOWS 1
-  #ifndef WITCH_LIBC
-    #define WITCH_LIBC 1
+#endif
+
+#ifdef __platform_stdlib
+  #ifndef __platform_nolibc
+    #ifndef __platform_libc
+      #define __platform_libc
+    #endif
+  #endif
+
+  #ifndef __platform_nolibcpp
+    #ifdef __cplusplus
+      #ifndef __platform_libcpp
+        #define __platform_libcpp
+      #endif
+    #endif
   #endif
 #endif
 

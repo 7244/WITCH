@@ -1,7 +1,7 @@
 #include _WITCH_PATH(include/syscall.h)
 
 #ifndef _PR_set_abort_print
-  #if defined(WITCH_LIBC)
+  #if defined(__platform_libc)
     #define _PR_set_abort_print 1
   #else
     #define _PR_set_abort_print 0
@@ -9,7 +9,7 @@
 #endif
 
 #if _PR_set_abort_print
-  #if WITCH_LIBC > 0
+  #if defined(__platform_libc)
     #include <stdio.h>
     #include <stdlib.h>
     #include <sys/wait.h>
@@ -45,7 +45,8 @@ static void PR_exit(uint32_t num) {
 }
 
 #if _PR_set_abort_print
-  #if WITCH_LIBC > 0
+  /* TODO checking libc and using printf and exit in here is kinda stupid */
+  #if defined(__platform_libc)
     static void PR_abort(void) {
       printf("[PR] PR_abort() is called\n");
       _PR_DumpTrace();

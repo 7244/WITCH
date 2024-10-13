@@ -5,7 +5,7 @@
 
 /* lets only define __ASSEMBLER__ when there is no libc */
 /* otherwise some retard standard libs crying when they cant find errno variable */
-#if !WITCH_LIBC
+#ifndef __platform_libc
   #define __ASSEMBLER__
 #endif
 #include <errno.h>

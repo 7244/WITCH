@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef STR_common_set_backend
-  #if WITCH_LIBC
+  #if defined(__platform_libc)
     #define STR_common_set_backend 0
   #else
     #define STR_common_set_backend 1
