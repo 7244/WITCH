@@ -467,6 +467,9 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
       /* write to kernel owned address from userside. should guarantee crash. */
       *(uintptr_t *)((uintptr_t)1 << SYSTEM_BIT - 1) = 0;
+    #elif defined(__platform_bpf)
+      /* should die at verifier */
+      while(1){}
     #else
       #error ?
     #endif

@@ -1,6 +1,8 @@
 #pragma once
 
 #ifndef __platform
+  #define __platform
+
   #if defined(__linux__)
     #define WOS_UNIX 1
     #define WOS_UNIX_LINUX 1
@@ -9,15 +11,19 @@
     #define WOS_UNIX_BSD 1
   #elif defined(_WIN32) || defined(_WIN64)
     #define WOS_WINDOWS 1
+  #elif defined(__bpf__) || defined(__BPF__) || defined(__BPF_CPU_VERSION__)
+    #define __platform_bpf
+  #else
+    #undef __platform
   #endif
-
-  #define __platform
 #endif
 
 #if defined(__platform)
   /* TODO how to detect WITCH_PLATFORM_linux_kernel_module ? */
   #if defined(WITCH_PLATFORM_linux_kernel_module)
     #define WITCH_unsigned_types_will_be_defined
+  #elif defined(__platform_bpf)
+    #define __platform_nothread
   #else
     #ifndef __platform_stdlib
       #define __platform_stdlib
