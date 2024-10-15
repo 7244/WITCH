@@ -27,5 +27,6 @@ struct EV_t{
   _EV_tp_t tp;
 
   /* w by listener, r by user */
-  auint32_t stat[EV_total_e];
+  /* TODO this was auint32. you need to make operations of this thing atomic */
+  uint32_t stat[EV_total_e];
 };

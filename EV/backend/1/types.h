@@ -65,5 +65,6 @@ struct EV_t{
   VAS2_t timers;
 
   /* w by listener, r by user */
-  auint32_t stat[EV_total_e];
+  /* TODO this was auint32. you need to make operations of this thing atomic */
+  uint32_t stat[EV_total_e];
 };
