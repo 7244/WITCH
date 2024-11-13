@@ -27,7 +27,7 @@
 #undef NAL_PRIORITY_HIGHEST
 
 #include _WITCH_PATH(A/A.h)
-#include _WITCH_PATH(ETC/CC/st/st.h)
+#include <pixfconv/st/st.h>
 
 typedef struct{
   ISVCEncoder *en;
@@ -321,27 +321,27 @@ _ETC_VEDC_Encode_Encoder_OpenH264_Write(
       bool Alloced = 0;
       ETC_VEDC_Encode_Frame_t FrameStack;
       ETC_VEDC_Encode_Frame_t *Frame;
-      uint8_t ImageCount = ETC_PIXF_GetImageCount(ETC_PIXF_YUV420p);
+      uint8_t ImageCount = PIXF_GetImageCount(PIXF_YUV420p);
       {
         ETC_VEDC_Encode_Frame_t *ParameterFrame = (ETC_VEDC_Encode_Frame_t *)WriteData;
-        if(ParameterFrame->Properties.PixelFormat != ETC_PIXF_YUV420p){
+        if(ParameterFrame->Properties.PixelFormat != PIXF_YUV420p){
           Frame = &FrameStack;
           Alloced = 1;
-          Frame->Properties.PixelFormat = ETC_PIXF_YUV420p;
+          Frame->Properties.PixelFormat = PIXF_YUV420p;
           Frame->Properties.SizeX = ParameterFrame->Properties.SizeX;
           Frame->Properties.SizeY = ParameterFrame->Properties.SizeY;
           Frame->TimeStamp = ParameterFrame->TimeStamp;
           for(uint8_t i = 0; i < ImageCount; i++){
             uint32_t x = Frame->Properties.SizeX;
             uint32_t y = Frame->Properties.SizeY;
-            ETC_PIXF_GetImageSize(ETC_PIXF_YUV420p, i, &x, &y);
+            PIXF_GetImageSize(PIXF_YUV420p, i, &x, &y);
             Frame->Properties.Stride[i] = x;
             Frame->Data[i] = A_resize(0, x * y);
           }
 
-          CC_st_convert(
+          pixfconv_st_convert(
             ParameterFrame->Properties.PixelFormat,
-            ETC_PIXF_YUV420p,
+            PIXF_YUV420p,
             Frame->Properties.SizeX,
             Frame->Properties.SizeY,
             (const uint32_t *)ParameterFrame->Properties.Stride,
@@ -357,7 +357,7 @@ _ETC_VEDC_Encode_Encoder_OpenH264_Write(
       SSourcePicture InternalSource;
 
       switch(Frame->Properties.PixelFormat){
-        case ETC_PIXF_YUV420p:{
+        case PIXF_YUV420p:{
           InternalSource.iColorFormat = videoFormatI420;
           break;
         }

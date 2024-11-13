@@ -4,12 +4,12 @@
   ETC_VEDC_Encode_DefineEncoder_<name of codec>
 */
 
-#include _WITCH_PATH(ETC/PIXF/PIXF.h)
+#include <PIXF.h>
 #include _WITCH_PATH(ETC/VCODECSTD/VCODECSTD.h)
 #include _WITCH_PATH(MEM/MEM.h)
 
 typedef struct{
-  ETC_PIXF PixelFormat;
+  PIXF PixelFormat;
   uint32_t Stride[4];
   uint32_t SizeX;
   uint32_t SizeY;

@@ -115,7 +115,7 @@ void _ETC_VEDC_Decoder_Codec_OpenH264_GetReadImageProperties(
 
   switch(ReadType){
     case ETC_VEDC_Decoder_ReadType_Frame:{
-      ImageProperties->PixelFormat = ETC_PIXF_YUV420p;
+      ImageProperties->PixelFormat = PIXF_YUV420p;
 
       ImageProperties->Stride[0] = Decoder->wrd.BufferInfo.UsrData.sSystemBuffer.iStride[0];
       ImageProperties->Stride[1] = Decoder->wrd.BufferInfo.UsrData.sSystemBuffer.iStride[1];
@@ -159,7 +159,7 @@ _ETC_VEDC_Decoder_Codec_OpenH264_Read(
     case ETC_VEDC_Decoder_ReadType_Frame:{
       ETC_VEDC_Decoder_Frame_t *Frame = (ETC_VEDC_Decoder_Frame_t *)ReadData;
 
-      Frame->Properties.PixelFormat = ETC_PIXF_YUV420p;
+      Frame->Properties.PixelFormat = PIXF_YUV420p;
 
       Frame->Data[0] = Decoder->wrd.Data[0];
       Frame->Data[1] = Decoder->wrd.Data[1];

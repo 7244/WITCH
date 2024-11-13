@@ -1,7 +1,5 @@
 #pragma once
 
-#define OSSL_DEPRECATED(_m)
-
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
