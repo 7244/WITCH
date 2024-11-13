@@ -251,7 +251,7 @@ void _ETC_VEDC_Decoder_Codec_cuvid_GetReadImageProperties(
 
   switch(ReadType){
     case ETC_VEDC_Decoder_ReadType_CudaArrayFrame:{
-      ImageProperties->PixelFormat = ETC_PIXF_YUVNV12;
+      ImageProperties->PixelFormat = PIXF_YUVNV12;
 
       ImageProperties->Stride[0] = Decoder->wrd.SizeX;
       ImageProperties->Stride[1] = Decoder->wrd.SizeY;
