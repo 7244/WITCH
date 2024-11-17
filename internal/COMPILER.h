@@ -351,8 +351,11 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 #endif
 
 #ifndef __abort
-  #define __abort __abort
-  static void __abort(){
+  #define __abort() do{ \
+    __simplest_abort(); \
+    __unreachable(); \
+  }while(0)
+  static void __simplest_abort(){
     #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
       /* write to kernel owned address from userside. should guarantee crash. */
       *(uintptr_t *)((uintptr_t)1 << SYSTEM_BIT - 1) = 0;

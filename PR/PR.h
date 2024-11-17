@@ -25,6 +25,10 @@
 #ifdef __abort
   #undef __abort
 #endif
-#define __abort PR_abort
+
+#define __abort() do{ \
+  PR_abort(); \
+  __unreachable(); \
+}while(0)
 
 #endif
