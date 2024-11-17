@@ -298,16 +298,17 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     }; \
     struct varname##_t : varname##structed_dt{ \
       constexpr operator uintptr_t() const { return __COUNTER__ - DME_INTERNAL__BEG - 1; } \
-      static inline constexpr uintptr_t dss = (sizeof((char[]){#__VA_ARGS__}) != 1) * sizeof(varname##structed_dt); \
+      static inline constexpr uintptr_t dss = (sizeof(#__VA_ARGS__) > 1) * sizeof(varname##structed_dt); \
     }; \
     inline static struct varname##_t varname; \
     static inline constexpr char varname##_str[] = #varname; \
-    __dme_t<dme_type_t, varname##_str, varname##_t::dss> varname##_ram
+    __dme_t<value_type, varname##_str, varname##_t::dss> varname##_ram
 
   template <typename main_t, uintptr_t index, typename T = __empty_struct>
   struct __dme_inherit_t{
-    using dme_type_t = T;
-    constexpr auto* NA(uintptr_t I) const { return &((__dme_t<dme_type_t, __dme_empty_string, 0> *)this)[I]; }
+    using value_type = T;
+    using dme_type_t = __dme_t<value_type, __dme_empty_string, 0>;
+    constexpr auto* NA(uintptr_t I) const { return &((dme_type_t *)this)[I]; }
     static constexpr uintptr_t GetMemberAmount() { return sizeof(main_t) / sizeof(dme_type_t); }
     static constexpr auto DME_INTERNAL__BEG = index;
   };
