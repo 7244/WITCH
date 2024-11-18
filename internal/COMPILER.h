@@ -264,6 +264,8 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+#include "atomic.h"
+
 #ifndef __empty_struct
   #define __empty_struct __empty_struct
   typedef struct{
