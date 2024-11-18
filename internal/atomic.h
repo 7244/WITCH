@@ -1,7 +1,9 @@
 #if defined(__compiler_gcc) || defined(__compiler_clang)
   /* nothing to do */
 #elif defined(__compiler_msvc)
-  #include <intrin.h>
+  /* TODO check c11 */
+
+  #include <stdatomic.h>
 
   #ifndef __ATOMIC_RELAXED
     #define __ATOMIC_RELAXED 0
@@ -42,37 +44,24 @@
 
   __cta(__ATOMIC_ACQ_REL != __ATOMIC_SEQ_CST);
 
-  #if !defined(WL_CPP)
-    #error too pain
-  #endif
-
-  #define __define_in(name, size, value) \
-    else if constexpr(sizeof(*ptr) == size){ \
-      if(order == __ATOMIC_ACQUIRE){ \
-        return name ## _acq(ptr, value); \
-      } \
-      else if(order == __ATOMIC_RELEASE){ \
-        return name ## _rel(ptr, value); \
-      } \
-      else{ \
-        return name(ptr, value); \
-      } \
-    }
+  #define __define_convert__ATOMIC_RELAXED memory_order_relaxed
+  #define __define_convert__ATOMIC_CONSUME memory_order_consume
+  #define __define_convert__ATOMIC_ACQUIRE memory_order_acquire
+  #define __define_convert__ATOMIC_RELEASE memory_order_release
+  #define __define_convert__ATOMIC_ACQ_REL memory_order_acq_rel
+  #define __define_convert__ATOMIC_SEQ_CST memory_order_seq_cst
 
   #ifndef __atomic_load_n
-    auto __atomic_load_n(auto *ptr, uintptr_t order){
-      if constexpr(0){}
-      __define_in(_InterlockedXor8, 1, 0)
-      __define_in(_InterlockedXor16, 2, 0)
-      __define_in(_InterlockedXor, 4, 0)
-      __define_in(_InterlockedXor64, 8, 0)
-      else{
-        __cta(false);
-      }
-    }
+    #define __atomic_load_n(ptr, order) \
+      atomic_load_explicit(ptr, __define_convert##order)
   #endif
 
-  #undef __define_in
+  #undef __define_convert__ATOMIC_RELAXED
+  #undef __define_convert__ATOMIC_CONSUME
+  #undef __define_convert__ATOMIC_ACQUIRE
+  #undef __define_convert__ATOMIC_RELEASE
+  #undef __define_convert__ATOMIC_ACQ_REL
+  #undef __define_convert__ATOMIC_SEQ_CST
 #else
   #error ?
 #endif
