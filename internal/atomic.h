@@ -1,4 +1,4 @@
-#if defined(__compiler_gcc) || defined(__compiler_clang)
+#if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
   /* nothing to do */
 #elif defined(__compiler_msvc)
   /* TODO check c++11 */
@@ -19,7 +19,6 @@
         v.store(*a, __atomic_orderconvert##order); \
         return v.load(); \
       }()
-      
   #endif
 #else
   #error ?

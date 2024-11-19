@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(_MSC_VER)
+#if defined(__compiler_msvc)
   #include <intrin.h>
 #endif
 
@@ -9,9 +9,9 @@
   static
   uint8_t
   __clz32(uint32_t p0){
-    #if defined(__GNUC__)
+    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
       return __builtin_clz(p0);
-    #elif defined(_MSC_VER)
+    #elif defined(__compiler_msvc)
       DWORD trailing_zero;
       if(_BitScanReverse(&trailing_zero, p0)){
         return 31 - trailing_zero;
@@ -26,9 +26,9 @@
   static
   uint8_t
   __clz64(uint64_t p0){
-    #if defined(__GNUC__)
+    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
       return __builtin_clzll(p0);
-    #elif defined(_MSC_VER)
+    #elif defined(__compiler_msvc)
       DWORD trailing_zero;
       if(_BitScanReverse64(&trailing_zero, p0)){
         return 63 - trailing_zero;
@@ -54,9 +54,9 @@
 #endif
 
 static uint8_t CTZ32(uint32_t x){
-  #if defined(__GNUC__)
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     return __builtin_ctzl(x);
-  #elif defined(_MSC_VER)
+  #elif defined(__compiler_msvc)
     unsigned long ret;
     _BitScanForward(&ret, x);
     return ret;
@@ -67,9 +67,9 @@ static uint8_t CTZ32(uint32_t x){
   #endif
 }
 static uint8_t CTZ64(uint64_t x){
-  #if defined(__GNUC__)
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     return __builtin_ctzll(x);
-  #elif defined(_MSC_VER)
+  #elif defined(__compiler_msvc)
     unsigned long ret;
     _BitScanForward64(&ret, x);
     return ret;
@@ -85,7 +85,7 @@ static uint8_t CTZ64(uint64_t x){
   #define byteswap16(_m) bswap_16(_m)
   #define byteswap32(_m) bswap_32(_m)
   #define byteswap64(_m) bswap_64(_m)
-#elif defined(_MSC_VER)
+#elif defined(__compiler_msvc)
   #include <stdlib.h>
   #define byteswap16(_m) _byteswap_ushort(_m)
   #define byteswap32(_m) _byteswap_ulong(_m)

@@ -16,6 +16,8 @@
 #ifndef __compiler
   #if defined(__clang__)
     #define __compiler_clang
+  #elif defined(__TINYC__)
+    #define __compiler_tinyc
   #elif defined(__GNUC__) || defined(__GNUG__)
     #define __compiler_gcc
   #elif defined(_MSC_VER)
@@ -238,6 +240,9 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 #ifndef __unreachable
   #if defined(__compiler_clang) || defined(__compiler_gcc)
     #define __unreachable() __builtin_unreachable()
+  #elif defined(__compiler_tinyc)
+    #warning __compiler_tinyc doesnt support __unreachable(). expect future warning/error
+    #define __unreachable()
   #elif defined(__compiler_msvc)
     #define __unreachable() __assume(0)
   #else
@@ -323,7 +328,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 /* TODO make memorycopy dst src */
 /* src, dst, size */
 #ifndef __MemoryCopy
-  #if defined(__compiler_clang) || defined(__compiler_gcc)
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     #define __MemoryCopy(src, dst, size) __builtin_memcpy(dst, src, size)
   #elif defined(__compiler_msvc)
     #define __MemoryCopy(src, dst, size) memcpy(dst, src, size)
@@ -334,7 +339,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 /* TODO make memoryset dst src */
 /* byte, dst, size */
 #ifndef __MemorySet
-  #if defined(__compiler_clang) || defined(__compiler_gcc)
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     #define __MemorySet(byte, dst, size) __builtin_memset(dst, byte, size)
   #elif defined(__compiler_msvc)
     #define __MemorySet(byte, dst, size) memset(dst, byte, size)
@@ -344,7 +349,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 #endif
 
 #ifndef __MemoryMove
-  #if defined(__compiler_clang) || defined(__compiler_gcc)
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     #define __MemoryMove(dst, src, size) __builtin_memmove(dst, src, size)
   #elif defined(__compiler_msvc)
     #define __MemoryMove(dst, src, size) memmove(dst, src, size)

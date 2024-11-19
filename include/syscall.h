@@ -51,7 +51,65 @@
 /* this is useful for cross compile to different kernel */
 #include _syscall_h
 
-#if defined(_syscall_use_linux_x86_64)
+
+#if defined(__compiler_tinyc)
+  #warning __compiler_tinyc's implement of inline assembly InputOperands local register variable picking is broken.
+
+  #if defined(__platform_libc)
+    #warning gonna use libc's syscall function.
+    static inline sintptr_t syscall0(uintptr_t nr){
+      unsigned long r = (unsigned long)syscall(nr);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall1(uintptr_t nr, uintptr_t p0){
+      unsigned long r = (unsigned long)syscall(nr, p0);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall2(uintptr_t nr, uintptr_t p0, uintptr_t p1){
+      unsigned long r = (unsigned long)syscall(nr, p0, p1);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall3(uintptr_t nr, uintptr_t p0, uintptr_t p1, uintptr_t p2){
+      unsigned long r = (unsigned long)syscall(nr, p0, p1, p2);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall4(uintptr_t nr, uintptr_t p0, uintptr_t p1, uintptr_t p2, uintptr_t p3){
+      unsigned long r = (unsigned long)syscall(nr, p0, p1, p2, p3);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall5(uintptr_t nr, uintptr_t p0, uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4){
+      unsigned long r = (unsigned long)syscall(nr, p0, p1, p2, p3, p4);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+    static inline sintptr_t syscall6(uintptr_t nr, uintptr_t p0, uintptr_t p1, uintptr_t p2, uintptr_t p3, uintptr_t p4, uintptr_t p5){
+      unsigned long r = (unsigned long)syscall(nr, p0, p1, p2, p3, p4, p5);
+      if(r > ((unsigned long)0 - 1 ^ 0xfff)){
+        return errno;
+      }
+      return r;
+    }
+  #else
+    #error cant solve syscall. aborting.
+  #endif
+#elif defined(_syscall_use_linux_x86_64)
   static inline sintptr_t syscall0(uintptr_t nr){
     register sintptr_t _r __asm__("rax");
     __asm__ __volatile__(
