@@ -14,7 +14,12 @@
 
   #ifndef __atomic_load_n
     #define __atomic_load_n(ptr, order) \
-      std::atomic_load_explicit(ptr, __atomic_orderconvert##order)
+      [a = ptr]{ \
+        std::atomic<std::remove_pointer_t<decltype(a)>> v{}; \
+        v.store(*a, __atomic_orderconvert##order); \
+        return v.load(); \
+      }()
+      
   #endif
 #else
   #error ?
