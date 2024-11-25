@@ -20,7 +20,8 @@ typedef enum{
   IO_pipe_Flag_NonblockWrite = 0x04
 }IO_pipe_Flag;
 
-#if defined(WL_CPP)
+#if defined(__language_cpp)
+  /* TODO why this is inline? can it be static instead? */
   inline IO_pipe_Flag operator|(IO_pipe_Flag a, IO_pipe_Flag b){
     return static_cast<IO_pipe_Flag>((uint32_t)a | (uint32_t)b);
   }

@@ -1,4 +1,4 @@
-#if defined(WL_CPP)
+#if defined(__language_cpp)
   extern "C"{
 #endif
 #include <linux/net.h>
@@ -8,7 +8,7 @@
 #include <asm/uaccess.h>
 #include <linux/socket.h>
 #include <linux/slab.h>
-#if defined(WL_CPP)
+#if defined(__language_cpp)
   }
 #endif
 

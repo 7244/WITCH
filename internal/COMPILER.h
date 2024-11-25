@@ -1,17 +1,13 @@
 #pragma once
 
-/* c99 o nada */
-#define WL_C 9000
+#ifdef __STDC_VERSION__
+  #define __language_c __STDC_VERSION__
+#endif
 #ifdef __cplusplus
-  #define WL_CPP __cplusplus
+  #define __language_cpp __cplusplus
 #endif
 
 #include _WITCH_PATH(internal/WOS.h)
-#ifndef WITCH_PRE_is_not_allowed
-  #ifndef PRE
-    #include _WITCH_PATH(internal/PRE.h)
-  #endif
-#endif
 
 #ifndef __compiler
   #if defined(__clang__)
@@ -26,6 +22,12 @@
     #error failed to find __compiler
   #endif
   #define __compiler
+#endif
+
+#ifndef WITCH_PRE_is_not_allowed
+  #ifndef PRE
+    #include _WITCH_PATH(internal/PRE.h)
+  #endif
 #endif
 
 #ifndef __sanit
@@ -250,7 +252,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
-#if defined(WL_CPP)
+#if defined(__language_cpp)
   #define WITCH_c(_m) _m
 #else
   #define WITCH_c(_m) (_m)
@@ -258,7 +260,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 
 /* compile time assert */
 #ifndef __cta
-  #if defined(WL_CPP)
+  #if defined(__language_cpp)
     #define __cta(X) static_assert(X)
   #else
     /* taken from stackoverflow.com/a/3385694 */
@@ -277,7 +279,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   }__empty_struct;
 #endif
 
-#if defined(WL_CPP)
+#if defined(__language_cpp)
   #ifndef __is_type_same
     template <typename, typename>
     inline constexpr bool __is_type_same = false;
@@ -405,7 +407,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #define lstd_preprocessor_combine_every_2(...) _lstd_preprocessor_combine_every_2_start(lstd_preprocessor_get_arg_count(__VA_ARGS__), __VA_ARGS__)
 #endif
 
-#ifdef WL_CPP
+#ifdef __language_cpp
   #ifndef lstd_defastruct
     using lstd_current_type = void;
     #define lstd_defastruct(name, ...) \
