@@ -9,13 +9,13 @@ typedef struct{
 #pragma pack(pop)
 
 #ifndef NET_set_backend
-  #if defined(WOS_UNIX_LINUX)
+  #if defined(__platform_unix_linux)
     #define NET_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define NET_set_backend 1
-  #elif defined(WOS_UNIX_BSD)
+  #elif defined(__platform_unix_freebsd)
     #define NET_set_backend 2
-  #elif defined(WITCH_PLATFORM_linux_kernel_module)
+  #elif defined(__platform_linux_kernel_module)
     #define NET_set_backend 3
   #else
     #error NET_set_backend is not defined

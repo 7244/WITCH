@@ -3,9 +3,9 @@
 #include _WITCH_PATH(WITCH.h)
 
 #ifndef EV_set_backend
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     #define EV_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define EV_set_backend 1
   #else
     #error EV_set_backend is not defined

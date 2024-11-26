@@ -8,9 +8,9 @@
 */
 
 #ifndef MD_set_backend
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     #define MD_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define MD_set_backend 1
   #endif
 #endif

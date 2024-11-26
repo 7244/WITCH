@@ -10,7 +10,7 @@
 #endif
 #include <errno.h>
 
-#if defined(WOS_UNIX_LINUX)
+#if defined(__platform_unix_linux)
   #if defined(__x86_64__)
     #ifndef _syscall_h
       #define _syscall_h <asm/unistd_64.h>
@@ -33,7 +33,7 @@
   #else
     #error ?
   #endif
-#elif defined(WOS_UNIX_BSD)
+#elif defined(__platform_unix_freebsd)
   #ifndef _syscall_h
     #define _syscall_h <sys/syscall.h>
   #endif

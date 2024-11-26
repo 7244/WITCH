@@ -81,7 +81,7 @@ typedef struct{
   FS_dir_t *dir;
   const char *name;
   uint64_t size;
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     WIN32_FIND_DATA _fdFile;
     HANDLE _hFind;
     uint8_t _fr;

@@ -5,7 +5,7 @@
 #include _WITCH_PATH(IO/IO.h)
 #include _WITCH_PATH(NET/NET.h)
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   #include _WITCH_PATH(NET/NET.h)
 #endif
 #include <ev.h>

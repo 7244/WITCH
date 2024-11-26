@@ -18,9 +18,9 @@ uint32_t EV_ev_flag(EV_event_t *event){
 }
 
 sint32_t _EV_ev_fd(uv_poll_t *ev){
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     return ev->io_watcher.fd;
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     return ev->socket;
   #else
     #error ?
@@ -84,11 +84,11 @@ void _EV_ev_watcher_set(EV_t *listener, sint32_t fd, EV_event_t *event, EV_event
   if(evflag){
     if(watcher->inited){
       watcher->inited = 0;
-      #if defined(WOS_UNIX)
+      #if defined(__platform_unix)
         if(uv_poll_init(listener->loop, &watcher->ev, fd) != 0){
           PR_abort();
         }
-      #elif defined(WOS_WINDOWS)
+      #elif defined(__platform_windows)
         if(uv_poll_init_socket(listener->loop, &watcher->ev, fd) != 0){
           PR_abort();
         }
@@ -201,7 +201,7 @@ void _EV_event_cb(EV_t *listener, EV_event_t *event, uint32_t flag){
 }
 
 void _EV_event_start(EV_t *listener, EV_event_t *event){
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     switch(_IO_get_fd(&event->fd)){
       case _IO_fd_tty_e:{
         event->ListenObjectsID = (uint8_t)-1;

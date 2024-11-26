@@ -67,7 +67,7 @@
     #endif
   #elif defined(__x86_64__) && __x86_64__ == 1
     #define ENDIAN 1
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define ENDIAN 1
   #else
     #error ?
@@ -100,7 +100,7 @@
   #define __ca__ ,
 #endif
 
-#ifndef WITCH_PLATFORM_linux_kernel_module
+#ifndef __platform_linux_kernel_module
   #include <stddef.h>
   #include <stdbool.h>
   #include <stdarg.h>
@@ -366,7 +366,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     __unreachable(); \
   }while(0)
   static void __simplest_abort(){
-    #if defined(WOS_UNIX_LINUX) || defined(WOS_WINDOWS)
+    #if defined(__platform_unix) || defined(__platform_windows)
       /* write to kernel owned address from userside. should guarantee crash. */
       *(uintptr_t *)((uintptr_t)1 << SYSTEM_BIT - 1) = 0;
     #elif defined(__platform_bpf)

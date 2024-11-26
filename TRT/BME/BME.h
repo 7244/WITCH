@@ -26,7 +26,7 @@
   2: c++
 */
 #ifndef TRT_BME_set_Backend
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     #define TRT_BME_set_Backend 1
   #else
     #define TRT_BME_set_Backend 0

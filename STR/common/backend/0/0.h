@@ -2,15 +2,15 @@
 
 #include <string.h>
 
-#if defined(WOS_UNIX)
+#if defined(__platform_unix)
   /* used for strncasecmp() */
   #include <strings.h>
 #endif
 
 static bool STR_ncasecmp(const void *s0, const void *s1, uintptr_t n){
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     return strncasecmp((const char *)s0, (const char *)s1, n);
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     return _strnicmp((const char *)s0, (const char *)s1, n);
   #else
     #error ?

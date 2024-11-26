@@ -1,11 +1,11 @@
 #pragma once
 
 #ifndef FS_set_backend
-  #if defined(WOS_UNIX_LINUX)
+  #if defined(__platform_unix_linux)
     #define FS_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define FS_set_backend 1
-  #elif defined(WOS_UNIX_BSD)
+  #elif defined(__platform_unix_freebsd)
     #define FS_set_backend 2
   #else
     #error FS_set_backend is not defined

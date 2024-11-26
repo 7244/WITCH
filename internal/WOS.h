@@ -4,13 +4,13 @@
   #define __platform
 
   #if defined(__linux__)
-    #define WOS_UNIX 1
-    #define WOS_UNIX_LINUX 1
+    #define __platform_unix
+    #define __platform_unix_linux
   #elif defined(__FreeBSD__)
-    #define WOS_UNIX 1
-    #define WOS_UNIX_BSD 1
+    #define __platform_unix
+    #define __platform_unix_freebsd
   #elif defined(_WIN32) || defined(_WIN64)
-    #define WOS_WINDOWS 1
+    #define __platform_windows
   #elif defined(__bpf__) || defined(__BPF__) || defined(__BPF_CPU_VERSION__)
     #define __platform_bpf
   #else
@@ -19,8 +19,8 @@
 #endif
 
 #if defined(__platform)
-  /* TODO how to detect WITCH_PLATFORM_linux_kernel_module ? */
-  #if defined(WITCH_PLATFORM_linux_kernel_module)
+  /* TODO how to detect __platform_linux_kernel_module ? */
+  #if defined(__platform_linux_kernel_module)
     #define WITCH_unsigned_types_will_be_defined
   #elif defined(__platform_bpf)
     #define __platform_nothread
@@ -57,13 +57,9 @@
   #endif
 #endif
 
-#if defined(WOS_UNIX)
-  #if defined(WOS_WINDOWS)
-    #if defined(__WINE__)
-      #undef WOS_UNIX
-    #else
-      #error defined(WOS_UNIX) && defined(WOS_WINDOWS)
-    #endif
+#if defined(__platform_unix)
+  #if defined(__platform_windows)
+    #error broken compiler. probably wine compiler.
   #endif
 
   #if defined(_FILE_OFFSET_BITS)
@@ -78,7 +74,7 @@
   #endif
 #endif
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   #define WIN32_LEAN_AND_MEAN
   #define WIN64_LEAN_AND_MEAN
   #define _CRT_SECURE_NO_WARNINGS
@@ -87,7 +83,7 @@
   #endif
 #endif
 
-#if defined(WOS_UNIX) || defined(WOS_WINDOWS)
+#if defined(__platform_unix) || defined(__platform_windows)
   #define FD_IN 0
   #define FD_OUT 1
   #define FD_ERR 2

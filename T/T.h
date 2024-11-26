@@ -5,11 +5,11 @@
 
 #if defined(__platform_libc)
   #include <time.h>
-#elif defined(WITCH_PLATFORM_linux_kernel_module)
+#elif defined(__platform_linux_kernel_module)
   #include <linux/timekeeping.h>
 #endif
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   #include _WITCH_PATH(include/windows/windows.h)
   #ifdef _MSC_VER
     /* rdtsc */
@@ -51,23 +51,23 @@ static uint64_t T_rdtsc(void){
   #endif
 }
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   inline uint64_t _T_time_freqi;
   inline f64_t    _T_time_freqf;
 #endif
 
 static uint64_t T_nowi(void){
-  #if defined(WOS_UNIX) && defined(__platform_libc)
+  #if defined(__platform_unix) && defined(__platform_libc)
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
     return ((uint64_t)t.tv_sec * 1000000000) + t.tv_nsec;
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     LARGE_INTEGER t;
     if(QueryPerformanceCounter(&t) == 0){
       PR_abort();
     }
     return t.QuadPart * _T_time_freqi;
-  #elif defined(WITCH_PLATFORM_linux_kernel_module)
+  #elif defined(__platform_linux_kernel_module)
     struct timespec64 ts;
     ktime_get_raw_ts64(&ts);
     return ((uint64_t)ts.tv_sec * 1000000000) + ts.tv_nsec;
@@ -78,17 +78,17 @@ static uint64_t T_nowi(void){
 
 #ifndef WITCH_float_is_disabled
   static f64_t T_nowf(void){
-    #if defined(WOS_UNIX) && defined(__platform_libc)
+    #if defined(__platform_unix) && defined(__platform_libc)
       struct timespec t;
       clock_gettime(CLOCK_MONOTONIC, &t);
       return (f64_t)t.tv_sec + (f64_t)t.tv_nsec / 1000000000;
-    #elif defined(WOS_WINDOWS)
+    #elif defined(__platform_windows)
       LARGE_INTEGER t;
       if(QueryPerformanceCounter(&t) == 0){
         PR_abort();
       }
       return (f64_t)t.QuadPart / _T_time_freqf;
-    #elif defined(WITCH_PLATFORM_linux_kernel_module)
+    #elif defined(__platform_linux_kernel_module)
       struct timespec64 ts;
       ktime_get_raw_ts64(&ts);
       return (f64_t)ts.tv_sec + (f64_t)ts.tv_nsec / 1000000000;
@@ -124,7 +124,7 @@ static bool T_date(T_date_t *date){
 }
 
 static void _T_internal_open(){
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     LARGE_INTEGER t;
     if(QueryPerformanceFrequency(&t) == 0){
       PR_abort();

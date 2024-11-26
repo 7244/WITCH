@@ -44,7 +44,7 @@ struct EV_t{
   _EV_watcher_t *watchers;
   uint32_t nwatchers;
 
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     struct{
       TH_mutex_t mutex[2];
       TH_id_t ThreadID;

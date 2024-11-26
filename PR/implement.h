@@ -9,7 +9,7 @@
 #endif
 
 #if _PR_set_abort_print
-  #if defined(WOS_UNIX) && defined(__platform_libc)
+  #if defined(__platform_unix) && defined(__platform_libc)
     #include <stdio.h>
     #include <stdlib.h>
     #include <sys/wait.h>
@@ -40,7 +40,7 @@
       std::stacktrace st;
       std::cout << st.current();
     }
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #include <stdio.h>
     #include <dbghelp.h>
 
@@ -88,7 +88,7 @@
     #error ?
   #endif
 
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     #include <signal.h>
 
     static void _PR_SignalCatcher(int signal){
@@ -103,13 +103,13 @@
 #endif
 
 static void PR_exit(uint32_t num){
-  #if defined(WOS_UNIX_LINUX)
+  #if defined(__platform_unix_linux)
     syscall1(__NR_exit_group, num);
-  #elif defined(WOS_UNIX_BSD)
+  #elif defined(__platform_unix_freebsd)
     syscall1_noerr(SYS_exit, num);
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     exit(num);
-  #elif defined(WITCH_PLATFORM_linux_kernel_module)
+  #elif defined(__platform_linux_kernel_module)
     while(1){}
   #elif defined(__platform_bpf)
     while(1){}
@@ -119,7 +119,7 @@ static void PR_exit(uint32_t num){
 }
 
 static void PR_abort(void){
-  #if defined(WITCH_PLATFORM_linux_kernel_module)
+  #if defined(__platform_linux_kernel_module)
     panic("[PR] PR_abort()");
   #else
     /* TODO make some generic function instead of printf */
@@ -131,7 +131,7 @@ static void PR_abort(void){
   #endif
 }
 
-#if defined(WOS_UNIX)
+#if defined(__platform_unix)
   typedef struct{
     sint32_t id;
   }PR_PID_t;
@@ -176,7 +176,7 @@ static void PR_abort(void){
 #endif
 
 static void _PR_internal_open(){
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     #if _PR_set_abort_print
       typedef void (*SignalHandlerPointer)(int);
       SignalHandlerPointer PreviousHandler;

@@ -33,7 +33,7 @@ f64_t EV_nowf(EV_t *listener){
 #include "method/idle/idle.h"
 #include "method/async/async.h"
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   typedef void (*EV_ListenObjects_cb_t)(void);
 
   void _EV_ListenObjects(EV_t *listener){
@@ -143,7 +143,7 @@ void EV_open(EV_t *listener){
   listener->watchers = (_EV_watcher_t *)A_resize(0, sizeof(_EV_watcher_t) * _EV_fdlimit);
   listener->nwatchers = 0;
 
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     TH_mutex_init(&listener->ListenObjects.mutex[0]);
     TH_mutex_init(&listener->ListenObjects.mutex[1]);
     listener->ListenObjects.ObjectHandlesCurrent = 2;

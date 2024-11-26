@@ -6,7 +6,7 @@ typedef struct EV_event_t EV_event_t;
 
 typedef void (*EV_event_cb_t)(EV_t *, EV_event_t *, uint32_t);
 
-#if defined(WOS_WINDOWS)
+#if defined(__platform_windows)
   #define EV_event_common_di \
     IO_fd_t fd; \
     uint32_t evflag; \

@@ -1,9 +1,9 @@
 #pragma once
 
 #ifndef TH_set_backend
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     #define TH_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define TH_set_backend 1
   #else
     #error TH_set_backend is not defined

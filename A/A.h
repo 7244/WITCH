@@ -2,7 +2,7 @@
 
 #if defined(__platform_libc)
   #include <malloc.h>
-#elif defined(WITCH_PLATFORM_linux_kernel_module)
+#elif defined(__platform_linux_kernel_module)
   #include <linux/slab.h>
 #endif
 
@@ -46,7 +46,7 @@ static uint8_t *A_resize(void *ptr, uintptr_t size){
         return 0;
       }
     }
-  #elif defined(WITCH_PLATFORM_linux_kernel_module)
+  #elif defined(__platform_linux_kernel_module)
     if(ptr){
       if(size){
         void *rptr = krealloc(ptr, size, GFP_KERNEL);

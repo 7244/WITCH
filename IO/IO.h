@@ -2,11 +2,11 @@
 #define _WITCH_libdefine_IO
 
 #ifndef IO_set_backend
-  #if defined(WOS_UNIX_LINUX)
+  #if defined(__platform_unix_linux)
     #define IO_set_backend 0
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     #define IO_set_backend 1
-  #elif defined(WOS_UNIX_BSD)
+  #elif defined(__platform_unix_freebsd)
     #define IO_set_backend 2
   #else
     #error IO_set_backend is not defined

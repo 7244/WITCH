@@ -19,20 +19,20 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
   return r;
 }
 
-#if defined(WOS_UNIX)
+#if defined(__platform_unix)
   #include <sys/random.h>
-#elif defined(WOS_WINDOWS)
+#elif defined(__platform_windows)
   #include <wincrypt.h>
   #pragma comment(lib, "Advapi32.lib")
   inline HCRYPTPROV _RAND_hCryptProv;
 #endif
 
 static void RAND_hard_ram(void *ptr, uintptr_t size){
-  #if defined(WOS_UNIX)
+  #if defined(__platform_unix)
     if(getrandom(ptr, size, GRND_RANDOM) < 0){
       PR_abort();
     }
-  #elif defined(WOS_WINDOWS)
+  #elif defined(__platform_windows)
     if(CryptGenRandom(_RAND_hCryptProv, size, (BYTE *)ptr) == 0){
       PR_abort();
     }
@@ -82,14 +82,14 @@ static sintptr_t RAND_hard_snum(sintptr_t min, sintptr_t max){
 }
 
 static void _RAND_internal_open(){
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     if(CryptAcquireContext(&_RAND_hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == 0){
       __abort();
     }
   #endif
 }
 static void _RAND_internal_close(){
-  #if defined(WOS_WINDOWS)
+  #if defined(__platform_windows)
     if(CryptReleaseContext(_RAND_hCryptProv, 0) == 0){
       /* TODO handle GetLastError like ERROR_BUSY */
       __abort();
