@@ -1,4 +1,8 @@
-#include _WITCH_PATH(include/syscall.h)
+#if defined(__platform_unix)
+	#include _WITCH_PATH(include/syscall.h)
+#elif defined(__platform_windows)
+	#include <stdlib.h>
+#endif
 
 #ifndef _PR_set_abort_print
   #if defined(__platform_libc)
