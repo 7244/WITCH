@@ -79,7 +79,7 @@ _MAP_P(QueryInput)(
       }
       const void *ni = n->data.i;
     #endif
-    if(MEM_cmp(ni, i, InputSize)){
+    if(!MEM_cmp(ni, i, InputSize)){
       break;
     }
   }
