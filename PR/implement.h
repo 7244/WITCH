@@ -120,6 +120,8 @@ static void PR_exit(uint32_t num){
   #else
     #error ?
   #endif
+
+  __unreachable();
 }
 
 static void PR_abort(void){
@@ -135,6 +137,8 @@ static void PR_abort(void){
     #endif
     PR_exit(1);
   #endif
+
+  __unreachable();
 }
 
 #if defined(__platform_unix) && !defined(__platform_nothread)
