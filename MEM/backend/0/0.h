@@ -13,7 +13,7 @@ static void MEM_set(const uint8_t src, void *dst, const uintptr_t size){
 }
 
 static bool MEM_cmp(const void *src, const void *dst, const uintptr_t size){
-  return !memcmp(dst, src, size);
+  return !!memcmp(dst, src, size);
 }
 
 static bool MEM_ncmp(const void *src, const uintptr_t src_size, const void *dst, const uintptr_t dst_size){

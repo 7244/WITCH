@@ -21,7 +21,7 @@
     dst.sa_mask = 0;
     dst.sa_flags = 0;
     dst.sa_restorer = 0;
-    syscall4(__NR_rt_sigaction, signum, &dst, &src, 8);
+    syscall4(__NR_rt_sigaction, signum, (uintptr_t)&dst, (uintptr_t)&src, 8);
     return 0;
   }
 #endif

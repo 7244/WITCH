@@ -7,8 +7,6 @@
   #define __language_cpp __cplusplus
 #endif
 
-#include _WITCH_PATH(internal/WOS.h)
-
 #ifndef __compiler
   #if defined(__clang__)
     #define __compiler_clang
@@ -22,6 +20,42 @@
     #error failed to find __compiler
   #endif
   #define __compiler
+#endif
+
+#include _WITCH_PATH(internal/WOS.h)
+
+#if defined(__compiler_clang)
+  #if !defined(__clang_major__)
+    #warning cant get clang major version. expect brokenness
+  #elif __clang_major__ == 18
+    #if !defined(__platform_libc)
+      /* clang still tries to use memset memcpy even when it doesnt exists */
+
+      #if defined(__platform_windows)
+        #error how to say uintptr_t in windows's clang?
+      #endif
+
+      void memset(
+        void * dst,
+        unsigned char byte,
+        const unsigned long size
+      ){
+        for(unsigned long i = 0; i < size; i++){
+          ((unsigned char *)dst)[i] = byte;
+        }
+      }
+
+      void memcpy(
+        void * restrict dst,
+        const void * restrict src,
+        const unsigned long size
+      ){
+        for(unsigned long i = 0; i < size; i++){
+          ((unsigned char *)dst)[i] = ((unsigned char *)src)[i];
+        }
+      }
+    #endif
+  #endif
 #endif
 
 #ifndef WITCH_PRE_is_not_allowed

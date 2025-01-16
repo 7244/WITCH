@@ -130,12 +130,14 @@ static void PR_abort(void){
     #if defined(__platform_libc)
       printf("[PR] PR_abort() is called\n");
     #endif
-    _PR_DumpTrace();
+    #if _PR_set_abort_print
+      _PR_DumpTrace();
+    #endif
     PR_exit(1);
   #endif
 }
 
-#if defined(__platform_unix)
+#if defined(__platform_unix) && !defined(__platform_nothread)
   typedef struct{
     sint32_t id;
   }PR_PID_t;
