@@ -5,6 +5,14 @@
 #endif
 #ifdef __cplusplus
   #define __language_cpp __cplusplus
+
+  #if __language_cpp <= 202002L
+    /* cpp has bug where `new (ptr) type` requires you to include <new> */
+    /* `new` is listed as keyword. it shouldnt need a include to work. */
+    #include <new>
+  #else
+    #warning does this bug still exists?
+  #endif
 #endif
 
 #ifndef __compiler
