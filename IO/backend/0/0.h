@@ -1,7 +1,10 @@
 #include _WITCH_PATH(MEM/MEM.h)
 
 #include _WITCH_PATH(include/syscall.h)
-#include _WITCH_PATH(include/signal.h)
+
+#if !defined(__WITCH_IO_allow_sigpipe)
+  #include _WITCH_PATH(include/signal.h)
+#endif
 
 #if defined(__platform_libc)
   /* we actually dont need this */
@@ -294,6 +297,8 @@ static void IO_munmap(void *addr, IO_size_t length){
 }
 
 static void _IO_internal_open(){
-  signal(SIGPIPE, SIG_IGN);
+  #if !defined(__WITCH_IO_allow_sigpipe)
+    signal(SIGPIPE, SIG_IGN);
+  #endif
 }
 static void _IO_internal_close(){}
