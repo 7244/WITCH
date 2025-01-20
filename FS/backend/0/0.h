@@ -132,7 +132,12 @@ static sint32_t FS_dir_traverse(FS_dir_traverse_t *tra, const char **cstr){
   if(tra->offset == (IO_size_t)tra->read_size){
     gt_re:;
 
-    tra->read_size = syscall3(__NR_getdents64, tra->dir.fd.fd, tra->buffer, tra->buffer_size);
+    tra->read_size = syscall3(
+      __NR_getdents64,
+      tra->dir.fd.fd,
+      (uintptr_t)tra->buffer,
+      tra->buffer_size
+    );
     if(tra->read_size < 0){
       return tra->read_size;
     }

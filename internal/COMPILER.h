@@ -2,6 +2,8 @@
 
 #ifdef __STDC_VERSION__
   #define __language_c __STDC_VERSION__
+
+  #define __restrict_or_nothing restrict
 #endif
 #ifdef __cplusplus
   #define __language_cpp __cplusplus
@@ -13,6 +15,8 @@
   #else
     #warning does this bug still exists?
   #endif
+
+  #define __restrict_or_nothing
 #endif
 
 #ifndef __compiler
@@ -32,36 +36,28 @@
 
 #include _WITCH_PATH(internal/WOS.h)
 
-#if defined(__compiler_clang)
-  #if !defined(__clang_major__)
-    #warning cant get clang major version. expect brokenness
-  #elif __clang_major__ == 18
-    #if !defined(__platform_libc)
-      /* clang still tries to use memset memcpy even when it doesnt exists */
+#if !defined(__platform_libc)
+  /* when we need to include stdlib_mem.h */
+  #if defined(__compiler_clang)
+    #if !defined(__clang_major__)
+      #warning cant get clang major version. expect brokenness
+    #elif __clang_major__ >= 18 && __clang_major__ <= 18
+      #include "stdlib_mem.h"
+    #endif
+  #elif defined(__compiler_gcc)
+    #if !defined(__GNUC__)
+      #warning cant get gcc major version. expect brokenness
+    #elif __GNUC__ >= 14 && __GNUC__ <= 14
+      #include "stdlib_mem.h"
+    #endif
+  #endif
 
-      #if defined(__platform_windows)
-        #error how to say uintptr_t in windows's clang?
-      #endif
-
-      void memset(
-        void * dst,
-        unsigned char byte,
-        const unsigned long size
-      ){
-        for(unsigned long i = 0; i < size; i++){
-          ((unsigned char *)dst)[i] = byte;
-        }
-      }
-
-      void memcpy(
-        void * restrict dst,
-        const void * restrict src,
-        const unsigned long size
-      ){
-        for(unsigned long i = 0; i < size; i++){
-          ((unsigned char *)dst)[i] = ((unsigned char *)src)[i];
-        }
-      }
+  /* when we need to include __popcountdi2 */
+  #if defined(__compiler_gcc)
+    #if !defined(__GNUC__)
+      #warning cant get gcc major version. expect brokenness
+    #elif __GNUC__ >= 14 && __GNUC__ <= 14
+      #include "__popcountdi2.h"
     #endif
   #endif
 #endif

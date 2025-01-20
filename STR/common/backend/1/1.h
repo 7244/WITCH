@@ -142,6 +142,17 @@ bool STR_ischars_hex(const uint8_t c, const uintptr_t i){
   return STR_ischar_hexdigit(c);
 }
 
+static bool STR_ischar_BeginOfFloat(const uint8_t c){
+  switch(c){
+    case '.':
+    case '+':case '-':
+    case '0':case '1':case '2':case '3':case '4':
+    case '5':case '6':case '7':case '8':case '9':
+      return 1;
+  }
+  return 0;
+}
+
 bool STR_ischar_float(const uint8_t c){
   switch(c){
     case '.':
