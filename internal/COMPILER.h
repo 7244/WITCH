@@ -22,10 +22,18 @@
 #ifndef __compiler
   #if defined(__clang__)
     #define __compiler_clang
+
+    #if !defined(__clang_major__)
+      #error ?
+    #endif
   #elif defined(__TINYC__)
     #define __compiler_tinyc
   #elif defined(__GNUC__) || defined(__GNUG__)
     #define __compiler_gcc
+
+    #if !defined(__GNUC__)
+      #error ?
+    #endif
   #elif defined(_MSC_VER)
     #define __compiler_msvc
   #else
@@ -35,56 +43,6 @@
 #endif
 
 #include _WITCH_PATH(internal/WOS.h)
-
-#if !defined(__platform_libc)
-  /* when we need to include stdlib_mem.h */
-  #if defined(__compiler_clang)
-    #if !defined(__clang_major__)
-      #warning cant get clang major version. expect brokenness
-    #elif __clang_major__ >= 18 && __clang_major__ <= 18
-      #include "stdlib_mem.h"
-    #endif
-  #elif defined(__compiler_gcc)
-    #if !defined(__GNUC__)
-      #warning cant get gcc major version. expect brokenness
-    #elif __GNUC__ >= 14 && __GNUC__ <= 14
-      #include "stdlib_mem.h"
-    #endif
-  #endif
-
-  /* when we need to include __popcountdi2 */
-  #if defined(__compiler_gcc)
-    #if !defined(__GNUC__)
-      #warning cant get gcc major version. expect brokenness
-    #elif __GNUC__ >= 14 && __GNUC__ <= 14
-      #include "__popcountdi2.h"
-    #endif
-  #endif
-#endif
-
-#ifndef WITCH_PRE_is_not_allowed
-  #ifndef PRE
-    #include _WITCH_PATH(internal/PRE.h)
-  #endif
-#endif
-
-#ifndef __sanit
-  #if defined(__SANITIZE_ADDRESS__)
-    #define __sanit 1
-  #endif
-#endif
-
-#ifndef __sanit
-  #if defined(__has_feature)
-    #if __has_feature(address_sanitizer)
-      #define __sanit 1
-    #endif
-  #endif
-#endif
-
-#ifndef __sanit
-  #define __sanit 0
-#endif
 
 #ifndef ENDIAN
   #if defined(__BYTE_ORDER)
@@ -110,6 +68,49 @@
   #else
     #error ?
   #endif
+#endif
+
+#if !defined(__platform_libc)
+  /* when we need to include stdlib_mem.h */
+  #if defined(__compiler_clang)
+    #if __clang_major__ >= 18 && __clang_major__ <= 19
+      #include "stdlib_mem.h"
+    #endif
+  #elif defined(__compiler_gcc)
+    #if __GNUC__ >= 14 && __GNUC__ <= 14
+      #include "stdlib_mem.h"
+    #endif
+  #endif
+
+  #if defined(__i386__)
+    #include "needed_builtins_i386.h"
+  #elif defined(__x86_64__)
+    #include "needed_builtins_amd64.h"
+  #endif
+#endif
+
+#ifndef WITCH_PRE_is_not_allowed
+  #ifndef PRE
+    #include _WITCH_PATH(internal/PRE.h)
+  #endif
+#endif
+
+#ifndef __sanit
+  #if defined(__SANITIZE_ADDRESS__)
+    #define __sanit 1
+  #endif
+#endif
+
+#ifndef __sanit
+  #if defined(__has_feature)
+    #if __has_feature(address_sanitizer)
+      #define __sanit 1
+    #endif
+  #endif
+#endif
+
+#ifndef __sanit
+  #define __sanit 0
 #endif
 
 /* naming got from kernel code */
