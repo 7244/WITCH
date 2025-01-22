@@ -34,7 +34,7 @@
 
   #define __generic_mremap __generic_mremap
   void *__generic_mremap(void *ptr, uintptr_t old_size, uintptr_t new_size){
-    return syscall5(
+    return (void *)syscall5(
       __NR_mremap,
       (uintptr_t)ptr,
       old_size,
@@ -96,7 +96,7 @@
 
     ptr = (void *)((uintptr_t *)ptr - 1);
 
-    void *ret = __generic_mremap((uintptr_t)ptr, *(uintptr_t *)ptr, size);
+    void *ret = __generic_mremap(ptr, *(uintptr_t *)ptr, size);
     if((uintptr_t)ret > (uintptr_t)-0x1000){
       #if defined(__generic_alloc_abort)
         __abort();
