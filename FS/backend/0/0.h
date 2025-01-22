@@ -125,11 +125,15 @@ static sint32_t FS_dir_traverse_open(
 static void FS_dir_traverse_close(
   FS_dir_traverse_t *tra
 ){
-  /* cupcake */
+  /* ~cupcake~ */
 }
 static sint32_t FS_dir_traverse(FS_dir_traverse_t *tra, const char **cstr){
 
   if(tra->offset == (IO_size_t)tra->read_size){
+    if(tra->offset > (IO_size_t)-0x1000){
+      return (sint32_t)tra->offset;
+    }
+
     gt_re:;
 
     tra->read_size = syscall3(
@@ -138,6 +142,7 @@ static sint32_t FS_dir_traverse(FS_dir_traverse_t *tra, const char **cstr){
       (uintptr_t)tra->buffer,
       tra->buffer_size
     );
+    tra->offset = tra->read_size;
     if(tra->read_size < 0){
       return tra->read_size;
     }

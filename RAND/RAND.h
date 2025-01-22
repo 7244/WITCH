@@ -19,67 +19,72 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
   return r;
 }
 
-#if defined(__platform_unix)
-  #include <sys/random.h>
-#elif defined(__platform_windows)
-  #include <wincrypt.h>
-  #pragma comment(lib, "Advapi32.lib")
-  inline HCRYPTPROV _RAND_hCryptProv;
-#endif
+#if defined(__platform_libc)
+  /* TODO for no libc */
 
-static void RAND_hard_ram(void *ptr, uintptr_t size){
   #if defined(__platform_unix)
-    if(getrandom(ptr, size, GRND_RANDOM) < 0){
-      PR_abort();
-    }
+    #include <sys/random.h>
   #elif defined(__platform_windows)
-    if(CryptGenRandom(_RAND_hCryptProv, size, (BYTE *)ptr) == 0){
-      PR_abort();
-    }
-  #else
-    #error ?
+    #include <wincrypt.h>
+    #pragma comment(lib, "Advapi32.lib")
+    inline HCRYPTPROV _RAND_hCryptProv;
   #endif
-}
 
-static uint8_t RAND_hard_8(void){
-  uint8_t r;
-  RAND_hard_ram(&r, 1);
-  return r;
-}
-static uint16_t RAND_hard_16(void){
-  uint16_t r;
-  RAND_hard_ram(&r, 2);
-  return r;
-}
-static uint32_t RAND_hard_32(void){
-  uint32_t r;
-  RAND_hard_ram(&r, 4);
-  return r;
-}
-static uint64_t RAND_hard_64(void){
-  uint64_t r;
-  RAND_hard_ram(&r, 8);
-  return r;
-}
-static uintptr_t RAND_hard_0(void){
-  return CONCAT(RAND_hard_, SYSTEM_BIT)();
-}
+  static void RAND_hard_ram(void *ptr, uintptr_t size){
+    #if defined(__platform_unix)
+      if(getrandom(ptr, size, GRND_RANDOM) < 0){
+        PR_abort();
+      }
+    #elif defined(__platform_windows)
+      if(CryptGenRandom(_RAND_hCryptProv, size, (BYTE *)ptr) == 0){
+        PR_abort();
+      }
+    #else
+      #error ?
+    #endif
+  }
 
-static sint8_t RAND_hard_snum8(sint8_t min, sint8_t max){
-  return RAND_hard_8() % ((max - min) + 1) + min;
-}
-static sint16_t RAND_hard_snum16(sint16_t min, sint16_t max){
-  return RAND_hard_16() % ((max - min) + 1) + min;
-}
-static sint32_t RAND_hard_snum32(sint32_t min, sint32_t max){
-  return RAND_hard_32() % ((max - min) + 1) + min;
-}
-static sint64_t RAND_hard_snum64(sint64_t min, sint64_t max){
-  return RAND_hard_64() % ((max - min) + 1) + min;
-}
-static sintptr_t RAND_hard_snum(sintptr_t min, sintptr_t max){
-  return RAND_hard_0() % ((max - min) + 1) + min;
-}
+  static uint8_t RAND_hard_8(void){
+    uint8_t r;
+    RAND_hard_ram(&r, 1);
+    return r;
+  }
+  static uint16_t RAND_hard_16(void){
+    uint16_t r;
+    RAND_hard_ram(&r, 2);
+    return r;
+  }
+  static uint32_t RAND_hard_32(void){
+    uint32_t r;
+    RAND_hard_ram(&r, 4);
+    return r;
+  }
+  static uint64_t RAND_hard_64(void){
+    uint64_t r;
+    RAND_hard_ram(&r, 8);
+    return r;
+  }
+  static uintptr_t RAND_hard_0(void){
+    return CONCAT(RAND_hard_, SYSTEM_BIT)();
+  }
+
+  static sint8_t RAND_hard_snum8(sint8_t min, sint8_t max){
+    return RAND_hard_8() % ((max - min) + 1) + min;
+  }
+  static sint16_t RAND_hard_snum16(sint16_t min, sint16_t max){
+    return RAND_hard_16() % ((max - min) + 1) + min;
+  }
+  static sint32_t RAND_hard_snum32(sint32_t min, sint32_t max){
+    return RAND_hard_32() % ((max - min) + 1) + min;
+  }
+  static sint64_t RAND_hard_snum64(sint64_t min, sint64_t max){
+    return RAND_hard_64() % ((max - min) + 1) + min;
+  }
+  static sintptr_t RAND_hard_snum(sintptr_t min, sintptr_t max){
+    return RAND_hard_0() % ((max - min) + 1) + min;
+  }
+
+#endif
 
 static void _RAND_internal_open(){
   #if defined(__platform_windows)
