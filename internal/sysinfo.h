@@ -41,13 +41,14 @@
         sintptr_t err = syscall3(
           __NR_sched_getaffinity,
           0,
-          sizeof(cpu_set), (uintptr_t)&cpu_set
+          sizeof(cpu_set),
+          (uintptr_t)&cpu_set
         );
-        if(err){
+        if(err < 0){
           return err;
         }
 
-        return __WITCH_cpuset_cpucount(&cpu_set);
+        return __WITCH_cpuset_cpucount(err, &cpu_set);
       }
     #else
       #error ?
