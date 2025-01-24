@@ -170,17 +170,21 @@ static void PR_abort(void){
       (uintptr_t)envp);
   }
 
-  typedef siginfo_t PR_WaitPIDRV_t;
+  #if defined(__platform_libc)
+    /* TODO siginfo_t is not defined without libc */
 
-  static sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t flag){
-    return syscall5(
-      __NR_waitid,
-      P_PID,
-      pid->id,
-      (uintptr_t)WaitPIDRV,
-      flag,
-      (uintptr_t)NULL);
-  }
+    typedef siginfo_t PR_WaitPIDRV_t;
+
+    static sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t flag){
+      return syscall5(
+        __NR_waitid,
+        P_PID,
+        pid->id,
+        (uintptr_t)WaitPIDRV,
+        flag,
+        (uintptr_t)NULL);
+    }
+  #endif
 #else
   /* implement for more platforms */
 #endif
