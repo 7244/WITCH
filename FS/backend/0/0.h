@@ -129,7 +129,7 @@ static void FS_dir_traverse_close(
 }
 static sint32_t FS_dir_traverse(FS_dir_traverse_t *tra, const char **cstr){
 
-  if(tra->offset == (IO_size_t)tra->read_size){
+  if(tra->offset == tra->read_size){
     if(tra->offset > (IO_size_t)-0x1000){
       return (sint32_t)tra->offset;
     }
@@ -142,19 +142,21 @@ static sint32_t FS_dir_traverse(FS_dir_traverse_t *tra, const char **cstr){
       (uintptr_t)tra->buffer,
       tra->buffer_size
     );
-    tra->offset = tra->read_size;
-    if(tra->read_size < 0){
+    if(tra->read_size > (IO_size_t)-0x1000){
+      tra->offset = tra->read_size;
       return tra->read_size;
     }
     if(tra->read_size == 0){
-      return 1;
+      tra->offset = (IO_size_t)-ENODATA;
+      tra->read_size = (IO_size_t)-ENODATA;
+      return -ENODATA;
     }
     tra->offset = 0;
   }
   else{
     tra->offset += (*(_WITCH_FS_linux_dirent_t *)&tra->buffer[tra->offset]).reclen;
 
-    if(tra->offset >= (IO_size_t)tra->read_size){
+    if(tra->offset >= tra->read_size){
       goto gt_re;
     }
   }
