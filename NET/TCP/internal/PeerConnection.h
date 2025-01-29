@@ -43,10 +43,10 @@ NET_TCP_layerflag_t NET_TCP_StateLoop(NET_TCP_peer_t *peer){
       (uint8_t *)peer + sizeof(NET_TCP_peer_t) + extinfo->PeerDataOffset,
       NET_TCP_state_succ_e
     );
-    peer->StateOffset++;
     if(flag & NET_TCP_EXT_dontgo_e){
       return NET_TCP_EXT_dontgo_e;
     }
+    peer->StateOffset++;
   }
   /* hardcoded GodFatherStateLast starts here */
   return NET_TCP_EXT_dontgo_e;
