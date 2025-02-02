@@ -292,7 +292,7 @@ static sintptr_t IO_mmap(void *addr, IO_size_t length, int prot, int flags, int 
 static void IO_munmap(void *addr, IO_size_t length){
   int r = syscall2(__NR_munmap, (uintptr_t)addr, length);
   if(r != 0){
-    PR_abort();
+    __abort();
   }
 }
 
