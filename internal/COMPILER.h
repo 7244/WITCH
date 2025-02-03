@@ -414,17 +414,27 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     __simplest_abort(); \
     __unreachable(); \
   }while(0)
-  static void __simplest_abort(){
-    #if defined(__platform_unix) || defined(__platform_windows)
-      /* write to kernel owned address from userside. should guarantee crash. */
-      *(uintptr_t *)((uintptr_t)1 << SYSTEM_BIT - 1) = 0;
-    #elif defined(__platform_bpf)
-      /* should die at verifier */
-      while(1){}
-    #else
-      #error ?
-    #endif
-  }
+
+  #if defined(__compiler_gcc) || defined(__compiler_clang)
+    __attribute__((noreturn))
+    __attribute((naked))
+    static
+    __forceinline
+    void
+    __simplest_abort(){
+      __asm__ __volatile__(
+        #if defined(__i386__) || defined(__x86_64__)
+          "ud2\n"
+        #else
+          #error ?
+        #endif
+      );
+
+      #include _WITCH_PATH(include/end_of_naked.h)
+    }
+  #else
+    #error ?
+  #endif
 #endif
 
 #define lstd_preprocessor_get_argn(p0, p1, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, n, ...) n
