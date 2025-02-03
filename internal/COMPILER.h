@@ -278,6 +278,14 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     ((t_m *)((uint8_t *)(ptr_m) - offsetof(t_m, d_m)))
 #endif
 
+#ifndef __forceinline
+  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
+    #define __forceinline inline __attribute__((always_inline))
+  #else
+    #error ?
+  #endif
+#endif
+
 #ifndef __unreachable
   #if defined(__compiler_clang) || defined(__compiler_gcc)
     #define __unreachable() __builtin_unreachable()

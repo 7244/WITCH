@@ -12,6 +12,7 @@ WITCH is crossplatform all in one library which provides basic functionality (li
 - `__platform_*` defines. `__platform_unix` is defined for every unix based system including linux. check `internal/WOS.h` for more information about `__platform_*` defines.
 - `__compiler_*` defines. currently supported compilers are: `gcc`, `clang`, `tinyc` and `msvc`.
 - `__language_*` defines. currently supported languages are: `__language_c` and `__language_cpp`
+- `__forceinline` used to force inline a function. inline keyword is not needed.
 - `__atomic_*` defines even if compiler doesnt support it. Will give error in compile time if wanted atomic operation is not possible.
 - `__restrict_or_nothing` gives restrict keyword if language has it.
 - `__abort();` WITCH provides a default implement to abort that can be redefined by `PR` library or by user.
