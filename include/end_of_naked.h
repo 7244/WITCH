@@ -3,6 +3,8 @@
 #elif defined(__compiler_gcc)
   /* gcc generates undefined instruction without unreachable */
   __unreachable();
+#elif defined(__compiler_tinyc)
+  __unreachable();
 #else
   #error ?
 #endif

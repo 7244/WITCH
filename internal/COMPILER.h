@@ -415,7 +415,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     __unreachable(); \
   }while(0)
 
-  #if defined(__compiler_gcc) || defined(__compiler_clang)
+  #if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
     __attribute__((noreturn))
     __attribute((naked))
     static
