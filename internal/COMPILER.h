@@ -318,6 +318,9 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+#include "compile_time_log.h"
+#include "fast_log.h"
+
 #include "atomic.h"
 
 #ifndef __empty_struct
