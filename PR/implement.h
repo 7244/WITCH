@@ -170,21 +170,20 @@ static void PR_abort(void){
       (uintptr_t)envp);
   }
 
-  #if defined(__platform_libc)
-    /* TODO siginfo_t is not defined without libc */
+  #include _WITCH_PATH(include/signal.h)
 
-    typedef siginfo_t PR_WaitPIDRV_t;
+  #define WITCH_PR_P_PID 1
 
-    static sint32_t PR_WaitPID(PR_PID_t *pid, PR_WaitPIDRV_t *WaitPIDRV, uint32_t flag){
-      return syscall5(
-        __NR_waitid,
-        P_PID,
-        pid->id,
-        (uintptr_t)WaitPIDRV,
-        flag,
-        (uintptr_t)NULL);
-    }
-  #endif
+  static sint32_t PR_WaitPID(PR_PID_t *pid, WITCH_signal_siginfo_t *siginfo, uint32_t flag){
+    return syscall5(
+      __NR_waitid,
+      WITCH_PR_P_PID,
+      pid->id,
+      (uintptr_t)siginfo,
+      flag,
+      (uintptr_t)NULL
+    );
+  }
 #else
   /* implement for more platforms */
 #endif
