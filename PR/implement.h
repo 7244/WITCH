@@ -142,43 +142,75 @@ static void PR_abort(void){
 }
 
 #if defined(__platform_unix) && !defined(__platform_nothread)
-  typedef struct{
-    sint32_t id;
-  }PR_PID_t;
+  #if !defined(__WITCH_PR_dont_wrap_pid)
+    typedef struct{
+      sint32_t id;
+    }PR_PID_t;
+    typedef PR_PID_t* PR_PID_tp;
+  #else
+    typedef sint32_t PR_PID_t;
+    typedef sint32_t PR_PID_tp;
+  #endif
 
-  static sint32_t PR_fork(PR_PID_t *pid){
+  static sint32_t PR_fork(
+    #if !defined(__WITCH_PR_dont_wrap_pid)
+      PR_PID_tp pid
+    #endif
+  ){
     sint32_t r = syscall0(__NR_fork);
     if(r < 0){
       return r;
     }
-    pid->id = r;
-    return 0;
+    #if !defined(__WITCH_PR_dont_wrap_pid)
+      pid->id = r;
+      return 0;
+    #else
+      return r;
+    #endif
   }
 
-  static bool PR_IsPIDParent(PR_PID_t *pid){
-    return pid->id != 0;
+  static bool PR_IsPIDParent(PR_PID_tp pid){
+    #if !defined(__WITCH_PR_dont_wrap_pid)
+      return pid->id != 0;
+    #else
+      return pid != 0;
+    #endif
   }
-  static bool PR_IsPIDChild(PR_PID_t *pid){
-    return pid->id == 0;
+  static bool PR_IsPIDChild(PR_PID_tp pid){
+    #if !defined(__WITCH_PR_dont_wrap_pid)
+      return pid->id == 0;
+    #else
+      return pid == 0;
+    #endif
   }
 
-  static sint32_t PR_exec(const char *PathName, const char **arg, char * const *envp, uint32_t flag){
-    return syscall3(
-      __NR_execve,
-      (uintptr_t)PathName,
-      (uintptr_t)arg,
-      (uintptr_t)envp);
-  }
+  #if 0
+    /* TOOD this needs to be wrapped */
+    static sint32_t PR_exec(const char *PathName, const char **arg, char * const *envp, uint32_t flag){
+      return syscall3(
+        __NR_execve,
+        (uintptr_t)PathName,
+        (uintptr_t)arg,
+        (uintptr_t)envp
+      );
+    }
+  #endif
 
   #include _WITCH_PATH(include/signal.h)
 
   #define WITCH_PR_P_PID 1
 
-  static sint32_t PR_WaitPID(PR_PID_t *pid, WITCH_signal_siginfo_t *siginfo, uint32_t flag){
+  #define WITCH_PR_WEXITED 0x00000004
+
+  static sint32_t PR_WaitPID(PR_PID_tp pid, WITCH_signal_siginfo_t *siginfo, uint32_t flag){
     return syscall5(
       __NR_waitid,
       WITCH_PR_P_PID,
-      pid->id,
+      #if !defined(__WITCH_PR_dont_wrap_pid)
+        pid->id,
+      #else
+        pid,
+      #endif
       (uintptr_t)siginfo,
       flag,
       (uintptr_t)NULL
