@@ -33,11 +33,11 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
   static void RAND_hard_ram(void *ptr, uintptr_t size){
     #if defined(__platform_unix)
       if(getrandom(ptr, size, GRND_RANDOM) < 0){
-        PR_abort();
+        __abort();
       }
     #elif defined(__platform_windows)
       if(CryptGenRandom(_RAND_hCryptProv, size, (BYTE *)ptr) == 0){
-        PR_abort();
+        __abort();
       }
     #else
       #error ?

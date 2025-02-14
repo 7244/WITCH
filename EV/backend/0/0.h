@@ -47,7 +47,7 @@ void EV_stop(EV_t *listener){
 void EV_open(EV_t *listener){
   listener->loop = ev_loop_new(0);
   if(listener->loop == 0){
-    PR_abort();
+    __abort();
   }
   ev_set_userdata(listener->loop, listener);
   _EV_queue_init(listener);
