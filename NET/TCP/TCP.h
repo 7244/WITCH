@@ -53,7 +53,7 @@ NET_TCP_layerid_t NET_TCP_layer_state_open(
 }
 void NET_TCP_layer_state_close(NET_TCP_t *tcp, NET_TCP_layerid_t layerid){
   /* TODO */
-  PR_abort();
+  __abort();
 }
 NET_TCP_layerid_t NET_TCP_layer_read_open(
   NET_TCP_t *tcp,
@@ -75,7 +75,7 @@ NET_TCP_layerid_t NET_TCP_layer_read_open(
 }
 void NET_TCP_layer_read_close(NET_TCP_t *tcp, NET_TCP_layerid_t layerid){
   /* TODO */
-  PR_abort();
+  __abort();
 }
 NET_TCP_layerid_t NET_TCP_layer_write_open(
   NET_TCP_t *tcp,
@@ -97,7 +97,7 @@ NET_TCP_layerid_t NET_TCP_layer_write_open(
 }
 void NET_TCP_layer_write_close(NET_TCP_t *tcp, NET_TCP_layerid_t layerid){
   /* TODO */
-  PR_abort();
+  __abort();
 }
 NET_TCP_layerid_t NET_TCP_layer_connect_open(
   NET_TCP_t *tcp,
@@ -113,7 +113,7 @@ NET_TCP_layerid_t NET_TCP_layer_connect_open(
 }
 void NET_TCP_layer_connect_close(NET_TCP_t *tcp, NET_TCP_layerid_t layerid){
   /* TODO */
-  PR_abort();
+  __abort();
 }
 
 uint8_t *NET_TCP_GetSockData(NET_TCP_t *tcp, NET_TCP_extid_t extid){

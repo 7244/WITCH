@@ -35,18 +35,18 @@ uint32_t _NET_TCP_GodFatherReadLast(
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_SpecialPointer:{
-      PR_abort();
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_SignedSpecialPointer:{
-      PR_abort();
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_PeerEvent:{
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_File:{
-      PR_abort();
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_CloseHard:{

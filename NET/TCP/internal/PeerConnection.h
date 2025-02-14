@@ -265,7 +265,7 @@ void _NET_TCP_accept(EV_t *listener, EV_event_t *ev, uint32_t flag){
   EV_event_get_socket(ev, &accepter_socket);
   sint32_t err = NET_accept(&accepter_socket, &sdstaddr, SOCK_NONBLOCK, &sock);
   if(err){
-    PR_abort();
+    __abort();
   }
 
   NET_TCP_peer_t *peer = (NET_TCP_peer_t *)A_resize(0, sizeof(NET_TCP_peer_t) + tcp->PeerDataSize);
@@ -410,7 +410,7 @@ void _NET_TCP_connect_CB(EV_t *listener, EV_event_t *event, uint32_t flag){
   NET_socket_t sock = NET_TCP_gsfp(peer);
   sint32_t err;
   if(NET_getsockopt(&sock, SOL_SOCKET, SO_ERROR, &err) != 0){
-    PR_abort();
+    __abort();
   }
   if(err){
     _NET_TCP_close_peer_StateLoop(tcp, peer);

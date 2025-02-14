@@ -285,7 +285,7 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_PeerEvent:{
-      PR_abort();
+      __abort();
       return NET_TCP_EXT_dontgo_e;
     }
     case NET_TCP_QueueType_File:{
