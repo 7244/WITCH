@@ -2,6 +2,8 @@
 
 #if defined(__platform_libc)
   #include <signal.h>
+
+  typedef siginfo_t WITCH_signal_siginfo_t;
 #else
   /* TODO last time i tried this backend: it didnt work well */
   /* i guess i need to learn signals raw-system-call-wise */
