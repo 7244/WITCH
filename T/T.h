@@ -32,9 +32,9 @@ static uint64_t T_rdtsc(void){
           asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(pmccntr));
           return ((uint64_t)pmccntr) * 64;
         }
-        PR_abort();
+        __abort();
       }
-      PR_abort();
+      __abort();
     #endif
   #elif SYSTEM_BIT == 32
     /* TODO check cpuarch */
@@ -64,13 +64,20 @@ static uint64_t T_nowi(void){
   #elif defined(__platform_windows)
     LARGE_INTEGER t;
     if(QueryPerformanceCounter(&t) == 0){
-      PR_abort();
+      __abort();
     }
     return t.QuadPart * _T_time_freqi;
   #elif defined(__platform_linux_kernel_module)
     struct timespec64 ts;
     ktime_get_raw_ts64(&ts);
     return ((uint64_t)ts.tv_sec * 1000000000) + ts.tv_nsec;
+  #elif defined(__platform_unix_linux)
+    struct timespec t;
+    sintptr_t err = syscall2(__NR_clock_gettime, CLOCK_MONOTONIC, &t);
+    if(err){
+      __abort();
+    }
+    return ((uint64_t)t.tv_sec * 1000000000) + t.tv_nsec;
   #else
     #error ?
   #endif
@@ -85,13 +92,20 @@ static uint64_t T_nowi(void){
     #elif defined(__platform_windows)
       LARGE_INTEGER t;
       if(QueryPerformanceCounter(&t) == 0){
-        PR_abort();
+        __abort();
       }
       return (f64_t)t.QuadPart / _T_time_freqf;
     #elif defined(__platform_linux_kernel_module)
       struct timespec64 ts;
       ktime_get_raw_ts64(&ts);
       return (f64_t)ts.tv_sec + (f64_t)ts.tv_nsec / 1000000000;
+    #elif defined(__platform_unix_linux)
+      struct timespec t;
+      sintptr_t err = syscall2(__NR_clock_gettime, CLOCK_MONOTONIC, &t);
+      if(err){
+        __abort();
+      }
+      return (f64_t)t.tv_sec + (f64_t)t.tv_nsec / 1000000000;
     #else
       #error ?
     #endif
@@ -127,7 +141,7 @@ static void _T_internal_open(){
   #if defined(__platform_windows)
     LARGE_INTEGER t;
     if(QueryPerformanceFrequency(&t) == 0){
-      PR_abort();
+      __abort();
     }
     _T_time_freqi = 1000000000 / t.QuadPart;
     _T_time_freqf = t.QuadPart;

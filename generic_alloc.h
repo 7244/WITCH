@@ -1,8 +1,8 @@
 #if !defined(__platform_libc)
   #include <WITCH/include/syscall.h>
-
-  #include <linux/mman.h>
 #endif
+
+#include <linux/mman.h>
 
 #if !defined(__platform_libc)
   #define __generic_malloc_mmap_is_same
