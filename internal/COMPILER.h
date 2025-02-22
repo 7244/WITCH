@@ -70,25 +70,6 @@
   #endif
 #endif
 
-#if !defined(__platform_libc)
-  /* when we need to include stdlib_mem.h */
-  #if defined(__compiler_clang)
-    #if __clang_major__ >= 18 && __clang_major__ <= 19
-      #include "stdlib_mem.h"
-    #endif
-  #elif defined(__compiler_gcc)
-    #if __GNUC__ >= 14 && __GNUC__ <= 14
-      #include "stdlib_mem.h"
-    #endif
-  #endif
-
-  #if defined(__i386__)
-    #include "needed_builtins_i386.h"
-  #elif defined(__x86_64__)
-    #include "needed_builtins_amd64.h"
-  #endif
-#endif
-
 #ifndef WITCH_PRE_is_not_allowed
   #ifndef PRE
     #include _WITCH_PATH(internal/PRE.h)
@@ -228,6 +209,16 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #define LITERAL(type_m, num_m) \
   (type_m)CONCAT(num_m, CONCAT(_LITERAL_, type_m))
 
+#if !defined(__platform_libc)
+  #include "needed_builtins.h"
+
+  #if defined(__i386__)
+    #include "needed_builtins_i386.h"
+  #elif defined(__x86_64__)
+    #include "needed_builtins_amd64.h"
+  #endif
+#endif
+
 #ifndef CLAMP
   #define CLAMP(val, lo, hi) \
     ((val) <= (lo) ? (lo) : (val) > (hi) ? (hi) : (val))
@@ -235,22 +226,6 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #ifndef ABS
   #define ABS(num_m) \
     ((num_m) < 0 ? -(num_m) : (num_m))
-#endif
-#ifndef FLOOR
-  #define FLOOR \
-    (f_t)(sintptr_t)
-#endif
-#ifndef FMOD
-  #define FMOD(num_m, mod_m) \
-    ((num_m) - (FLOOR((num_m) / (mod_m)) * (mod_m)))
-#endif
-#ifndef SIGN
-  #define SIGN(_m) \
-    (sintptr_t)(-(_m < 0) | (_m > 0))
-#endif
-#ifndef RSIGN
-  #define RSIGN(_m) \
-    ((_m) * SIGN(_m))
 #endif
 
 static uint32_t LOG32(uintptr_t num, uint8_t base){
