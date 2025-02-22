@@ -7,7 +7,7 @@ static bool STR_sto32(const sint32_t v, const uint8_t base, uint8_t **data, uint
     '8', '9', 'a', 'b',
     'c', 'd', 'e', 'f'
   };
-  uint32_t _v = RSIGN(v);
+  uint32_t _v = ABS(v);
   *data += 32;
   uint8_t *origdata = *data;
   do{
@@ -29,7 +29,7 @@ static bool STR_sto64(const sint64_t v, const uint8_t base, uint8_t **data, uint
     '8', '9', 'a', 'b',
     'c', 'd', 'e', 'f'
   };
-  uint64_t _v = RSIGN(v);
+  uint64_t _v = ABS(v);
   *data += 64;
   uint8_t *origdata = *data;
   do{

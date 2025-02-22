@@ -53,7 +53,7 @@ static bool STR_fto128_base10(f128_t v, uintptr_t precision, uint8_t *data, uint
   const uint8_t *origdata = data;
   if(v < 0)
     *data++ = '-';
-  v = RSIGN(v);
+  v = ABS(v);
   uintptr_t left = v;
   v -= left;
   {

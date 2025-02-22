@@ -118,8 +118,8 @@ static bool STR_vFSttcc(STR_ttcc_t *ttcc, const char *cstr, va_list argv){
         }
         case '*':{
           sintptr_t var = va_arg(argv, sintptr_t);
-          psign[cp] = SIGN(var) == 1 ? 1 : 0;
-          pvalue[cp] = RSIGN(var);
+          psign[cp] = var > 0 ? 1 : 0;
+          pvalue[cp] = ABS(var);
           break;
         }
         case 'l':{
