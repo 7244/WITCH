@@ -133,19 +133,7 @@ static uint8_t *MEM_findchr0(
 static uintptr_t MEM_cstreu(
   const void *cstr
 ){
-  #if 0
-    /* compilers cant understand how to optimize this */
-    return (uintptr_t)MEM_findchr0(cstr, 0) - (uintptr_t)cstr;
-  #elif 0
-    /* compilers trying to change this to strlen when there is no libc */
-    return __builtin_strlen(cstr);
-  #else
-    uintptr_t i = 0;
-    while(EXPECT(*((const uint8_t *)cstr + i), 1)){
-      i++;
-    }
-    return i;
-  #endif
+  return __builtin_strlen(cstr);
 }
 
 static uint8_t *MEM_cstrep(

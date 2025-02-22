@@ -29,3 +29,18 @@
   }
 
 #endif
+
+#if \
+  (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14)
+
+  uintptr_t strlen(
+    const void *cstr
+  ){
+    uintptr_t i = 0;
+    while(EXPECT(((const uint8_t *)cstr)[i], 1)){
+      i++;
+    }
+    return i;
+  }
+
+#endif
