@@ -1,6 +1,4 @@
-#if !defined(__platform_libc)
-  #include <WITCH/include/syscall.h>
-#endif
+#include <WITCH/include/syscall.h>
 
 #include <linux/mman.h>
 
