@@ -36,6 +36,16 @@
     #endif
   #elif defined(_MSC_VER)
     #define __compiler_msvc
+
+    #ifndef __builtin_memset
+      #define __builtin_memset memset
+    #endif
+    #ifndef __builtin_memcpy
+      #define __builtin_memcpy memcpy
+    #endif
+    #ifndef __builtin_memmove
+      #define __builtin_memmove memmove
+    #endif
   #else
     #error failed to find __compiler
   #endif
@@ -351,39 +361,6 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     #define __dme_inherit(main_t, ...) __dme_inherit_t<main_t, __COUNTER__, ##__VA_ARGS__>
 
     #pragma pack(pop)
-  #endif
-#endif
-
-/* TODO make memorycopy dst src */
-/* src, dst, size */
-#ifndef __MemoryCopy
-  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
-    #define __MemoryCopy(src, dst, size) __builtin_memcpy(dst, src, size)
-  #elif defined(__compiler_msvc)
-    #define __MemoryCopy(src, dst, size) memcpy(dst, src, size)
-  #else
-    #error ?
-  #endif
-#endif
-/* TODO make memoryset dst src */
-/* byte, dst, size */
-#ifndef __MemorySet
-  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
-    #define __MemorySet(byte, dst, size) __builtin_memset(dst, byte, size)
-  #elif defined(__compiler_msvc)
-    #define __MemorySet(byte, dst, size) memset(dst, byte, size)
-  #else
-    #error ?
-  #endif
-#endif
-
-#ifndef __MemoryMove
-  #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
-    #define __MemoryMove(dst, src, size) __builtin_memmove(dst, src, size)
-  #elif defined(__compiler_msvc)
-    #define __MemoryMove(dst, src, size) memmove(dst, src, size)
-  #else
-    #error ?
   #endif
 #endif
 
