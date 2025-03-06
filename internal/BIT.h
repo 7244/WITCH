@@ -4,55 +4,6 @@
   #include <intrin.h>
 #endif
 
-#ifndef __clz
-  #define __clz __clz
-  static
-  uint8_t
-  __clz32(uint32_t p0){
-    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
-      return __builtin_clz(p0);
-    #elif defined(__compiler_msvc)
-      DWORD trailing_zero;
-      if(_BitScanReverse(&trailing_zero, p0)){
-        return 31 - trailing_zero;
-      }
-      else{
-        return 32;
-      }
-    #else
-      #error ?
-    #endif
-  }
-  static
-  uint8_t
-  __clz64(uint64_t p0){
-    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
-      return __builtin_clzll(p0);
-    #elif defined(__compiler_msvc)
-      DWORD trailing_zero;
-      if(_BitScanReverse64(&trailing_zero, p0)){
-        return 63 - trailing_zero;
-      }
-      else{
-        return 64;
-      }
-    #else
-      #error ?
-    #endif
-  }
-  static
-  uint8_t
-  __clz(uintptr_t p0){
-    #if SYSTEM_BIT == 32
-      return __clz32(p0);
-    #elif SYSTEM_BIT == 64
-      return __clz64(p0);
-    #else
-      #error ?
-    #endif
-  }
-#endif
-
 static uint8_t CTZ32(uint32_t x){
   #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     return __builtin_ctzl(x);

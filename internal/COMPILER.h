@@ -303,6 +303,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+#include "clz.h"
 #include "compile_time_log.h"
 #include "fast_log.h"
 
