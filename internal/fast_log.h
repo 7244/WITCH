@@ -13,7 +13,7 @@
 #ifndef __fast_32log2
   #define __fast_32log2 __fast_32log2
   __forceinline static uint8_t __fast_32log2(uint32_t v){
-    return 31 - __clz(v);
+    return 31 - __clz32(v);
   }
 #endif
 #ifndef __fast_64log2
