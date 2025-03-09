@@ -266,6 +266,8 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 #ifndef __forceinline
   #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     #define __forceinline inline __attribute__((always_inline))
+  #elif defined(__compiler_msvc)
+    #define __forceinline __forceinline
   #else
     #error ?
   #endif
