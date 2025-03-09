@@ -15,7 +15,7 @@
     static
     uint8_t
     __clz32(uint32_t p0){
-      DWORD trailing_zero;
+      unsigned long trailing_zero;
       if(_BitScanReverse(&trailing_zero, p0)){
         return 31 - trailing_zero;
       }
@@ -41,7 +41,7 @@
     static
     uint8_t
     __clz64(uint64_t p0){
-      DWORD trailing_zero;
+      unsigned long trailing_zero;
       if(_BitScanReverse64(&trailing_zero, p0)){
         return 63 - trailing_zero;
       }
