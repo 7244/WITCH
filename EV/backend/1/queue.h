@@ -26,7 +26,7 @@ void EV_queue_unlock(EV_t *listener){
 }
 void EV_queue_signal(EV_t *listener){
   if(uv_async_send(&listener->queue.evsync) != 0){
-    PR_abort();
+    __abort();
   }
 }
 void EV_queue_add(EV_t *listener, EV_queue_cb_t cb, void *p){
@@ -43,6 +43,6 @@ void _EV_queue_init(EV_t *listener){
   VEC_init(&listener->queue.nodes, 1, A_resize);
   TH_mutex_init(&listener->queue.mutex);
   if(uv_async_init(listener->loop, &listener->queue.evsync, _EV_queue_cb) != 0){
-    PR_abort();
+    __abort();
   }
 }

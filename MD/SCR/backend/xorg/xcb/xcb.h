@@ -76,7 +76,7 @@ sint32_t MD_SCR_open(MD_SCR_t *scr){
 void MD_SCR_close(MD_SCR_t *scr){
   xcb_shm_detach(scr->conn, scr->xcb_segment);
   if(shmdt(scr->data) != 0){
-    PR_abort();
+    __abort();
   }
   xcb_disconnect(scr->conn);
 }

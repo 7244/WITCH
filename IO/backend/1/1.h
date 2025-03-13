@@ -84,26 +84,26 @@ enum{
 static uint8_t *_IO_fd_nodes = NULL;
 static void _IO_assign_fd(const IO_fd_t *fd, uint8_t type){
   if(fd->fd >= IO_set_fd_limit){
-    PR_abort();
+    __abort();
   }
   if(type == _IO_fd_unknown_e){
     if(_IO_fd_nodes[fd->fd] == _IO_fd_unknown_e){
-      PR_abort();
+      __abort();
     }
   }
   else{
     if(_IO_fd_nodes[fd->fd] != _IO_fd_unknown_e){
-      PR_abort();
+      __abort();
     }
   }
   _IO_fd_nodes[fd->fd] = type;
 }
 static uint8_t _IO_get_fd(const IO_fd_t *fd){
   if(fd->fd >= IO_set_fd_limit){
-    PR_abort();
+    __abort();
   }
   if(_IO_fd_nodes[fd->fd] == _IO_fd_unknown_e){
-    PR_abort();
+    __abort();
   }
   return _IO_fd_nodes[fd->fd];
 }
@@ -300,20 +300,20 @@ static IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
       INPUT_RECORD record;
       DWORD numRead;
       if(!PeekConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
-        PR_abort();
+        __abort();
       }
       if (numRead < 1) {//keep carefully
         return 0;
       }
       if(record.EventType != KEY_EVENT){
         if(!ReadConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
-          PR_abort();
+          __abort();
         }
         return 0;
       }
       if(!record.Event.KeyEvent.bKeyDown){
         if(!ReadConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
-          PR_abort();
+          __abort();
         }
         return 0;
       }
@@ -322,7 +322,7 @@ static IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
         return 0;
       }
       if(!ReadConsoleInput((HANDLE)_get_osfhandle(fd->fd), &record, 1, &numRead)){
-        PR_abort();
+        __abort();
       }
       if(record.EventType != KEY_EVENT){
         return 0;
@@ -350,7 +350,7 @@ static IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
 
         int r = _write(1, stdout_buffer, 3);
         if(r == -1){
-          PR_abort();
+          __abort();
         }
       }
       else{
@@ -361,7 +361,7 @@ static IO_ssize_t IO_read(const IO_fd_t *fd, void *data, IO_size_t size){
         }
         int r = _write(1, data, end);
         if(r == -1){
-          PR_abort();
+          __abort();
         }
       }
       return end;
@@ -414,7 +414,7 @@ static IO_ssize_t IO_pread(const IO_fd_t *fd, void *data, IO_off_t isize, IO_siz
   int read_errno = errno;
   if(IO_lseek(fd, current, SEEK_SET) < 0){
     /* stupid problems */
-    PR_abort();
+    __abort();
   }
   if(len < 0){
     if(read_errno == EAGAIN){
@@ -482,7 +482,7 @@ static sint32_t IO_rename(const void *src, const void *dst){
 }
 
 static sint32_t IO_access(const void *path){
-  PR_abort();
+  __abort();
   return -1;
 }
 

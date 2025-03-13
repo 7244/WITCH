@@ -147,7 +147,7 @@ static void FS_file_getfd(FS_file_t *file, IO_fd_t *fd){
       break;
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       break;
     }
   }
@@ -233,7 +233,7 @@ static bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *ds
 static sint32_t FS_file_rename(FS_file_t *file, const void *path){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
     case _FS_file_Temporarily_e:{
@@ -256,28 +256,28 @@ static sint32_t FS_file_rename(FS_file_t *file, const void *path){
       IO_fd_t fd;
       sint32_t err = IO_open(tmppath, O_WRONLY | O_CREAT, &fd);
       if(err){
-        PR_abort();
+        __abort();
       }
       if(IO_write(
         &fd,
         file->Temporarily.vector.ptr,
         file->Temporarily.vector.Current
       ) != file->Temporarily.vector.Current){
-        PR_abort();
+        __abort();
         if(IO_close(&fd) != 0){
-          PR_abort();
+          __abort();
         }
         return -1;
       }
       if(IO_close(&fd) != 0){
-        PR_abort();
+        __abort();
       }
       if(IO_rename(tmppath, path) != 0){
-        PR_abort();
+        __abort();
       }
       err = IO_open(path, O_WRONLY, &fd);
       if(err){
-        PR_abort();
+        __abort();
       }
       VEC_free(&file->Temporarily.vector);
       file->Type = _FS_file_FileSystem_e;
@@ -334,7 +334,7 @@ enum{
 static void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
-      PR_abort();
+      __abort();
       return;
     }
     case _FS_file_Temporarily_e:{
@@ -352,7 +352,7 @@ static void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
           return;
         }
       }
-      PR_abort();
+      __abort();
     }
   }
 }
@@ -363,7 +363,7 @@ static FS_ssize_t FS_file_read(FS_file_t *file, void *data, FS_size_t size){
       return IO_read(&file->FileSystem.fd, data, size);
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
   }
@@ -392,7 +392,7 @@ static sint32_t FS_file_close(FS_file_t *file){
       return IO_close(&file->FileSystem.fd);
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
   }

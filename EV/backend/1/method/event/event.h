@@ -55,7 +55,7 @@ void _EV_ev_watcher_set(EV_t *listener, sint32_t fd, EV_event_t *event, EV_event
   if(fd >= listener->nwatchers){
     for(; listener->nwatchers <= fd; listener->nwatchers++){
       if(listener->nwatchers == _EV_fdlimit){
-        PR_abort();
+        __abort();
       }
       _EV_watcher_t *watcher = &listener->watchers[listener->nwatchers];
       watcher->inited = 1;
@@ -66,14 +66,14 @@ void _EV_ev_watcher_set(EV_t *listener, sint32_t fd, EV_event_t *event, EV_event
   _EV_watcher_t *watcher = &listener->watchers[fd];
   if(flag & EV_READ){
     if(watcher->readev != 0){
-      PR_abort();
+      __abort();
     }
     watcher->readev = event;
     watcher->readcb = cb;
   }
   if(flag & EV_WRITE){
     if(watcher->writeev != 0){
-      PR_abort();
+      __abort();
     }
     watcher->writeev = event;
     watcher->writecb = cb;
@@ -86,27 +86,27 @@ void _EV_ev_watcher_set(EV_t *listener, sint32_t fd, EV_event_t *event, EV_event
       watcher->inited = 0;
       #if defined(__platform_unix)
         if(uv_poll_init(listener->loop, &watcher->ev, fd) != 0){
-          PR_abort();
+          __abort();
         }
       #elif defined(__platform_windows)
         if(uv_poll_init_socket(listener->loop, &watcher->ev, fd) != 0){
-          PR_abort();
+          __abort();
         }
       #else
-        PR_abort();
+        __abort();
       #endif
     }
     if(watcher->inited != 0){
-      PR_abort();
+      __abort();
     }
     if(uv_poll_start(&watcher->ev, evflag, _EV_ev_watcher_cb) != 0){
-      PR_abort();
+      __abort();
     }
   }
   else{
-    PR_abort();
+    __abort();
     if(uv_poll_stop(&watcher->ev) != 0){
-      PR_abort();
+      __abort();
     }
   }
 }
@@ -116,7 +116,7 @@ void _EV_ev_watcher_update(EV_t *listener, sint32_t fd, uint32_t oldflag, uint32
   if(oldflag & EV_READ){
     if(!(oldflag & EV_WRITE) && newflag & EV_WRITE){
       if(watcher->writeev != 0){
-        PR_abort();
+        __abort();
       }
       watcher->writeev = watcher->readev;
       watcher->writecb = watcher->readcb;
@@ -128,7 +128,7 @@ void _EV_ev_watcher_update(EV_t *listener, sint32_t fd, uint32_t oldflag, uint32
   if(oldflag & EV_WRITE){
     if(!(oldflag & EV_READ) && newflag & EV_READ){
       if(watcher->readev != 0){
-        PR_abort();
+        __abort();
       }
       watcher->readev = watcher->writeev;
       watcher->readcb = watcher->writecb;
@@ -140,17 +140,17 @@ void _EV_ev_watcher_update(EV_t *listener, sint32_t fd, uint32_t oldflag, uint32
   if(newflag){
     if(oldflag != newflag){
       if(watcher->inited != 0){
-        PR_abort();
+        __abort();
       }
       if(uv_poll_start(&watcher->ev, newflag, _EV_ev_watcher_cb) != 0){
-        PR_abort();
+        __abort();
       }
     }
   }
   else{
-    PR_abort();
+    __abort();
     if(uv_poll_stop(&watcher->ev) != 0){
-      PR_abort();
+      __abort();
     }
   }
 }
@@ -168,19 +168,19 @@ void _EV_ev_watcher_del(EV_t *listener, sint32_t fd, uint32_t flag){
   evflag |= EV_WRITE * !!watcher->writeev;
   if(evflag){
     if(watcher->inited != 0){
-      PR_abort();
+      __abort();
     }
     if(uv_poll_start(&watcher->ev, evflag, _EV_ev_watcher_cb) != 0){
-      PR_abort();
+      __abort();
     }
   }
   else{
     if(watcher->inited != 0){
-      PR_abort();
+      __abort();
     }
     watcher->inited = 1;
     if(uv_poll_stop(&watcher->ev) != 0){
-      PR_abort();
+      __abort();
     }
   }
 }
@@ -210,7 +210,7 @@ void _EV_event_start(EV_t *listener, EV_event_t *event){
         listener->ListenObjects.QueueArrayCurrent[0]++;
         TH_unlock(&listener->ListenObjects.mutex[0]);
         if(SetEvent(listener->ListenObjects.ObjectHandles[0]) == 0){
-          PR_abort();
+          __abort();
         }
         return;
       }

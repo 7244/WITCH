@@ -35,7 +35,7 @@
         while(NodeReference != _MD_Mice_ListenerList.dst){
           _MD_Mice_ListenerList_Node_t *Node = _MD_Mice_ListenerList_GetNodeByReference(&_MD_Mice_ListenerList, NodeReference);
           if(IO_write(Node->data.PipeWrite, data, sizeof(data)) != sizeof(data)){
-            PR_abort();
+            __abort();
           }
           NodeReference = Node->NextNodeReference;
         }
@@ -49,7 +49,7 @@
   void _MD_Mice_EV_hook(void){
     _MD_Mice_hook = SetWindowsHookEx(WH_MOUSE_LL, (HOOKPROC)_MD_Mice_MouseCallback, NULL, 0);
     if(_MD_Mice_hook == NULL){
-      PR_abort();
+      __abort();
     }
   }
 #else
@@ -91,7 +91,7 @@ bool MD_MiceListener_open(MD_MiceListener_t *MiceListener, EV_t *listener){
     if(IO_pipe(pipes, 0) != 0){
       if(usage == 0){
         if(UnhookWindowsHookEx(_MD_Mice_hook) == 0){
-          PR_abort();
+          __abort();
         }
       }
       return 1;
@@ -109,12 +109,12 @@ void MD_MiceListener_close(MD_MiceListener_t *MiceListener){
   #if MD_Mice_set_backend == 0
     MD_Mice_close(&MiceListener->Mice);
     if(IO_close(MiceListener->fd) != 0){
-      PR_abort();
+      __abort();
     }
   #elif MD_Mice_set_backend == 1
     MD_Mice_close(&MiceListener->Mice);
     if(IO_close(MiceListener->fd) != 0){
-      PR_abort();
+      __abort();
     }
   #elif MD_Mice_set_backend == 2
   #endif
@@ -141,7 +141,7 @@ bool MD_MiceListener_Event_read(MD_MiceListener_t *MiceListener, uint32_t *x, ui
     xcb_query_pointer_cookie_t cookie = xcb_query_pointer(MiceListener->Mice.Connection, MiceListener->Mice.Window);
     xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(MiceListener->Mice.Connection, cookie, NULL);
     if(reply == NULL){
-      PR_abort();
+      __abort();
     }
     *x = reply->root_x;
     *y = reply->root_y;
@@ -149,7 +149,7 @@ bool MD_MiceListener_Event_read(MD_MiceListener_t *MiceListener, uint32_t *x, ui
   #elif MD_Mice_set_backend == 2
     uint32_t data[2];
     if(IO_read(MiceListener->fd, data, sizeof(data)) != sizeof(data)){
-      PR_abort();
+      __abort();
     }
     *x = data[0];
     *y = data[1];

@@ -56,7 +56,7 @@ sint32_t _ETC_VEDC_Decoder_Codec_va_Write(
 ){
   _ETC_VEDC_Decoder_Codec_va_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_va_Decoder_t *)*DecoderData;
 
-  PR_abort();
+  __abort();
 
   return 0;
 }
@@ -67,7 +67,7 @@ bool _ETC_VEDC_Decoder_Codec_va_Read(
 ){
   _ETC_VEDC_Decoder_Codec_va_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_va_Decoder_t *)*DecoderData;
 
-  PR_abort();
+  __abort();
 
   return 1;
 }
@@ -78,5 +78,5 @@ void _ETC_VEDC_Decoder_Codec_va_ReadClear(
 ){
   _ETC_VEDC_Decoder_Codec_va_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_va_Decoder_t *)*DecoderData;
 
-  PR_abort();
+  __abort();
 }

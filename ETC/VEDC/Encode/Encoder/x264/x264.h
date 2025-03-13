@@ -164,7 +164,7 @@ ETC_VEDC_Encode_Error _ETC_VEDC_Encode_Encoder_x264_SetFrameSize(
     Encoder->en = x264_encoder_open(&Encoder->InternalSetting);
     if(Encoder->en == NULL){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidFrameSize;
   }
@@ -196,7 +196,7 @@ _ETC_VEDC_Encode_Encoder_x264_SetRateControl(
     Encoder->en = x264_encoder_open(&Encoder->InternalSetting);
     if(Encoder->en == NULL){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidRateControl;
   }
@@ -221,7 +221,7 @@ _ETC_VEDC_Encode_Encoder_x264_SetInputFrameRate(
     Encoder->en = x264_encoder_open(&Encoder->InternalSetting);
     if(Encoder->en == NULL){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidFrameRate;
   }

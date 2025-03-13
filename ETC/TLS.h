@@ -126,7 +126,7 @@ void _TLS_cb(const SSL *ssl, int ptype, int pval){
   switch(ptype){
     case SSL_CB_HANDSHAKE_DONE:{
       if(pval != 1){
-        PR_abort();
+        __abort();
       }
       state = TLS_state_handshake_e;
       val = 0;

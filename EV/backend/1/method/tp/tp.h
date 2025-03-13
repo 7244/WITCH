@@ -16,7 +16,7 @@ void _EV_tp_work(_EV_tp_internal_pool_started_t *pool_started){
     pool_node = pool_started->tp->pool_node;
     if(!pool_started->tp->cb_outside(listener, pool_started->tp)){
       if(IO_write(&listener->tp.write_fd, &pool_node, sizeof(VAS2_node_t)) != sizeof(VAS2_node_t)){
-        PR_abort();
+        __abort();
       }
     }
     wait_gt:
@@ -98,11 +98,11 @@ void _EV_tp_read_cb(EV_t *listener, EV_event_t *io, uint32_t flag){
         return;
       }
       else{
-        PR_abort();
+        __abort();
       }
     }
     if(readsize % sizeof(VAS2_node_t) != 0){
-      PR_abort();
+      __abort();
     }
     readsize /= sizeof(VAS2_node_t);
 
@@ -172,7 +172,7 @@ void _EV_tp_init(EV_t *listener){
   listener->tp.c[1] = (uint32_t)-1;
   IO_fd_t pips[2];
   if(IO_pipe(pips, IO_pipe_Flag_NonblockRead) != 0){
-    PR_abort();
+    __abort();
   }
   listener->tp.write_fd = pips[1];
   VAS2_open(&listener->tp.pool.started, sizeof(_EV_tp_internal_pool_started_t), EV_tp_set_limit);

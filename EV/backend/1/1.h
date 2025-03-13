@@ -46,7 +46,7 @@ f64_t EV_nowf(EV_t *listener){
         QS_ALLINPUT
       );
       if(r == WAIT_FAILED){
-        PR_abort();
+        __abort();
       }
       if(r == WAIT_OBJECT_0 + 0){
         TH_lock(&listener->ListenObjects.mutex[0]);
@@ -60,7 +60,7 @@ f64_t EV_nowf(EV_t *listener){
             listener->ListenObjects.ObjectHandlesCurrent++;
           }
           else{
-            PR_abort();
+            __abort();
           }
         }
         listener->ListenObjects.QueueArrayCurrent[0] = 0;
@@ -84,7 +84,7 @@ f64_t EV_nowf(EV_t *listener){
       else{
         uint32_t Index = r - WAIT_OBJECT_0;
         if(Index > listener->ListenObjects.ObjectHandlesCurrent){
-          PR_abort();
+          __abort();
         }
         TH_lock(&listener->ListenObjects.cond.mutex);
         if(IO_write(
@@ -92,7 +92,7 @@ f64_t EV_nowf(EV_t *listener){
           &listener->ListenObjects.ObjectHandlesIO[Index],
           sizeof(listener->ListenObjects.ObjectHandlesIO[Index])
         ) != sizeof(listener->ListenObjects.ObjectHandlesIO[Index])){
-          PR_abort();
+          __abort();
         }
         TH_wait(&listener->ListenObjects.cond);
         TH_unlock(&listener->ListenObjects.cond.mutex);
@@ -106,7 +106,7 @@ f64_t EV_nowf(EV_t *listener){
     listener->ListenObjects.QueueArrayCurrent[1]++;
     TH_unlock(&listener->ListenObjects.mutex[1]);
     if(SetEvent(listener->ListenObjects.ObjectHandles[1]) == 0){
-      PR_abort();
+      __abort();
     }
   }
 
@@ -114,7 +114,7 @@ f64_t EV_nowf(EV_t *listener){
     EV_event_t *received_evio;
     IO_ssize_t size = IO_read(&listener->ListenObjects.pipes[0], &received_evio, sizeof(received_evio));
     if(size != sizeof(received_evio)){
-      PR_abort();
+      __abort();
     }
     TH_lock(&listener->ListenObjects.cond.mutex);
     received_evio->cb(listener, received_evio, received_evio->evflag);
@@ -149,23 +149,23 @@ void EV_open(EV_t *listener){
     listener->ListenObjects.ObjectHandlesCurrent = 2;
     listener->ListenObjects.ObjectHandles[0] = CreateEvent(NULL, FALSE, FALSE, NULL);
     if(listener->ListenObjects.ObjectHandles[0] == NULL){
-      PR_abort();
+      __abort();
     }
     listener->ListenObjects.ObjectHandles[1] = CreateEvent(NULL, FALSE, FALSE, NULL);
     if(listener->ListenObjects.ObjectHandles[1] == NULL){
-      PR_abort();
+      __abort();
     }
     listener->ListenObjects.QueueArrayCurrent[0] = 0;
     listener->ListenObjects.QueueArrayCurrent[1] = 0;
     if(IO_pipe(listener->ListenObjects.pipes, IO_pipe_Flag_NoFlag) != 0){
-      PR_abort();
+      __abort();
     }
     TH_cond_init(&listener->ListenObjects.cond);
     EV_event_init_fd(&listener->ListenObjects.evio, &listener->ListenObjects.pipes[0], _EV_ListenObjects_io, EV_READ);
     EV_event_start(listener, &listener->ListenObjects.evio);
     listener->ListenObjects.ThreadID = TH_open((void *)_EV_ListenObjects, listener);
     if(listener->ListenObjects.ThreadID == (TH_id_t)-1){
-      PR_abort();
+      __abort();
     }
   #endif
 

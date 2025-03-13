@@ -143,7 +143,7 @@ _P(Examine)
   uintptr_t findchru = MEM_findchru(&((uint8_t *)Data)[*DataIndex], LeftSize, '<');
   if(findchru == LeftSize){
     /* TODO implement later */
-    PR_abort();
+    __abort();
   }
   else if(findchru != 0){
     Result->Content.Itself.v = &((uint8_t *)Data)[*DataIndex];
@@ -157,14 +157,14 @@ _P(Examine)
   uint8_t *TagEnd = &Tag[TagSize];
   if(TagSize == LeftSize){
     #if ETC_HTML_EXAMINER_set_AbortIfBadData == 1
-      PR_abort();
+      __abort();
     #endif
     return ~_P(ExamineError_BadData_e);
   }
   else if(TagSize == 0){
     /* <> */
     #if ETC_HTML_EXAMINER_set_AbortIfBadData == 1
-      PR_abort();
+      __abort();
     #endif
     return ~_P(ExamineError_BadData_e);
   }
@@ -211,14 +211,14 @@ _P(Examine)
         </ >
       */
       #if ETC_HTML_EXAMINER_set_AbortIfBadData == 1
-        PR_abort();
+        __abort();
       #endif
       return ~_P(ExamineError_BadData_e);
     }
     case 0x01:{
       if(_PP(ncasecmp)("p", TagName, 0x01)){
         /* enjoy */
-        PR_abort();
+        __abort();
       }
       break;
     }
@@ -290,7 +290,7 @@ _P(Examine)
   /* unknown Tag name */
   #if ETC_HTML_EXAMINER_set_AbortIfBadData == 1
     WriteInformation("%u \"%.*s\"\n", TagNameSize, TagNameSize, Tag);
-    PR_abort();
+    __abort();
   #endif
   return ~_P(ExamineError_BadData_e);
 }

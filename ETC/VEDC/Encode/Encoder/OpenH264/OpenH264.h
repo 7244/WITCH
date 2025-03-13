@@ -137,7 +137,7 @@ _ETC_VEDC_Encode_Encoder_OpenH264_Close_(
 ){
   int ir = Encoder->en->Uninitialize();
   if(ir != 0){
-    PR_abort();
+    __abort();
   }
 }
 
@@ -224,7 +224,7 @@ _ETC_VEDC_Encode_Encoder_OpenH264_SetFrameSize(
     r = _ETC_VEDC_Encode_Encoder_OpenH264_Open_(Encoder);
     if(r != ETC_VEDC_Encode_Error_Success){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidFrameSize;
   }
@@ -255,7 +255,7 @@ _ETC_VEDC_Encode_Encoder_OpenH264_SetRateControl(
     r = _ETC_VEDC_Encode_Encoder_OpenH264_Open_(Encoder);
     if(r != ETC_VEDC_Encode_Error_Success){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidRateControl;
   }
@@ -281,7 +281,7 @@ _ETC_VEDC_Encode_Encoder_OpenH264_SetInputFrameRate(
     r = _ETC_VEDC_Encode_Encoder_OpenH264_Open_(Encoder);
     if(r != ETC_VEDC_Encode_Error_Success){
       /* faulty encoder */
-      PR_abort();
+      __abort();
     }
     return ETC_VEDC_Encode_Error_InvalidFrameRate;
   }

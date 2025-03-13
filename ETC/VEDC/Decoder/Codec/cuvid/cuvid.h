@@ -54,7 +54,7 @@ int _ETC_VEDC_Decoder_Codec_cuvid_Sequence_cb(void *user, CUVIDEOFORMAT *fmt){
 
   if(Decoder->Decoder != NULL){
     if(cuvidDestroyDecoder(Decoder->Decoder) != CUDA_SUCCESS){
-      PR_abort();
+      __abort();
     }
   }
 
@@ -77,7 +77,7 @@ int _ETC_VEDC_Decoder_Codec_cuvid_Sequence_cb(void *user, CUVIDEOFORMAT *fmt){
   create_info.ulTargetHeight = create_info.ulHeight;
 
   if(cuvidCreateDecoder(&Decoder->Decoder, &create_info) != CUDA_SUCCESS){
-    PR_abort();
+    __abort();
   }
 
   return nDecodeSurface;
@@ -87,11 +87,11 @@ int _ETC_VEDC_Decoder_Codec_cuvid_Decode_cb(void *user, CUVIDPICPARAMS *pic) {
   _ETC_VEDC_Decoder_Codec_cuvid_Decoder_t *Decoder = (_ETC_VEDC_Decoder_Codec_cuvid_Decoder_t *)user;
 
   if (Decoder->Decoder == NULL) {
-    PR_abort();
+    __abort();
   }
 
   if(cuvidDecodePicture(Decoder->Decoder, pic) != CUDA_SUCCESS){
-    PR_abort();
+    __abort();
   }
 
   return 1;
@@ -120,7 +120,7 @@ ETC_VEDC_Decoder_Error _ETC_VEDC_Decoder_Codec_cuvid_Open(
   {
     int device_count;
     if(cuDeviceGetCount(&device_count) != CUDA_SUCCESS){
-      PR_abort();
+      __abort();
     }
     if(device_count == 0){
       return ETC_VEDC_Decoder_Error_CudaNoDevice;
@@ -298,7 +298,7 @@ _ETC_VEDC_Decoder_Codec_cuvid_Read(
         &nPitch,
         &p
       ) != CUDA_SUCCESS){
-        PR_abort();
+        __abort();
       }
 
       if(cudaMemcpy2DToArray(
@@ -311,7 +311,7 @@ _ETC_VEDC_Decoder_Codec_cuvid_Read(
         Decoder->wrd.SizeY,
         cudaMemcpyDeviceToDevice
       ) != CUDA_SUCCESS){
-        PR_abort();
+        __abort();
       }
       if(cudaMemcpy2DToArray(
         Frame->Array[1],
@@ -323,11 +323,11 @@ _ETC_VEDC_Decoder_Codec_cuvid_Read(
         Decoder->wrd.SizeY / 2,
         cudaMemcpyDeviceToDevice
       ) != CUDA_SUCCESS){
-        PR_abort();
+        __abort();
       }
 
       if(cuvidUnmapVideoFrame(Decoder->Decoder, HostPointer) != CUDA_SUCCESS){
-        PR_abort();
+        __abort();
       }
 
       Decoder->wrd.Readable = 0;

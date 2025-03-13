@@ -99,7 +99,7 @@ ETC_HTTP_Websock_p(Parse)
     else if(Parser->State == 1){
       uint8_t b = Data[(*DataIndex)++];
       if(b & ETC_HTTP_Websock_p(MaskBit)){
-        PR_abort(); /* how to deal with MaskBit? */
+        __abort(); /* how to deal with MaskBit? */
         Parser->MaskBit = true;
         b ^= ETC_HTTP_Websock_p(MaskBit);
       }

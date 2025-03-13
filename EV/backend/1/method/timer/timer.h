@@ -14,10 +14,10 @@ void _EV_timer_start(EV_t *listener, EV_timer_t *timer){
   _EV_timer_t *_timer = (_EV_timer_t *)VAS2_out(&listener->timers, timer->node);
   _timer->data = (void *)timer;
   if(uv_timer_init(listener->loop, &_timer->ev) != 0){
-    PR_abort();
+    __abort();
   }
   if(uv_timer_start(&_timer->ev, _EV_timer_cb, timer->timeout, timer->timeout) != 0){
-    PR_abort();
+    __abort();
   }
 }
 void EV_timer_start(EV_t *listener, EV_timer_t *timer){

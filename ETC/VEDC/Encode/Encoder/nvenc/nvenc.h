@@ -42,7 +42,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
   {
     int device_count;
     if (cuDeviceGetCount(&device_count) != CUDA_SUCCESS) {
-      PR_abort();
+      __abort();
     }
     if (device_count == 0) {
       return ETC_VEDC_Encode_Error_CudaNoDevice;
@@ -257,7 +257,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_Read(
   }
 
   if (Encoder->wrd.vPacket.size() != 1) {
-    PR_abort();
+    __abort();
   }
 
   *Data = &Encoder->wrd.vPacket[0][0];

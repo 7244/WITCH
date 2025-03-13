@@ -74,7 +74,7 @@ MD_Mice_Error MD_Mice_Open(MD_Mice_t *Mice){
 
     xcb_screen_t *Screen = _MD_GetScreenByIndex(setup, 0);
     if(!Screen){
-      PR_abort();
+      __abort();
       return MD_Mice_Error_InternalError;
     }
 
@@ -104,7 +104,7 @@ MD_Mice_Error MD_Mice_Coordinate_Read(MD_Mice_t *Mice, uint32_t *x, uint32_t *y)
     xcb_query_pointer_cookie_t cookie = xcb_query_pointer(Mice->Connection, Mice->Window);
     xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(Mice->Connection, cookie, NULL);
     if(reply == NULL){
-      PR_abort();
+      __abort();
     }
     *x = reply->root_x;
     *y = reply->root_y;

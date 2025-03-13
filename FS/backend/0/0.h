@@ -221,7 +221,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
         break;
       }
       case _FS_file_Temporarily_e:{
-        PR_abort();
+        __abort();
         break;
       }
     }
@@ -270,7 +270,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
   static sint32_t FS_file_rename(FS_file_t *file, const void *path){
     switch(file->Type){
       case _FS_file_FileSystem_e:{
-        PR_abort();
+        __abort();
         return 0;
       }
       case _FS_file_Temporarily_e:{
@@ -293,21 +293,21 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
         IO_fd_t fd;
         sint32_t err = IO_open(tmppath, O_WRONLY | O_CREAT, &fd);
         if(err){
-          PR_abort();
+          __abort();
         }
         if((uintptr_t)IO_write(
           &fd,
           file->Temporarily.vector.ptr,
           file->Temporarily.vector.Current
         ) != file->Temporarily.vector.Current){
-          PR_abort();
+          __abort();
           if(IO_close(&fd) != 0){
-            PR_abort();
+            __abort();
           }
           return -1;
         }
         if(IO_rename(tmppath, path) != 0){
-          PR_abort();
+          __abort();
         }
         VEC_free(&file->Temporarily.vector);
         file->Type = _FS_file_FileSystem_e;
@@ -356,7 +356,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
   static void FS_file_seek(FS_file_t *file, FS_off_t offset, uint32_t flag){
     switch(file->Type){
       case _FS_file_FileSystem_e:{
-        PR_abort();
+        __abort();
         return;
       }
       case _FS_file_Temporarily_e:{
@@ -374,7 +374,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
             return;
           }
         }
-        PR_abort();
+        __abort();
       }
     }
   }
@@ -385,7 +385,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
         return IO_read(&file->FileSystem.fd, data, size);
       }
       case _FS_file_Temporarily_e:{
-        PR_abort();
+        __abort();
         return 0;
       }
     }
@@ -414,7 +414,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
         return IO_close(&file->FileSystem.fd);
       }
       case _FS_file_Temporarily_e:{
-        PR_abort();
+        __abort();
         return 0;
       }
     }

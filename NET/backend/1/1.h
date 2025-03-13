@@ -38,7 +38,7 @@ sint32_t NET_shutdown(const NET_socket_t *sock){
 
 void NET_close(const NET_socket_t *sock){
   if(closesocket(sock->fd.fd) == SOCKET_ERROR){
-    PR_abort();
+    __abort();
   }
   _IO_assign_fd(&sock->fd, _IO_fd_unknown_e);
 }
@@ -102,7 +102,7 @@ sint32_t NET_connect(const NET_socket_t *sock, NET_addr_t *addr){
         return -ENETUNREACH;
       }
       default:{
-        PR_abort();
+        __abort();
       }
     }
   }

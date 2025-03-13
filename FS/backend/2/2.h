@@ -127,7 +127,7 @@ static IO_fd_t FS_file_getfd(FS_file_t *file){
       return file->FileSystem.fd;
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
   }
@@ -204,7 +204,7 @@ static bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *ds
 static sint32_t FS_file_rename(FS_file_t *file, const void *path){
   switch(file->Type){
     case _FS_file_FileSystem_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
     case _FS_file_Temporarily_e:{
@@ -230,14 +230,14 @@ static sint32_t FS_file_rename(FS_file_t *file, const void *path){
         file->Temporarily.vector.ptr,
         file->Temporarily.vector.Current
       ) != file->Temporarily.vector.Current){
-        PR_abort();
+        __abort();
         if(IO_close(fd) != 0){
-          PR_abort();
+          __abort();
         }
         return -1;
       }
       if(IO_rename(tmppath, path) != 0){
-        PR_abort();
+        __abort();
       }
       VEC_free(&file->Temporarily.vector);
       file->Type = _FS_file_FileSystem_e;
@@ -291,7 +291,7 @@ static FS_ssize_t FS_file_read(FS_file_t *file, void *data, FS_size_t size){
       return IO_read(file->FileSystem.fd, data, size);
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
   }
@@ -304,7 +304,7 @@ static FS_ssize_t FS_file_write(FS_file_t *file, const void *data, FS_size_t siz
     }
     case _FS_file_Temporarily_e:{
       if(file->Temporarily.Offset != file->Temporarily.vector.Current){
-        PR_abort();
+        __abort();
       }
       VEC_handle0(&file->Temporarily.vector, size);
       MEM_copy(data, &file->Temporarily.vector.ptr[file->Temporarily.Offset], size);
@@ -320,7 +320,7 @@ static sint32_t FS_file_close(FS_file_t *file){
       return IO_close(file->FileSystem.fd);
     }
     case _FS_file_Temporarily_e:{
-      PR_abort();
+      __abort();
       return 0;
     }
   }
