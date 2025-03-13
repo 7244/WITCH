@@ -5,8 +5,8 @@ typedef pthread_t TH_id_t;
 
 static void TH_sleepf(f64_t time){
   struct timespec t;
-  t.tv_sec = FLOOR(time);
-  t.tv_nsec = FMOD(time, 1) * 1000000000;
+  t.tv_sec = time;
+  t.tv_nsec = (time - (f64_t)t.tv_sec) * 1000000000;
   nanosleep(&t, &t);
 }
 static void TH_sleepi(uint64_t time){
