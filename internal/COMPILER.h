@@ -390,6 +390,13 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 
       #include _WITCH_PATH(include/end_of_naked.h)
     }
+  #elif defined(__compiler_msvc)
+    static
+    __forceinline
+    void
+    __simplest_abort(){
+      __ud2();
+    }
   #else
     #error ?
   #endif
