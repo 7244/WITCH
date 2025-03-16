@@ -20,6 +20,14 @@
         return v.load(); \
       }()
   #endif
+
+  #ifndef __atomic_exchange_n
+    #define __atomic_exchange_n(dst_ptr, src, order) \
+      [a = ptr]{ \
+        auto *v = (std::atomic<std::remove_pointer_t<decltype(a)>> *)dst_ptr; \
+        return v->exchange(src, __atomic_orderconvert##order); \
+      }()
+  #endif
 #else
   #error ?
 #endif
