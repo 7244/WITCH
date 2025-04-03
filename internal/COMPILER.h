@@ -80,6 +80,21 @@
   #endif
 #endif
 
+#ifdef __BYTE_ORDER_BIG
+  #error ?
+#endif
+#ifdef __BYTE_ORDER_LITTLE
+  #error ?
+#endif
+
+#if ENDIAN == 0
+  #define __BYTE_ORDER_BIG 1
+#elif ENDIAN == 1
+  #define __BYTE_ORDER_LITTLE 1
+#else
+  #error ?
+#endif
+
 #ifndef WITCH_PRE_is_not_allowed
   #ifndef PRE
     #include _WITCH_PATH(internal/PRE.h)
