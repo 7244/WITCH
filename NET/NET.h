@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WITCH/STR/STR.h>
+
 /* all backends must obey to this struct */
 #pragma pack(push, 1)
 typedef struct{
@@ -55,6 +57,29 @@ static uint16_t NET_hton16(uint16_t p){
   #else
     #error ?
   #endif
+}
+
+static uint32_t NET_ipv4_from_string(const void *str){
+  uint32_t ret;
+
+  uintptr_t index = 0;
+  for(uint8_t i = 0; i < 4; i++){
+    #if defined(__BYTE_ORDER_BIG)
+      ((uint8_t *)&ret)[i] = STR_psu8_iguess_abort(str, &index);
+    #elif defined(__BYTE_ORDER_LITTLE)
+      ((uint8_t *)&ret)[3 - i] = STR_psu8_iguess_abort(str, &index);
+    #else
+      #error ?
+    #endif
+
+    if(i < 3 && ((uint8_t *)str)[index] != '.'){
+      __abort();
+    }
+
+    index++;
+  }
+
+  return ret;
 }
 
 #ifndef NET_set_backend
