@@ -253,6 +253,14 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
     ((num_m) < 0 ? -(num_m) : (num_m))
 #endif
 
+#ifndef SIGN
+  #if defined(__language_cpp)
+    #define SIGN(p) ((decltype(p))(p < 0 ? -1 : p > 0 ? +1 : 0))
+  #else
+    #define SIGN(p) (p < 0 ? p / -p : p > 0 ? p / p : p)
+  #endif
+#endif
+
 static uint32_t LOG32(uintptr_t num, uint8_t base){
   uint32_t log = 0;
   while(num){
