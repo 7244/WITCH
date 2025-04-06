@@ -136,10 +136,9 @@ static sint32_t IO_openat(const IO_dirfd_t *dirfd, const void *path, uint32_t fl
   return 0;
 }
 
-static sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *ppath, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
-  const char *path = (const char *)ppath;
+static sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *path, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
   char npath[PATH_MAX];
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return IO_openat(dirfd, npath, flag, fd);
 }

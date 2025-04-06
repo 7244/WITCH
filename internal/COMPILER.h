@@ -400,7 +400,6 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     __attribute__((noreturn))
     __attribute((naked))
     static
-    __forceinline
     void
     __simplest_abort(){
       __asm__ __volatile__(

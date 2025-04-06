@@ -187,7 +187,7 @@ static _STR_rscan_type_t _STR_rscan_get_operator(const uint8_t *in, uintptr_t *i
       r.type = _STR_rscan_type_unknown;
       break;
   }
-  if(r.outsize == -1)
+  if(r.outsize == (uintptr_t)-1)
     switch(r.type){
       case _STR_rscan_type_signed:
       case _STR_rscan_type_unsigned:
@@ -398,7 +398,7 @@ static bool STR_vrscanss(const uint8_t *da, uintptr_t *dai, const uintptr_t dasi
             break;
           case _STR_rscan_type_any:
           case _STR_rscan_type_clist:
-            MEM_copy(apply.outdata, pvar, apply.outsize);
+            __builtin_memcpy(pvar, apply.outdata, apply.outsize);
             break;
           case _STR_rscan_type_signed:
           case _STR_rscan_type_unsigned:
@@ -435,7 +435,7 @@ static bool STR_vrscanss(const uint8_t *da, uintptr_t *dai, const uintptr_t dasi
         void *fcb = va_arg(argv, void *);
         void *pvar = va_arg(argv, void *);
         uint8_t *out = ((STR_rscan_fcb_t)fcb)(pvar, &apply.outsize);
-        MEM_copy(apply.outdata, out, apply.outsize);
+        __builtin_memcpy(out, apply.outdata, apply.outsize);
         break;
       }
     }

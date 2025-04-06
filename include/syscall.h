@@ -53,10 +53,10 @@
 
 
 #if defined(__compiler_tinyc)
-  #warning __compiler_tinyc's implement of inline assembly InputOperands local register variable picking is broken.
+  #warning "__compiler_tinyc's implement of inline assembly InputOperands local register variable picking is broken."
 
   #if defined(__platform_libc)
-    #warning gonna use libc's syscall function.
+    #warning "gonna use libc's syscall function."
     static inline sintptr_t syscall0(uintptr_t nr){
       unsigned long r = (unsigned long)syscall(nr);
       if(r > ((unsigned long)0 - 1 ^ 0xfff)){

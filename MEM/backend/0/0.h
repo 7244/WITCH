@@ -1,30 +1,5 @@
 #include <string.h>
 
-/* TODO add restrict */
-static void MEM_copy(
-  const void *src,
-  void *dst,
-  uintptr_t size
-){
-  memcpy(dst, src, size);
-}
-
-static void MEM_move(
-  void *src,
-  void *dst,
-  uintptr_t size
-){
-  memmove(dst, src, size);
-}
-
-static void MEM_set(
-  const uint8_t src,
-  void *dst,
-  uintptr_t size
-){
-  memset(dst, src, size);
-}
-
 static bool MEM_cmp(
   const void *src,
   const void *dst,

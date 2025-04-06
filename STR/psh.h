@@ -12,6 +12,9 @@ uint8_t _STR_psh_c(uint8_t c){
     case 'A':case 'B':case 'C':case 'D':case 'E':case 'F':
       return c - 'A' + 10;
   }
+
+  /* TODO this is generic function. it should return error somehow */
+  __abort();
 }
 #define _STR_psh_c(c_m) \
   _STR_psh_c((uint8_t)(c_m))

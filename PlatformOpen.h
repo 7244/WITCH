@@ -4,7 +4,7 @@
   #define _WITCH_libdefine_PlatformOpen
 
   #ifdef PRE
-    #error PlatformOpen can't be called when PRE is defined.
+    #error "PlatformOpen can't be called when PRE is defined."
   #endif
 
   #ifdef _WITCH_libdefine_PlatformClose

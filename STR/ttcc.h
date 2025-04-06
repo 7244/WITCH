@@ -35,7 +35,7 @@ static bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const
   while(pad){
     uintptr_t left = ttcc->p - ttcc->c;
     uintptr_t n = left < pad ? left : pad;
-    MEM_set(padchar, &ttcc->ptr[ttcc->c], n);
+    __builtin_memset(&ttcc->ptr[ttcc->c], padchar, n);
     ttcc->c += n;
     if(ttcc->c == ttcc->p && ttcc->f(ttcc)){
       return 1;
@@ -46,7 +46,7 @@ static bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const
   while(size){
     uintptr_t left = ttcc->p - ttcc->c;
     uintptr_t n = left < size ? left : size;
-    MEM_copy(data, &ttcc->ptr[ttcc->c], n);
+    __builtin_memcpy(&ttcc->ptr[ttcc->c], data, n);
     ttcc->c += n;
     if(ttcc->c == ttcc->p && ttcc->f(ttcc)){
       return 1;
@@ -57,7 +57,7 @@ static bool _STR_ttcc_com(STR_ttcc_t *ttcc, const bool side, uint64_t pad, const
   while(pad){
     uintptr_t left = ttcc->p - ttcc->c;
     uintptr_t n = left < pad ? left : pad;
-    MEM_set(padchar, &ttcc->ptr[ttcc->c], n);
+    __builtin_memset(&ttcc->ptr[ttcc->c], padchar, n);
     ttcc->c += n;
     if(ttcc->c == ttcc->p && ttcc->f(ttcc)){
       return 1;

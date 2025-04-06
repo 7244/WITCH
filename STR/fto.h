@@ -61,7 +61,7 @@ static bool STR_fto128_base10(f128_t v, uintptr_t precision, uint8_t *data, uint
     uintptr_t utosize;
     if(STR_uto(left, 10, &utostr, &utosize))
       return 1;
-    MEM_move(utostr, data, utosize);
+    __builtin_memmove(data, utostr, utosize);
     data += utosize;
   }
   if(precision)
@@ -72,7 +72,7 @@ static bool STR_fto128_base10(f128_t v, uintptr_t precision, uint8_t *data, uint
     v *= _STR_fto_digit10[n];
     left = v;
     v -= left;
-    MEM_set('0', data, n);
+    __builtin_memset(data, '0', n);
     if(STR_uto_wise(left, 10, n - 1, data))
       return 1;
     data += n;
