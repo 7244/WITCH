@@ -109,7 +109,7 @@ sint32_t NET_connect(const NET_socket_t *sock, NET_addr_t *addr){
   return ret;
 }
 
-sint32_t NET_socket(uint32_t domain, uint32_t type, uint32_t protocol, NET_socket_t *sock){
+sint32_t NET_socket2(uint32_t domain, uint32_t type, uint32_t protocol, NET_socket_t *sock){
   NET_socket_t tsock;
   sint32_t err;
   if(type & SOCK_NONBLOCK){

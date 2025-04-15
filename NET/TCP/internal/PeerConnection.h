@@ -291,7 +291,7 @@ void _NET_TCP_accept(EV_t *listener, EV_event_t *ev, uint32_t flag){
 
 sint32_t NET_TCP_listen(NET_TCP_t *tcp){
   sint32_t err;
-  err = NET_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP, &tcp->sock);
+  err = NET_socket2(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP, &tcp->sock);
   if(err){
     return err;
   }
@@ -476,7 +476,7 @@ sint32_t _NET_TCP_connect(
 ){
   sint32_t err;
   NET_socket_t sock;
-  err = NET_socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP, &sock);
+  err = NET_socket2(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP, &sock);
   if(err){
     return err;
   }

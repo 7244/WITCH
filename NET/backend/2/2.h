@@ -83,13 +83,14 @@ sint32_t NET_connect(NET_socket_t sock, NET_addr_t *addr){
   return r;
 }
 
-NET_socket_t NET_socket(uint32_t domain, uint32_t type, uint32_t protocol){
+sint32_t NET_socket2(uint32_t domain, uint32_t type, uint32_t protocol, NET_socket_t *s){
   bool carry;
-  NET_socket_t r = syscall3_carry(&carry, SYS_socket, domain, type, protocol);
+  sintptr_t r = syscall3_carry(&carry, SYS_socket, domain, type, protocol);
   if(carry){
-    return -r;
+    return (sint32_t)-r;
   }
-  return r;
+  *s = r;
+  return 0;
 }
 
 IO_ssize_t NET_sendto(NET_socket_t sock, const void *data, IO_size_t size, const NET_addr_t *addr){
