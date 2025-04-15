@@ -10,7 +10,7 @@ sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t *Resolution){
   }
   Window root = DefaultRootWindow(display);
   XWindowAttributes attr;
-  MEM_set(0, &attr, sizeof(attr));
+  __builtin_memset(&attr, 0, sizeof(attr));
   if(!XGetWindowAttributes(display, root, &attr)){
     return 1;
   }
@@ -31,7 +31,7 @@ typedef struct{
 sint32_t MD_SCR_open(MD_SCR_t *scr){
   scr->_display = XOpenDisplay(0);
   scr->_root = DefaultRootWindow(scr->_display);
-  MEM_set(0, &scr->_attributes, sizeof(scr->_attributes));
+  __builtin_memset(&scr->_attributes, 0, sizeof(scr->_attributes));
   XGetWindowAttributes(scr->_display, scr->_root, &scr->_attributes);
   scr->Geometry.Resolution.x = scr->_attributes.width;
   scr->Geometry.Resolution.y = scr->_attributes.height;

@@ -142,7 +142,7 @@ _MAP_P(InNew)(
   #else
     n->data.InputSize = InputSize;
     n->data.i = A_resize(NULL, n->data.InputSize);
-    MEM_copy(i, n->data.i, InputSize);
+    __builtin_memcpy(n->data.i, i, InputSize);
   #endif
   n->data.o = *o;
 }

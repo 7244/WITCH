@@ -41,8 +41,8 @@ void HTTP_CookieContainer_add0(HTTP_CookieContainer_t *Container, HTTP_Cookie_t 
   HTTP_Cookie_t *Cookie = &((HTTP_Cookie_t *)Container->vec.ptr)[Container->vec.Current - 1];
   Cookie->name_size = PCookie->name_size;
   Cookie->value_size = PCookie->value_size;
-  MEM_copy(PCookie->name, Cookie->name, Cookie->name_size);
-  MEM_copy(PCookie->value, Cookie->value, Cookie->value_size);
+  __builtin_memcpy(Cookie->name, PCookie->name, Cookie->name_size);
+  __builtin_memcpy(Cookie->value, PCookie->value, Cookie->value_size);
   Cookie->flag = PCookie->flag;
 }
 
@@ -59,7 +59,7 @@ sint32_t HTTP_CookieContainer_add1(HTTP_CookieContainer_t *Container, const void
   HTTP_Cookie_t *Cookie = &((HTTP_Cookie_t *)Container->vec.ptr)[Container->vec.Current - 1];
   Cookie->name_size = name_size;
   Cookie->value_size = value_size;
-  MEM_copy(name, Cookie->name, Cookie->name_size);
-  MEM_copy(value, Cookie->value, Cookie->value_size);
+  __builtin_memcpy(Cookie->name, name, Cookie->name_size);
+  __builtin_memcpy(Cookie->value, value, Cookie->value_size);
   Cookie->flag = flag;
 }

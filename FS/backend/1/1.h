@@ -44,7 +44,7 @@ static sint32_t FS_dir_open(const void *path, FS_dir_t *dir, uint32_t flag){
         continue;
       }
       ipath++;
-      MEM_copy(path, tname, ipath);
+      __builtin_memcpy(tname, path, ipath);
       tname[ipath] = 0;
       IO_stat_t s;
       sint32_t err = IO_stat(tname, &s);
@@ -165,7 +165,7 @@ static sint32_t FS_unlinkn(const void *path, uintptr_t pathsize, uint32_t flag){
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
   }
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return FS_unlink(npath, flag);
 }
@@ -185,7 +185,7 @@ static sint32_t FS_unlinkatn(FS_dir_t *dir, const void *path, uintptr_t pathsize
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
   }
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return FS_unlinkat(dir, npath, flag);
 }
@@ -204,7 +204,7 @@ static void _FS_file_GetPathDirectory(const void *src, uintptr_t src_length, voi
   src_length--;
   while(src_length != (uintptr_t)-1){
     if(((uint8_t *)src)[src_length] == '/'){
-      MEM_copy(src, dst, src_length + 1);
+      __builtin_memcpy(dst, src, src_length + 1);
       ((uint8_t *)dst)[src_length + 1] = 0;
       return;
     }
@@ -217,14 +217,14 @@ static bool _FS_file_GetFileName(const void *src, uintptr_t src_length, void *ds
   src_i--;
   while(src_i != (uintptr_t)-1){
     if(((uint8_t *)src)[src_i] == '/'){
-      MEM_copy(&((uint8_t *)src)[src_i + 1], dst, src_length - src_i);
+      __builtin_memcpy(dst, &((uint8_t *)src)[src_i + 1], src_length - src_i);
       ((uint8_t *)dst)[src_length - src_i] = 0;
       return 0;
     }
     src_i--;
   }
   if(src_length){
-    MEM_copy(src, dst, src_length);
+    __builtin_memcpy(dst, src, src_length);
     ((uint8_t *)dst)[src_length] = 0;
     return 0;
   }
@@ -301,7 +301,7 @@ static sint32_t FS_file_openn(const void *path, uintptr_t pathsize, FS_file_t *f
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
   }
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return FS_file_open(npath, file, flag);
 }
@@ -320,7 +320,7 @@ static sint32_t FS_file_openatn(FS_dir_t *dir, const void *path, uintptr_t paths
   if(pathsize >= (PATH_MAX - 1)){
     return -ENAMETOOLONG;
   }
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return FS_file_openat(dir, npath, file, flag);
 }
@@ -379,7 +379,7 @@ static FS_ssize_t FS_file_write(FS_file_t *file, const void *data, FS_size_t siz
       if(of > 0){
         VEC_handle0(&file->Temporarily.vector, size);
       }
-      MEM_copy(data, &file->Temporarily.vector.ptr[file->Temporarily.Offset], size);
+      __builtin_memcpy(&file->Temporarily.vector.ptr[file->Temporarily.Offset], data, size);
       file->Temporarily.Offset += size;
       return size;
     }

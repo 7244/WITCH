@@ -120,10 +120,9 @@ static IO_fd_t IO_openat(IO_dirfd_t fd, const char *path, uint32_t flag){
   return r;
 }
 
-static IO_fd_t IO_openatn(IO_dirfd_t fd, const void *ppath, uintptr_t pathsize, int flag){
-  const char *path = (const char *)ppath;
+static IO_fd_t IO_openatn(IO_dirfd_t fd, const void *path, uintptr_t pathsize, int flag){
   char npath[PATH_MAX];
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return IO_openat(fd, npath, flag);
 }

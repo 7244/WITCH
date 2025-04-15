@@ -1,6 +1,5 @@
 #pragma once
 
-#include _WITCH_PATH(MEM/MEM.h)
 #include _WITCH_PATH(A/A.h)
 #include _WITCH_PATH(IO/IO.h)
 #include _WITCH_PATH(NET/NET.h)
@@ -56,7 +55,7 @@ void EV_open(EV_t *listener){
     _EV_tp_init(listener);
   #endif
 
-  MEM_set(0, &listener->stat, sizeof(listener->stat));
+  __builtin_memset(&listener->stat, 0, sizeof(listener->stat));
 }
 void EV_close(EV_t *listener){
 

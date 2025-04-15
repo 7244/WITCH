@@ -247,7 +247,7 @@ uint32_t _NET_TCP_GodFatherWriteLast(
       SpecialPointer->index = 0;
       SpecialPointer->size = size;
       SpecialPointer->cb = NET_TCP_SpecialPointer_ecb;
-      MEM_copy(ptr, QueueElement.tdata + sizeof(_SpecialPointer_t), size);
+      __builtin_memcpy(QueueElement.tdata + sizeof(_SpecialPointer_t), ptr, size);
       if(NET_TCP_EXT_write_add(peer, QueuerReference, &QueueElement)){
         EV_ev_flag_add(listener, &peer->event, EV_WRITE);
       }

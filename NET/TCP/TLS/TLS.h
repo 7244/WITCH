@@ -509,7 +509,7 @@ uint32_t _NET_TCP_TLS_write(
         QueueElement.tdata = A_resize(0, sizeof(_SpecialPointer_t) + size);
         _SpecialPointer_t *SpecialPointer = (_SpecialPointer_t *)QueueElement.tdata;
         SpecialPointer->size = size;
-        MEM_copy(ptr, QueueElement.tdata, size);
+        __builtin_memcpy(QueueElement.tdata, ptr, size);
         NET_TCP_EXT_write_add(peer, QueuerReference, &QueueElement);
         return NET_TCP_EXT_dontgo_e;
       }

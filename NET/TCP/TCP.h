@@ -1,6 +1,5 @@
 #pragma once
 
-#include _WITCH_PATH(MEM/MEM.h)
 #include _WITCH_PATH(A/A.h)
 #include _WITCH_PATH(EV/EV.h)
 #include _WITCH_PATH(NET/NET.h)
@@ -188,7 +187,7 @@ NET_TCP_t *NET_TCP_alloc(EV_t *listener){
   tcp->SockDataSize = 0;
   tcp->PeerDataSize = 0;
 
-  MEM_set(0, tcp->op, sizeof(tcp->op));
+  __builtin_memset(tcp->op, 0, sizeof(tcp->op));
 
   #if __sanit
     tcp->UniqueNumber = 0;

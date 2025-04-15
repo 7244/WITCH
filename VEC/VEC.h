@@ -1,7 +1,6 @@
 #pragma once
 
 #include _WITCH_PATH(A/A.h)
-#include _WITCH_PATH(MEM/MEM.h)
 
 typedef struct{
   uintptr_t Current, Possible, Type, Buffer;
@@ -44,7 +43,7 @@ static void VEC_dupe(VEC_t *src, VEC_t *dst){
   dst->ptr = 0;
   dst->resize = src->resize;
   VEC_handle(dst);
-  MEM_copy(src->ptr, dst->ptr, dst->Current * dst->Type);
+  __builtin_memcpy(dst->ptr, src->ptr, dst->Current * dst->Type);
 }
 
 static void VEC_free(VEC_t *vec){

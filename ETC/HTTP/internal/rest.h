@@ -164,7 +164,7 @@ _PP(decode_CopyToBuffer_02_04)
     if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
       return ~_P(DecodeError_LineLengthLimit_e);
     }
-    MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+    __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
     decode->priv.StateData.head.result_head.v[LoopFrom] = CopyTo;
     decode->priv.StateData.head.result_head.s[LoopFrom] = Size;
   }
@@ -196,7 +196,7 @@ _PP(decode_CopyToBuffer_09)
     if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
       return ~_P(DecodeError_LineLengthLimit_e);
     }
-    MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+    __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
     decode->priv.StateData.header.result_header.v[LoopFrom] = CopyTo;
     decode->priv.StateData.header.result_header.s[LoopFrom] = Size;
   }
@@ -233,7 +233,7 @@ _P(decode)
         if(findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[From], &decode->Buffer[0], findchru);
+        __builtin_memcpy(&decode->Buffer[0], &((uint8_t *)Data)[From], findchru);
         decode->priv.StateData.head.BufferOffset = 1;
         decode->priv.StateData.head.result_head.v[0] = 0;
         decode->priv.StateData.head.result_head.s[0] = findchru;
@@ -262,7 +262,7 @@ _P(decode)
         if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
         decode->priv.State = 2;
         goto label_SwitchState;
       }
@@ -271,7 +271,7 @@ _P(decode)
       if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
         return ~_P(DecodeError_LineLengthLimit_e);
       }
-      MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+      __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
       return _P(ResultType_NotEnoughData_e);
     }
     case 0x02:{
@@ -293,7 +293,7 @@ _P(decode)
         if(CopyTo + findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[From], &decode->Buffer[CopyTo], findchru);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[From], findchru);
         decode->priv.StateData.head.BufferOffset = 2;
         decode->priv.StateData.head.result_head.v[1] = CopyTo;
         decode->priv.StateData.head.result_head.s[1] = findchru;
@@ -324,7 +324,7 @@ _P(decode)
         if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
         decode->priv.State = 4;
         goto label_SwitchState;
       }
@@ -333,7 +333,7 @@ _P(decode)
       if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
         return ~_P(DecodeError_LineLengthLimit_e);
       }
-      MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+      __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
       return _P(ResultType_NotEnoughData_e);
     }
     case 0x04:{
@@ -357,7 +357,7 @@ _P(decode)
         if(CopyTo + findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[From], &decode->Buffer[CopyTo], findchru);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[From], findchru);
         decode->priv.StateData.head.BufferOffset = 3;
         decode->priv.StateData.head.result_head.v[2] = CopyTo;
         decode->priv.StateData.head.result_head.s[2] = findchru;
@@ -388,7 +388,7 @@ _P(decode)
         if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
         decode->priv.State = 6;
         goto label_SwitchState;
       }
@@ -397,7 +397,7 @@ _P(decode)
       if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
         return ~_P(DecodeError_LineLengthLimit_e);
       }
-      MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+      __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
       return _P(ResultType_NotEnoughData_e);
     }
     case 0x06:{
@@ -435,7 +435,7 @@ _P(decode)
         if(findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[From], &decode->Buffer[0], findchru);
+        __builtin_memcpy(&decode->Buffer[0], &((uint8_t *)Data)[From], findchru);
         decode->priv.StateData.header.BufferOffset = 1;
         decode->priv.StateData.header.result_header.v[0] = 0;
         decode->priv.StateData.header.result_header.s[0] = findchru;
@@ -463,7 +463,7 @@ _P(decode)
         if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
         decode->priv.State = 9;
         goto label_SwitchState;
       }
@@ -472,7 +472,7 @@ _P(decode)
       if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
         return ~_P(DecodeError_LineLengthLimit_e);
       }
-      MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+      __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
       return _P(ResultType_NotEnoughData_e);
     }
     case 0x09:{
@@ -500,7 +500,7 @@ _P(decode)
         if(CopyTo + findchru > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[From], &decode->Buffer[CopyTo], findchru);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[From], findchru);
         decode->priv.StateData.header.BufferOffset = 2;
         decode->priv.StateData.header.result_header.v[1] = CopyTo;
         decode->priv.StateData.header.result_header.s[1] = findchru;
@@ -530,7 +530,7 @@ _P(decode)
         if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
           return ~_P(DecodeError_LineLengthLimit_e);
         }
-        MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+        __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
         decode->priv.State = 0x0b;
         goto label_SwitchState;
       }
@@ -539,7 +539,7 @@ _P(decode)
       if(CopyTo + Size > ETC_HTTP_set_LineLengthLimit){
         return ~_P(DecodeError_LineLengthLimit_e);
       }
-      MEM_copy(&((uint8_t *)Data)[Start], &decode->Buffer[CopyTo], Size);
+      __builtin_memcpy(&decode->Buffer[CopyTo], &((uint8_t *)Data)[Start], Size);
       return _P(ResultType_NotEnoughData_e);
     }
     case 0x0b:{

@@ -7,7 +7,6 @@
   #define IO_set_fd_limit 0xffff
 #endif
 
-#include _WITCH_PATH(MEM/MEM.h)
 #include _WITCH_PATH(PR/PR.h)
 #include _WITCH_PATH(A/A.h)
 
@@ -259,10 +258,9 @@ static sint32_t IO_openat(const IO_dirfd_t *dirfd, const void *path, uint32_t fl
   return IO_open(spath, flag, fd);
 }
 
-static sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *ppath, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
-  const char *path = (const char *)ppath;
+static sint32_t IO_openatn(const IO_dirfd_t *dirfd, const void *path, uintptr_t pathsize, uint32_t flag, IO_fd_t *fd){
   char npath[PATH_MAX];
-  MEM_copy(path, npath, pathsize);
+  __builtin_memcpy(npath, path, pathsize);
   npath[pathsize] = 0;
   return IO_openat(dirfd, npath, flag, fd);
 }
@@ -492,7 +490,7 @@ static bool IO_IsPathExists(const void *path){
 
 static void _IO_internal_open(){
   _IO_fd_nodes = A_resize(NULL, IO_set_fd_limit);
-  MEM_set(_IO_fd_unknown_e, _IO_fd_nodes, IO_set_fd_limit);
+  __builtin_memset(_IO_fd_nodes, _IO_fd_unknown_e, IO_set_fd_limit);
   IO_fd_t fd;
   IO_fd_set(&fd, STDIN_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
