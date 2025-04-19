@@ -1,12 +1,34 @@
 #include _WITCH_PATH(IO/IO.h)
 #include _WITCH_PATH(include/syscall.h)
 
+#define	NET_INADDR_ANY ((uint32_t)0)
+
 #define NET_PF_LOCAL 1
 #define NET_PF_UNIX NET_PF_LOCAL
 #define NET_PF_INET 2
 
 #define NET_AF_UNIX NET_PF_UNIX
 #define NET_AF_INET NET_PF_INET
+
+#define NET_SOL_SOCKET 1
+
+#define NET_SO_DEBUG 1
+#define NET_SO_REUSEADDR 2
+#define NET_SO_TYPE 3
+#define NET_SO_ERROR 4
+#define NET_SO_DONTROUTE 5
+#define NET_SO_BROADCAST 6
+#define NET_SO_SNDBUF 7
+#define NET_SO_RCVBUF 8
+#define NET_SO_SNDBUFFORCE 32
+#define NET_SO_RCVBUFFORCE 33
+#define NET_SO_KEEPALIVE 9
+#define NET_SO_OOBINLINE 10
+#define NET_SO_NO_CHECK 11
+#define NET_SO_PRIORITY 12
+#define NET_SO_LINGER 13
+#define NET_SO_BSDCOMPAT 14
+#define NET_SO_REUSEPORT 15
 
 enum{
   NET_SHUT_RD = 0,
@@ -59,6 +81,58 @@ enum{
   NET_IPPROTO_MAX
 };
 
+#define NET_TCP_NODELAY 1
+#define NET_TCP_MAXSEG 2
+#define NET_TCP_CORK 3
+#define NET_TCP_KEEPIDLE 4
+#define NET_TCP_KEEPINTVL 5
+#define NET_TCP_KEEPCNT 6
+#define NET_TCP_SYNCNT 7
+#define NET_TCP_LINGER2 8
+#define NET_TCP_DEFER_ACCEPT 9
+#define NET_TCP_WINDOW_CLAMP 10
+#define NET_TCP_INFO 11
+#define NET_TCP_QUICKACK 12
+#define NET_TCP_CONGESTION 13
+#define NET_TCP_MD5SIG 14
+#define NET_TCP_THIN_LINEAR_TIMEOUTS 16
+#define NET_TCP_THIN_DUPACK 17
+#define NET_TCP_USER_TIMEOUT 18
+#define NET_TCP_REPAIR 19
+#define NET_TCP_REPAIR_QUEUE 20
+#define NET_TCP_QUEUE_SEQ 21
+#define NET_TCP_REPAIR_OPTIONS 22
+#define NET_TCP_FASTOPEN 23
+#define NET_TCP_TIMESTAMP 24
+#define NET_TCP_NOTSENT_LOWAT 25
+#define NET_TCP_CC_INFO 26
+#define NET_TCP_SAVE_SYN 27
+#define NET_TCP_SAVED_SYN 28
+#define NET_TCP_REPAIR_WINDOW 29
+#define NET_TCP_FASTOPEN_CONNECT 30
+#define NET_TCP_ULP 31
+#define NET_TCP_MD5SIG_EXT 32
+#define NET_TCP_FASTOPEN_KEY 33
+#define NET_TCP_FASTOPEN_NO_COOKIE 34
+#define NET_TCP_ZEROCOPY_RECEIVE 35
+#define NET_TCP_INQ 36
+
+#define NET_TCP_CM_INQ NET_TCP_INQ
+
+#define NET_TCP_TX_DELAY 37
+
+#define NET_TCP_AO_ADD_KEY 38
+#define NET_TCP_AO_DEL_KEY 39
+#define NET_TCP_AO_INFO 40
+#define NET_TCP_AO_GET_KEYS 41
+#define NET_TCP_AO_REPAIR 42
+
+#define NET_TCP_IS_MPTCP 43
+
+#define NET_TCP_REPAIR_ON 1
+#define NET_TCP_REPAIR_OFF 0
+#define NET_TCP_REPAIR_OFF_NO_WP -1
+
 typedef struct{
   sint16_t sin_family;
   uint16_t sin_port;
@@ -80,7 +154,6 @@ void _NET_addr_TO_sockaddr_in(const NET_addr_t *src, _NET_sockaddr_in_t *dst){
 typedef struct{
   IO_fd_t fd;
 }NET_socket_t;
-#define NET_reuseport SO_REUSEPORT
 
 sint32_t NET_shutdown(const NET_socket_t *sock){
   return syscall2(__NR_shutdown, sock->fd.fd, NET_SHUT_RDWR);

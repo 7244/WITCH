@@ -263,7 +263,7 @@ void _NET_TCP_accept(EV_t *listener, EV_event_t *ev, uint32_t flag){
   NET_socket_t sock;
   NET_socket_t accepter_socket;
   EV_event_get_socket(ev, &accepter_socket);
-  sint32_t err = NET_accept(&accepter_socket, &sdstaddr, SOCK_NONBLOCK, &sock);
+  sint32_t err = NET_accept(&accepter_socket, &sdstaddr, NET_SOCK_NONBLOCK, &sock);
   if(err){
     __abort();
   }
@@ -291,11 +291,11 @@ void _NET_TCP_accept(EV_t *listener, EV_event_t *ev, uint32_t flag){
 
 sint32_t NET_TCP_listen(NET_TCP_t *tcp){
   sint32_t err;
-  err = NET_socket2(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP, &tcp->sock);
+  err = NET_socket2(NET_AF_INET, NET_SOCK_STREAM | NET_SOCK_NONBLOCK, NET_IPPROTO_TCP, &tcp->sock);
   if(err){
     return err;
   }
-  err = NET_setsockopt(&tcp->sock, SOL_SOCKET, NET_reuseport, 1);
+  err = NET_setsockopt(&tcp->sock, NET_SOL_SOCKET, NET_SO_REUSEPORT, 1);
   if(err){
     NET_close(&tcp->sock);
     return err;
@@ -409,7 +409,7 @@ void _NET_TCP_connect_CB(EV_t *listener, EV_event_t *event, uint32_t flag){
 
   NET_socket_t sock = NET_TCP_gsfp(peer);
   sint32_t err;
-  if(NET_getsockopt(&sock, SOL_SOCKET, SO_ERROR, &err) != 0){
+  if(NET_getsockopt(&sock, NET_SOL_SOCKET, NET_SO_ERROR, &err) != 0){
     __abort();
   }
   if(err){
@@ -476,12 +476,12 @@ sint32_t _NET_TCP_connect(
 ){
   sint32_t err;
   NET_socket_t sock;
-  err = NET_socket2(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP, &sock);
+  err = NET_socket2(NET_AF_INET, NET_SOCK_STREAM | NET_SOCK_NONBLOCK, NET_IPPROTO_TCP, &sock);
   if(err){
     return err;
   }
 
-  err = NET_setsockopt(&sock, SOL_SOCKET, NET_reuseport, 1);
+  err = NET_setsockopt(&sock, NET_SOL_SOCKET, NET_SO_REUSEPORT, 1);
   if(err){
     NET_close(&sock);
     return err;
@@ -587,5 +587,5 @@ sint32_t NET_TCP_connect_ThreadSafe(
 
 sint32_t NET_TCP_MakePeerNoDelay(NET_TCP_peer_t *peer){
   NET_socket_t peer_socket = NET_TCP_gsfp(peer);
-  return NET_setsockopt(&peer_socket, IPPROTO_TCP, TCP_NODELAY, 1);
+  return NET_setsockopt(&peer_socket, NET_IPPROTO_TCP, NET_TCP_NODELAY, 1);
 }

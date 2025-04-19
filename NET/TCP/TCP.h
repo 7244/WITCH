@@ -177,7 +177,7 @@ NET_TCP_t *NET_TCP_alloc(EV_t *listener){
   tcp->ConnectTimeoutTime = 5000000000;
   VAS_open(&tcp->ConnectTimerList, sizeof(_NET_TCP_ConnectTimer_t));
 
-  tcp->ssrcaddr.ip = INADDR_ANY;
+  tcp->ssrcaddr.ip = NET_INADDR_ANY;
   tcp->ssrcaddr.port = 0;
 
   tcp->ext.total = 0;
