@@ -4,7 +4,7 @@
   ETC_VEDC_Encode_DefineEncoder_<name of codec>
 */
 
-#include <PIXF.h>
+#include <PIXF/PIXF.h>
 #include _WITCH_PATH(ETC/VCODECSTD/VCODECSTD.h)
 #include _WITCH_PATH(MEM/MEM.h)
 

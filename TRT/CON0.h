@@ -8,11 +8,11 @@ private:
 
   pType *m_Pointer = NULL;
 
-  #define TRT_BME_set_Prefix Cond
-  #define TRT_BME_set_Language 1
-  #define TRT_BME_set_AreWeInsideStruct 1
-  #define TRT_BME_set_Conditional
-  #include <WITCH/TRT/BME/BME.h>
+  #define BME_set_Prefix Cond
+  #define BME_set_Language 1
+  #define BME_set_AreWeInsideStruct 1
+  #define BME_set_Conditional 1
+  #include <BME/BME.h>
   Cond_t m_Cond;
 
   uint8_t m_Count = Count;
@@ -70,10 +70,10 @@ template <typename Common_t, uint8_t Count = 0>
 struct TRT_CON0_Itself_t{
 private:
 
-  #define TRT_BME_set_Prefix Mutex
-  #define TRT_BME_set_Language 1
-  #define TRT_BME_set_AreWeInsideStruct 1
-  #include <WITCH/TRT/BME/BME.h>
+  #define BME_set_Prefix Mutex
+  #define BME_set_Language 1
+  #define BME_set_AreWeInsideStruct 1
+  #include <BME/BME.h>
   Mutex_t m_Mutex;
 
   uint8_t m_Count = Count;
