@@ -28,6 +28,10 @@
         return v->exchange(src, __atomic_orderconvert##order); \
       }()
   #endif
+  
+  #ifndef __atomic_store_n
+    #define __atomic_store_n __atomic_exchange_n
+  #endif
 #else
   #error ?
 #endif
