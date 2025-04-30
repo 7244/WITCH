@@ -12,6 +12,11 @@ typedef struct{
 typedef NET_addr_t NET_addr4port_t;
 
 typedef struct{
+  uint32_t ip;
+  uint8_t prefix;
+}NET_addr4prefix_t;
+
+typedef struct{
   #if defined(__BYTE_ORDER_BIG)
     uint8_t version:4, ihl:4;
   #elif defined(__BYTE_ORDER_LITTLE)
@@ -59,27 +64,83 @@ static uint16_t NET_hton16(uint16_t p){
   #endif
 }
 
-static uint32_t NET_ipv4_from_string(const void *str){
+static uint32_t NET_ntoh32(uint32_t p){
+  #if defined(__BYTE_ORDER_BIG)
+    return p;
+  #elif defined(__BYTE_ORDER_LITTLE)
+    return byteswap32(p);
+  #else
+    #error ?
+  #endif
+}
+
+static uint16_t NET_ntoh16(uint16_t p){
+  #if defined(__BYTE_ORDER_BIG)
+    return p;
+  #elif defined(__BYTE_ORDER_LITTLE)
+    return byteswap16(p);
+  #else
+    #error ?
+  #endif
+}
+
+static uint32_t _NET_addr4_from_string(const void *str, uintptr_t *index){
   uint32_t ret;
 
-  uintptr_t index = 0;
-  for(uint8_t i = 0; i < 4; i++){
+  uint8_t i = 0;
+  while(1){
     #if defined(__BYTE_ORDER_BIG)
-      ((uint8_t *)&ret)[i] = STR_psu8_iguess_abort(str, &index);
+      ((uint8_t *)&ret)[i] = STR_psu8_iguess_abort(str, index);
     #elif defined(__BYTE_ORDER_LITTLE)
-      ((uint8_t *)&ret)[3 - i] = STR_psu8_iguess_abort(str, &index);
+      ((uint8_t *)&ret)[3 - i] = STR_psu8_iguess_abort(str, index);
     #else
       #error ?
     #endif
 
-    if(i < 3 && ((uint8_t *)str)[index] != '.'){
+    if(i < 3 && ((uint8_t *)str)[*index] != '.'){
       __abort();
     }
 
-    index++;
+    i++;
+    if(i >= 4){
+      break;
+    }
+
+    (*index)++;
   }
 
   return ret;
+}
+
+static uint32_t NET_ipv4_from_string(const void *str){
+  uintptr_t index = 0;
+  return _NET_addr4_from_string(str, &index);
+}
+
+static sint32_t NET_addr4prefix_from_string(const void *str, NET_addr4prefix_t *addr4prefix){
+  uintptr_t index = 0;
+  addr4prefix->ip = _NET_addr4_from_string(str, &index);
+  addr4prefix->prefix = 32;
+
+  if(((uint8_t *)str)[index] == '/'){
+    index++;
+
+    addr4prefix->prefix = STR_psu8_iguess_abort(str, &index);
+  }
+
+  if(addr4prefix->prefix > 32){
+    return -1;
+  }
+
+  if(addr4prefix->prefix == 0){
+    addr4prefix->ip = 0;
+  }
+  else{
+    addr4prefix->ip &= ~(((uint32_t)1 << 32 - addr4prefix->prefix) - 1);
+  }
+
+
+  return 0;
 }
 
 #ifndef NET_set_backend
