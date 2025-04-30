@@ -1,19 +1,17 @@
 #pragma once
 
-#ifndef TH_set_backend
-  #if defined(__platform_unix)
-    #define TH_set_backend 0
-  #elif defined(__platform_windows)
-    #define TH_set_backend 1
-  #else
-    #error TH_set_backend is not defined
-  #endif
+#ifdef TH_set_backend
+  #error TH_set_backend is deprecated. now its automatic, dont define it.
 #endif
 
-#if TH_set_backend == 0
-  #include _WITCH_PATH(TH/backend/0/0.h)
-#elif TH_set_backend == 1
-  #include _WITCH_PATH(TH/backend/1/1.h)
+#if defined(__platform_unix)
+  #if defined(__platform_libc)
+    #include "backend/0/0.h"
+  #else
+    #include "backend/unix/impl.h"
+  #endif
+#elif defined(__platform_windows)
+  #include "backend/1/1.h"
 #else
-  #error ?
+  #error failed to find any backend for this platform
 #endif
