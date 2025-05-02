@@ -31,7 +31,7 @@
 #endif
 
 #if \
-  (defined(__compiler_gcc) && __GNUC__ >= 13 && __GNUC__ <= 14) || \
+  (defined(__compiler_gcc) && __GNUC__ >= 13 && __GNUC__ <= 15) || \
   (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
 
   #if \
