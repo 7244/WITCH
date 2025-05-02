@@ -239,7 +239,7 @@ IO_ssize_t NET_sendto(const NET_socket_t *sock, const void *data, IO_size_t size
   return len;
 }
 
-sintptr_t NET_sendmmsg(const NET_socket_t *sock, struct mmsghdr *msgvec, uint32_t vlen, uint32_t flags){
+sintptr_t NET_sendmmsg(const NET_socket_t *sock, NET_mmsghdr_t *msgvec, uint32_t vlen, uint32_t flags){
   return syscall4(__NR_sendmmsg, sock->fd.fd, (uintptr_t)msgvec, vlen, flags);
 }
 
