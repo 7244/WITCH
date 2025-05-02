@@ -152,6 +152,26 @@ void _NET_addr_TO_sockaddr_in(const NET_addr_t *src, _NET_sockaddr_in_t *dst){
 }
 
 typedef struct{
+  void *iov_base;
+  uintptr_t iov_len;
+}NET_iovec_t;
+
+typedef struct{
+  void *msg_name;
+  sint32_t msg_namelen;
+  NET_iovec_t *msg_iov;
+  uintptr_t msg_iovlen;
+  void *msg_control;
+  uintptr_t msg_controllen;
+  uint32_t msg_flags;
+}NET_msghdr_t;
+
+typedef struct{
+  NET_msghdr_t msg_hdr;
+  uint32_t msg_len;
+}NET_mmsghdr_t;
+
+typedef struct{
   IO_fd_t fd;
 }NET_socket_t;
 
@@ -217,6 +237,10 @@ IO_ssize_t NET_sendto(const NET_socket_t *sock, const void *data, IO_size_t size
     }
   }
   return len;
+}
+
+sintptr_t NET_sendmmsg(const NET_socket_t *sock, struct mmsghdr *msgvec, uint32_t vlen, uint32_t flags){
+  return syscall4(__NR_sendmmsg, sock->fd.fd, (uintptr_t)msgvec, vlen, flags);
 }
 
 IO_ssize_t NET_recvfrom(const NET_socket_t *sock, void *data, IO_size_t size, NET_addr_t *addr){
