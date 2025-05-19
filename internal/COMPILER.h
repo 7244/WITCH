@@ -391,36 +391,40 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 #endif
 
 #ifndef __abort
-  #define __abort() do{ \
-    __simplest_abort(); \
-    __unreachable(); \
-  }while(0)
-
-  #if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
-    __attribute__((noreturn))
-    __attribute((naked))
-    static
-    void
-    __simplest_abort(){
-      __asm__ __volatile__(
-        #if defined(__i386__) || defined(__x86_64__)
-          "ud2\n"
-        #else
-          #error ?
-        #endif
-      );
-
-      #include _WITCH_PATH(include/end_of_naked.h)
-    }
-  #elif defined(__compiler_msvc)
-    static
-    __forceinline
-    void
-    __simplest_abort(){
-      __ud2();
-    }
+  #if defined(__platform_bpf)
+    #define __abort() __abort()
   #else
-    #error ?
+    #define __abort() do{ \
+      __simplest_abort(); \
+      __unreachable(); \
+    }while(0)
+
+    #if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
+      __attribute__((noreturn))
+      __attribute((naked))
+      static
+      void
+      __simplest_abort(){
+        __asm__ __volatile__(
+          #if defined(__i386__) || defined(__x86_64__)
+            "ud2\n"
+          #else
+            #error ?
+          #endif
+        );
+
+        #include _WITCH_PATH(include/end_of_naked.h)
+      }
+    #elif defined(__compiler_msvc)
+      static
+      __forceinline
+      void
+      __simplest_abort(){
+        __ud2();
+      }
+    #else
+      #error ?
+    #endif
   #endif
 #endif
 
