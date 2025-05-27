@@ -71,9 +71,9 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
     Encoder->encodeConfig = { NV_ENC_CONFIG_VER };
     Encoder->InternalSetting.encodeConfig = &Encoder->encodeConfig;
     Encoder->en.CreateDefaultEncoderParams(&Encoder->InternalSetting, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
-    Encoder->InternalSetting.frameRateNum = EncoderSetting->InputFrameRate * 1000;
     Encoder->InternalSetting.frameRateDen = 1000;
-    Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+    Encoder->InternalSetting.frameRateNum = EncoderSetting->InputFrameRate * Encoder->InternalSetting.frameRateDen;
+    Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
     Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = EncoderSetting->RateControl.VBR.bps;
     Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps;
 

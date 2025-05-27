@@ -143,6 +143,13 @@ ETC_VEDC_Decoder_Error _ETC_VEDC_Decoder_Codec_cuvid_Open(
     goto gt_err0;
   }
 
+  CUmemoryPool memPool;
+  cuCtxSetCurrent(Decoder->Context);
+  if (cuDeviceGetMemPool(&memPool, Decoder->Device) == CUDA_SUCCESS) {
+    size_t maxMemory = 2024 * 1024 * 1024; // 2GB
+    cuMemPoolSetAttribute(memPool, CU_MEMPOOL_ATTR_RELEASE_THRESHOLD, &maxMemory);
+  }
+
   {
     CUVIDPARSERPARAMS p = {.CodecType = cudaVideoCodec_H264};
     p.ulMaxNumDecodeSurfaces = 1;

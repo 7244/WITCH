@@ -13,7 +13,7 @@
     /* `new` is listed as keyword. it shouldnt need a include to work. */
     #include <new>
   #else
-    #warning does this bug still exists?
+    //#warning does this bug still exists?
   #endif
 
   #define __restrict_or_nothing
