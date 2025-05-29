@@ -143,6 +143,20 @@ static sint32_t NET_addr4prefix_from_string(const void *str, NET_addr4prefix_t *
   return 0;
 }
 
+static sint32_t NET_addr4port_from_string(const void* str, NET_addr4port_t* addr4port) {
+  uintptr_t index = 0;
+  addr4port->ip = _NET_addr4_from_string(str, &index);
+  addr4port->port = 0;
+
+  if (((uint8_t*)str)[index] == ':') {
+    index++;
+
+    addr4port->port = STR_psu16_iguess_abort(str, &index);
+  }
+
+  return 0;
+}
+
 #ifndef NET_set_backend
   #if defined(__platform_unix_linux)
     #define NET_set_backend 0
