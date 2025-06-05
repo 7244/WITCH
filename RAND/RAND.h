@@ -25,9 +25,8 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
   #if defined(__platform_unix)
     #include <sys/random.h>
   #elif defined(__platform_windows)
-    #include <wincrypt.h>
-    #pragma comment(lib, "Advapi32.lib")
-    inline HCRYPTPROV _RAND_hCryptProv;
+    #include <bcrypt.h>
+    #pragma comment(lib, "bcrypt.lib")
   #endif
 
   static void RAND_hard_ram(void *ptr, uintptr_t size){
@@ -36,7 +35,14 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
         __abort();
       }
     #elif defined(__platform_windows)
-      if(CryptGenRandom(_RAND_hCryptProv, size, (BYTE *)ptr) == 0){
+      NTSTATUS status = BCryptGenRandom(
+        NULL,                   
+        (PUCHAR)ptr,            
+        (ULONG)size,         
+        BCRYPT_USE_SYSTEM_PREFERRED_RNG
+      );
+    
+      if (!BCRYPT_SUCCESS(status)) {
         __abort();
       }
     #else
@@ -87,19 +93,10 @@ static uint32_t RAND_csoft3uint32_uint32(uint32_t p0, uint32_t p1, uint32_t p2){
 #endif
 
 static void _RAND_internal_open(){
-  #if defined(__platform_windows)
-    if(CryptAcquireContext(&_RAND_hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == 0){
-      __abort();
-    }
-  #endif
+
 }
 static void _RAND_internal_close(){
-  #if defined(__platform_windows)
-    if(CryptReleaseContext(_RAND_hCryptProv, 0) == 0){
-      /* TODO handle GetLastError like ERROR_BUSY */
-      __abort();
-    }
-  #endif
+
 }
 
 #ifdef _WITCH_libdefine_PlatformOpen
