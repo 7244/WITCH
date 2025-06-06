@@ -65,6 +65,10 @@ typedef enum{
   ETC_VEDC_EncoderSetting_RateControlType_TBR /* time based bit rate */
 }ETC_VEDC_EncoderSetting_RateControlType;
 
+typedef enum {
+  ETC_VEDC_EncoderFlag_ResetIDR = 1 << 0
+};
+
 typedef struct{
   ETC_VEDC_EncoderSetting_RateControlType Type;
   union{
@@ -133,7 +137,8 @@ typedef bool (*_ETC_VEDC_Encoder_IsWriteType_cb)(
 typedef ETC_VEDC_Encode_Error (*_ETC_VEDC_Encoder_Write_cb)(
   void **EncoderData,
   ETC_VEDC_Encode_WriteType WriteType,
-  void *WriteData);
+  void *WriteData,
+  uint8_t Flags);
 typedef bool (*_ETC_VEDC_Encoder_IsReadable_cb)(
   void **EncoderData);
 typedef sint32_t (*_ETC_VEDC_Encoder_Read_cb)(
@@ -318,10 +323,11 @@ ETC_VEDC_Encode_Error
 ETC_VEDC_Encode_Write(
   ETC_VEDC_Encode_t *Encode,
   ETC_VEDC_Encode_WriteType WriteType,
-  void *WriteData
+  void *WriteData,
+  uint8_t Flags
 ){
   _ETC_VEDC_EncoderInfo *di = &_ETC_VEDC_EncoderList[Encode->EncoderID];
-  return di->Write_cb(&Encode->EncoderData, WriteType, WriteData);
+  return di->Write_cb(&Encode->EncoderData, WriteType, WriteData, Flags);
 }
 
 bool

@@ -250,7 +250,8 @@ ETC_VEDC_Encode_Error
 _ETC_VEDC_Encode_Encoder_x264_Write(
   void **EncoderData,
   ETC_VEDC_Encode_WriteType WriteType,
-  void *WriteData
+  void *WriteData,
+  uint8_t Flags
 ){
   _ETC_VEDC_Encode_Encoder_x264_t *Encoder = (_ETC_VEDC_Encode_Encoder_x264_t *)*EncoderData;
 
@@ -312,6 +313,10 @@ _ETC_VEDC_Encode_Encoder_x264_Write(
       for(uint8_t i = 0; i < 4; i++) { pic.img.plane[i] = (uint8_t *)Frame->Data[i]; }
 
       pic.i_pts = Frame->TimeStamp / 1000000;
+
+      if (Flags & ETC_VEDC_EncoderFlag_ResetIDR) {
+        pic.i_type |= X264_TYPE_IDR;
+      }
 
       {
         x264_picture_t pic_filler;

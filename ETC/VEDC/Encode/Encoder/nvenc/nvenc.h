@@ -75,7 +75,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
     Encoder->InternalSetting.frameRateNum = EncoderSetting->InputFrameRate * Encoder->InternalSetting.frameRateDen;
     Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
     Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = EncoderSetting->RateControl.VBR.bps;
-    Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps;
+    Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps * 1.2;
 
     Encoder->en.CreateEncoder(&Encoder->InternalSetting);
   }
@@ -196,7 +196,8 @@ ETC_VEDC_Encode_Error
 _ETC_VEDC_Encode_Encoder_nvenc_Write(
   void** EncoderData,
   ETC_VEDC_Encode_WriteType WriteType,
-  void* WriteData
+  void* WriteData,
+  uint8_t Flags
 ) {
   _ETC_VEDC_Encode_Encoder_nvenc_t* Encoder = (_ETC_VEDC_Encode_Encoder_nvenc_t*)*EncoderData;
 
@@ -217,8 +218,11 @@ _ETC_VEDC_Encode_Encoder_nvenc_Write(
         encoderInputFrame->bufferFormat,
         encoderInputFrame->chromaOffsets,
         encoderInputFrame->numChromaPlanes);
-
-      Encoder->en.EncodeFrame(Encoder->wrd.vPacket);
+      NV_ENC_PIC_PARAMS picParams = {};
+      if (Flags & ETC_VEDC_EncoderFlag_ResetIDR) {
+        picParams.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
+      }
+      Encoder->en.EncodeFrame(Encoder->wrd.vPacket, &picParams);
 
       Encoder->wrd.Readed = 0;
 

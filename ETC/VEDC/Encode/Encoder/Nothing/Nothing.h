@@ -59,7 +59,8 @@ ETC_VEDC_Encode_Error
 _ETC_VEDC_Encode_Encoder_Nothing_Write(
   void **EncoderData,
   ETC_VEDC_Encode_WriteType WriteType,
-  void *WriteData
+  void *WriteData,
+  uint8_t Flags
 ){
   return ETC_VEDC_Encode_Error_Success;
 }

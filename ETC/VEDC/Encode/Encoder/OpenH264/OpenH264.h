@@ -310,7 +310,8 @@ ETC_VEDC_Encode_Error
 _ETC_VEDC_Encode_Encoder_OpenH264_Write(
   void **EncoderData,
   ETC_VEDC_Encode_WriteType WriteType,
-  void *WriteData
+  void *WriteData,
+  uint8_t Flags
 ){
   _ETC_VEDC_Encode_Encoder_OpenH264_t *Encoder = (_ETC_VEDC_Encode_Encoder_OpenH264_t *)*EncoderData;
 
@@ -374,6 +375,8 @@ _ETC_VEDC_Encode_Encoder_OpenH264_Write(
       InternalSource.iPicHeight = Frame->Properties.SizeY;
 
       InternalSource.uiTimeStamp = Frame->TimeStamp / 1000000;
+
+      Encoder->en->ForceIntraFrame(Flags & ETC_VEDC_EncoderFlag_ResetIDR);
 
       {
         int ir = Encoder->en->EncodeFrame(&InternalSource, &Encoder->wrd.info);
