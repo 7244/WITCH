@@ -101,11 +101,11 @@ static void xdg_output_description(void* data, struct zxdg_output_v1* output, co
 
 }
 static const struct zxdg_output_v1_listener xdg_output_listener = {
-    .logical_position = xdg_output_logical_position,
-    .logical_size = xdg_output_logical_size,
-    .done = xdg_output_done,
-    .name = xdg_output_name,
-    .description = xdg_output_description,
+  .logical_position = xdg_output_logical_position,
+  .logical_size = xdg_output_logical_size,
+  .done = xdg_output_done,
+  .name = xdg_output_name,
+  .description = xdg_output_description,
 };
 
 sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
