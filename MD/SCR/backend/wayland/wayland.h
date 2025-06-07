@@ -48,6 +48,37 @@ typedef struct {
   int geometry_received;
 } wayland_screencap_t;
 
+static void registry_global(void* data, struct wl_registry* registry,
+  uint32_t id, const char* interface, uint32_t version) {
+  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
+
+  if (strcmp(interface, wl_compositor_interface.name) == 0) {
+    ctx->compositor = (struct wl_compositor*)wl_registry_bind(registry, id, &wl_compositor_interface, 4);
+  }
+  else if (strcmp(interface, wl_shm_interface.name) == 0) {
+    ctx->shm = (struct wl_shm*)wl_registry_bind(registry, id, &wl_shm_interface, 1);
+  }
+  else if (strcmp(interface, wl_output_interface.name) == 0) {
+    ctx->output = (struct wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 3);
+  }
+  else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
+    ctx->screencopy_manager = (struct zwlr_screencopy_manager_v1*)wl_registry_bind(registry, id,
+      &zwlr_screencopy_manager_v1_interface, 3);
+  }
+  else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
+    ctx->output_manager = (struct zxdg_output_manager_v1*)wl_registry_bind(registry, id,
+      &zxdg_output_manager_v1_interface, 2);
+  }
+}
+
+static void registry_global_remove(void* data, struct wl_registry* registry, uint32_t id) {
+
+}
+static const struct wl_registry_listener registry_listener = {
+  .global = registry_global,
+  .global_remove = registry_global_remove,
+};
+
 sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
   struct wl_display* display;
   struct wl_registry* registry;
@@ -110,41 +141,9 @@ sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
   return 0;
 }
 
-static void registry_global(void* data, struct wl_registry* registry,
-  uint32_t id, const char* interface, uint32_t version) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-
-  if (strcmp(interface, wl_compositor_interface.name) == 0) {
-    ctx->compositor = (struct wl_compositor*)wl_registry_bind(registry, id, &wl_compositor_interface, 4);
-  }
-  else if (strcmp(interface, wl_shm_interface.name) == 0) {
-    ctx->shm = (struct wl_shm*)wl_registry_bind(registry, id, &wl_shm_interface, 1);
-  }
-  else if (strcmp(interface, wl_output_interface.name) == 0) {
-    ctx->output = (struct wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 3);
-  }
-  else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
-    ctx->screencopy_manager = (struct zwlr_screencopy_manager_v1*)wl_registry_bind(registry, id,
-      &zwlr_screencopy_manager_v1_interface, 3);
-  }
-  else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
-    ctx->output_manager = (struct zxdg_output_manager_v1*)wl_registry_bind(registry, id,
-      &zxdg_output_manager_v1_interface, 2);
-  }
-}
-
-static void registry_global_remove(void* data, struct wl_registry* registry, uint32_t id) {
-  // Handle removal if needed
-}
-
-static const struct wl_registry_listener registry_listener = {
-  .global = registry_global,
-  .global_remove = registry_global_remove,
-};
-
 static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output,
   int32_t x, int32_t y) {
-  // Handle position if needed
+
 }
 static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output,
   int32_t width, int32_t height) {
