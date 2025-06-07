@@ -21,6 +21,8 @@ typedef struct{
   #endif
 #elif MD_set_backend == 1
   #include _WITCH_PATH(MD/SCR/backend/DXGI/DXGI.h)
+#elif MD_set_backend == 2
+  #include _WITCH_PATH(MD/SCR/backend/wayland/wayland.h)
 #else
   #error MD_set_backend is not defined
 #endif
