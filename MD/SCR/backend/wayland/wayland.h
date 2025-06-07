@@ -79,6 +79,35 @@ static const struct wl_registry_listener registry_listener = {
   .global_remove = registry_global_remove,
 };
 
+static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output,
+  int32_t x, int32_t y) {
+
+}
+static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output,
+  int32_t width, int32_t height) {
+   wayland_screencap_t* ctx = (wayland_screencap_t*)data;
+  ctx->width = width;
+  ctx->height = height;
+  ctx->geometry_received = 1;
+}
+static void xdg_output_done(void* data, struct zxdg_output_v1* output) {
+  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
+  ctx->geometry_received = 1;
+}
+static void xdg_output_name(void* data, struct zxdg_output_v1* output, const char* name) {
+
+}
+static void xdg_output_description(void* data, struct zxdg_output_v1* output, const char* desc) {
+
+}
+static const struct zxdg_output_v1_listener xdg_output_listener = {
+    .logical_position = xdg_output_logical_position,
+    .logical_size = xdg_output_logical_size,
+    .done = xdg_output_done,
+    .name = xdg_output_name,
+    .description = xdg_output_description,
+};
+
 sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
   struct wl_display* display;
   struct wl_registry* registry;
@@ -140,35 +169,6 @@ sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
 
   return 0;
 }
-
-static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output,
-  int32_t x, int32_t y) {
-
-}
-static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output,
-  int32_t width, int32_t height) {
-   wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->width = width;
-  ctx->height = height;
-  ctx->geometry_received = 1;
-}
-static void xdg_output_done(void* data, struct zxdg_output_v1* output) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->geometry_received = 1;
-}
-static void xdg_output_name(void* data, struct zxdg_output_v1* output, const char* name) {
-
-}
-static void xdg_output_description(void* data, struct zxdg_output_v1* output, const char* desc) {
-
-}
-static const struct zxdg_output_v1_listener xdg_output_listener = {
-    .logical_position = xdg_output_logical_position,
-    .logical_size = xdg_output_logical_size,
-    .done = xdg_output_done,
-    .name = xdg_output_name,
-    .description = xdg_output_description,
-};
 
 static int create_shm_file(size_t size) {
   int fd = memfd_create("wayland-screencap", MFD_CLOEXEC);
