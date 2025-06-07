@@ -5,6 +5,6 @@
   __unreachable();
 #elif defined(__compiler_tinyc)
   __unreachable();
-#else
+#elif defined(__WITCH_DEVELOPER) && __WITCH_DEVELOPER
   #error ?
 #endif
