@@ -47,8 +47,8 @@
   #endif
 #elif MD_set_backend == 2
   #include <wayland-client.h>
-  #include "wlr-screencopy-unstable-v1-client-protocol.h"
-  #include "xdg-output-unstable-v1-client-protocol.h"
+  #include "SCR/backend/wayland/wlr-screencopy-unstable-v1-client-protocol.h"
+  #include "SCR/backend/wayland/xdg-output-unstable-v1-client-protocol.h"
   
   // Wayland doesn't have a direct screen index concept like X11
   // Outputs are discovered through registry enumeration
