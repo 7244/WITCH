@@ -13,7 +13,9 @@
     /* `new` is listed as keyword. it shouldnt need a include to work. */
     #include <new>
   #else
-    //#warning does this bug still exists?
+    #if defined(__WITCH_DEVELOPER) && __WITCH_DEVELOPER
+      #warning is this bug still exist?
+    #endif
   #endif
 
   #define __restrict_or_nothing

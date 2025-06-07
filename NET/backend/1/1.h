@@ -2,49 +2,17 @@
 #include _WITCH_PATH(include/windows/windows.h)
 #include _WITCH_PATH(include/windows/winsock.h)
 
-#ifndef NET_AF_INET
-  #define NET_AF_INET AF_INET
-#endif
-
-#ifndef NET_SOCK_DGRAM
-  #define NET_SOCK_DGRAM SOCK_DGRAM
-#endif
-
-#ifndef NET_SOCK_NONBLOCK
-  #define NET_SOCK_NONBLOCK SOCK_NONBLOCK
-#endif
-
-#ifndef NET_IPPROTO_UDP
-  #define NET_IPPROTO_UDP IPPROTO_UDP
-#endif
-
-#ifndef NET_INADDR_ANY
-  #define NET_INADDR_ANY INADDR_ANY
-#endif
-
-#ifndef NET_SOCK_STREAM
-  #define NET_SOCK_STREAM SOCK_STREAM
-#endif
-
-#ifndef NET_IPPROTO_TCP
-  #define NET_IPPROTO_TCP IPPROTO_TCP
-#endif
-
-#ifndef NET_SOL_SOCKET
-  #define NET_SOL_SOCKET SOL_SOCKET
-#endif
-
-#ifndef NET_SO_REUSEPORT
-  #define NET_SO_REUSEPORT SO_REUSEADDR
-#endif
-
-#ifndef NET_SO_ERROR
-  #define NET_SO_ERROR SO_ERROR
-#endif
-
-#ifndef NET_TCP_NODELAY
-  #define NET_TCP_NODELAY TCP_NODELAY
-#endif
+#define NET_AF_INET AF_INET
+#define NET_SOCK_DGRAM SOCK_DGRAM
+#define NET_SOCK_NONBLOCK SOCK_NONBLOCK
+#define NET_IPPROTO_UDP IPPROTO_UDP
+#define NET_INADDR_ANY INADDR_ANY
+#define NET_SOCK_STREAM SOCK_STREAM
+#define NET_IPPROTO_TCP IPPROTO_TCP
+#define NET_SOL_SOCKET SOL_SOCKET
+#define NET_SO_REUSEPORT SO_REUSEADDR
+#define NET_SO_ERROR SO_ERROR
+#define NET_TCP_NODELAY TCP_NODELAY
 
 typedef struct{
   sint16_t sin_family;
