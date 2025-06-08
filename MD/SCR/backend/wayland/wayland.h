@@ -365,6 +365,11 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   DBusError error;
   const char* session_handle;
 
+  char session_token[64];
+  char start_token[64];
+  snprintf(session_token, sizeof(session_token), "session_%d_%ld", getpid(), time(NULL));
+  snprintf(start_token, sizeof(start_token), "start_%d_%ld", getpid(), time(NULL) + 1);
+
   dbus_error_init(&error);
 
   conn = dbus_bus_get(DBUS_BUS_SESSION, &error);
@@ -383,13 +388,22 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
     "CreateSession"
   );
 
-  DBusMessageIter args, options;
+  DBusMessageIter args, options, option, variant;
   dbus_message_iter_init_append(msg, &args);
 
   dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
+
+  const char* token_key = "session_handle_token";
+  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
+  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &token_key);
+  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant);
+  dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &session_token);
+  dbus_message_iter_close_container(&option, &variant);
+  dbus_message_iter_close_container(&options, &option);
+
   dbus_message_iter_close_container(&args, &options);
 
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 5000, &error);
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
   dbus_message_unref(msg);
 
   if (dbus_error_is_set(&error)) {
@@ -407,11 +421,16 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_OBJECT_PATH) {
     dbus_message_iter_get_basic(&reply_iter, &session_handle);
     scr->portal_session_handle = strdup(session_handle);
+#if defined(MD_SCR_DEBUG_PRINTS)
+    printf("Session handle: %s\n", scr->portal_session_handle);
+#endif
   }
 
   dbus_message_unref(reply);
 
-  // Select sources (desktop)
+  // Wait a bit for the session to be ready - TODO correct?
+  usleep(100000); // 100ms
+
   msg = dbus_message_new_method_call(
     "org.freedesktop.portal.Desktop",
     "/org/freedesktop/portal/desktop",
@@ -425,20 +444,28 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
 
   // Set source types (monitor = 1)
-  DBusMessageIter option, variant;
-  const char* key = "types";
+  const char* types_key = "types";
   uint32_t source_type = 1; // Monitor
 
   dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
-  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &key);
+  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &types_key);
   dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant);
   dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &source_type);
   dbus_message_iter_close_container(&option, &variant);
   dbus_message_iter_close_container(&options, &option);
 
+  const char* multiple_key = "multiple";
+  dbus_bool_t multiple_val = FALSE;
+  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
+  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &multiple_key);
+  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "b", &variant);
+  dbus_message_iter_append_basic(&variant, DBUS_TYPE_BOOLEAN, &multiple_val);
+  dbus_message_iter_close_container(&option, &variant);
+  dbus_message_iter_close_container(&options, &option);
+
   dbus_message_iter_close_container(&args, &options);
 
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 5000, &error);
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
   dbus_message_unref(msg);
 
   if (dbus_error_is_set(&error)) {
@@ -452,6 +479,9 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
 
   dbus_message_unref(reply);
 
+  // Wait a bit more - TODO correct?
+  usleep(100000); // 100ms
+
   msg = dbus_message_new_method_call(
     "org.freedesktop.portal.Desktop",
     "/org/freedesktop/portal/desktop",
@@ -461,12 +491,24 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
 
   dbus_message_iter_init_append(msg, &args);
   dbus_message_iter_append_basic(&args, DBUS_TYPE_OBJECT_PATH, &scr->portal_session_handle);
-  dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &"");
+
+  const char* parent_window = "";
+  dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &parent_window);
 
   dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
+
+  // Add handle_token for Start request
+  const char* handle_token_key = "handle_token";
+  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
+  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &handle_token_key);
+  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant);
+  dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &start_token);
+  dbus_message_iter_close_container(&option, &variant);
+  dbus_message_iter_close_container(&options, &option);
+
   dbus_message_iter_close_container(&args, &options);
 
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, 30000, &error); // Longer timeout for user interaction
   dbus_message_unref(msg);
 
   if (dbus_error_is_set(&error)) {
@@ -480,10 +522,23 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
 
   dbus_message_iter_init(reply, &reply_iter);
 
+  // Parse response code
+  uint32_t response_code = 1; // Default to error
   if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_UINT32) {
+    dbus_message_iter_get_basic(&reply_iter, &response_code);
     dbus_message_iter_next(&reply_iter);
   }
 
+  if (response_code != 0) {
+#if defined(MD_SCR_DEBUG_PRINTS)
+    printf("Start request failed with response code: %u\n", response_code);
+#endif
+    dbus_message_unref(reply);
+    dbus_connection_unref(conn);
+    return -1;
+  }
+
+  // Parse results to get stream information
   if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_ARRAY) {
     DBusMessageIter results_iter, dict_entry, variant_iter, streams_iter;
 
@@ -506,6 +561,9 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
 
           if (dbus_message_iter_get_arg_type(&stream_iter) == DBUS_TYPE_UINT32) {
             dbus_message_iter_get_basic(&stream_iter, &scr->portal_source_id);
+#if defined(MD_SCR_DEBUG_PRINTS)
+            printf("Got PipeWire source ID: %u\n", scr->portal_source_id);
+#endif
           }
         }
         break;
