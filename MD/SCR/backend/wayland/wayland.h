@@ -1,4 +1,3 @@
-#include _WITCH_PATH(MEM/MEM.h)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,10 +5,10 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <errno.h>
-
+#include <time.h>
+#include <iostream>
+#include <gio/gio.h>
 #define MD_SCR_DEBUG_PRINTS
-
-//-----------------------------------------wlroots-----------------------------------------
 
 // Wayland protocol headers - generated from .xml files
 // https://raw.githubusercontent.com/swaywm/wlr-protocols/master/unstable/wlr-screencopy-unstable-v1.xml
@@ -26,34 +25,29 @@
 #include <wayland-client.h>
 #include "wlr-screencopy-unstable-v1-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
-//-----------------------------------------wlroots-----------------------------------------
-
-//-----------------------------------------PipeWire-----------------------------------------
 
 //Link: -ldbus-1 -lpipewire-0.3 -lspa-0.2
 #include <dbus/dbus.h>
-
 #include <pipewire/pipewire.h>
 #include <spa/param/video/format-utils.h>
 #include <spa/param/video/type-info.h>
 #include <spa/debug/types.h>
 
-//-----------------------------------------PipeWire-----------------------------------------
-
 typedef struct {
-  struct pw_main_loop* loop;
+  struct pw_loop* loop;
+  struct pw_context* context;
   struct pw_core* core;
   struct pw_stream* stream;
   struct spa_hook stream_listener;
-
   uint8_t* frame_data;
   size_t frame_size;
   uint32_t width;
   uint32_t height;
   uint32_t stride;
-
+  uint32_t format;
   int frame_ready;
   int capture_failed;
+  int connected;
 } pipewire_ctx_t;
 
 typedef struct {
@@ -85,20 +79,31 @@ typedef enum {
   MD_SCR_METHOD_WLR_SCREENCOPY,
 } MD_SCR_Method_t;
 
+
 typedef struct {
   MD_SCR_Method_t method;
   MD_SCR_Geometry_t Geometry;
-
   pipewire_ctx_t* pw_ctx;
   wayland_screencap_t* wl_ctx;
-
   char* portal_session_handle;
   uint32_t portal_source_id;
 } MD_SCR_t;
 
-//-----------------------------------------wlroots-----------------------------------------
-static void registry_global(void* data, struct wl_registry* registry,
-  uint32_t id, const char* interface, uint32_t version) {
+// Portal state tracking
+typedef struct {
+  char* session_handle;
+  uint32_t source_id;
+  int create_session_done;
+  int select_sources_done;
+  int start_done;
+  int failed;
+  char* request_path;
+} portal_state_t;
+
+static portal_state_t portal_state = { 0 };
+
+// Wayland screencopy implementation (keeping your existing code)
+static void registry_global(void* data, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
   wayland_screencap_t* ctx = (wayland_screencap_t*)data;
   if (strcmp(interface, wl_compositor_interface.name) == 0) {
     ctx->compositor = (struct wl_compositor*)wl_registry_bind(registry, id, &wl_compositor_interface, 4);
@@ -110,30 +115,25 @@ static void registry_global(void* data, struct wl_registry* registry,
     ctx->output = (struct wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 3);
   }
   else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
-    ctx->screencopy_manager = (struct zwlr_screencopy_manager_v1*)wl_registry_bind(registry, id,
-      &zwlr_screencopy_manager_v1_interface, 3);
+    ctx->screencopy_manager = (struct zwlr_screencopy_manager_v1*)wl_registry_bind(
+      registry, id, &zwlr_screencopy_manager_v1_interface, 3);
   }
   else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
-    ctx->output_manager = (struct zxdg_output_manager_v1*)wl_registry_bind(registry, id,
-      &zxdg_output_manager_v1_interface, 2);
+    ctx->output_manager = (struct zxdg_output_manager_v1*)wl_registry_bind(
+      registry, id, &zxdg_output_manager_v1_interface, 2);
   }
 }
 
-static void registry_global_remove(void* data, struct wl_registry* registry, uint32_t id) {
-
-}
+static void registry_global_remove(void* data, struct wl_registry* registry, uint32_t id) {}
 
 static const struct wl_registry_listener registry_listener = {
-  .global = registry_global,
-  .global_remove = registry_global_remove,
+    .global = registry_global,
+    .global_remove = registry_global_remove,
 };
 
-static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output,
-  int32_t x, int32_t y) {
-}
+static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output, int32_t x, int32_t y) {}
 
-static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output,
-  int32_t width, int32_t height) {
+static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output, int32_t width, int32_t height) {
   wayland_screencap_t* ctx = (wayland_screencap_t*)data;
   ctx->width = width;
   ctx->height = height;
@@ -145,443 +145,478 @@ static void xdg_output_done(void* data, struct zxdg_output_v1* output) {
   ctx->geometry_received = 1;
 }
 
-static void xdg_output_name(void* data, struct zxdg_output_v1* output, const char* name) {
-}
-
-static void xdg_output_description(void* data, struct zxdg_output_v1* output, const char* desc) {
-}
+static void xdg_output_name(void* data, struct zxdg_output_v1* output, const char* name) {}
+static void xdg_output_description(void* data, struct zxdg_output_v1* output, const char* desc) {}
 
 static const struct zxdg_output_v1_listener xdg_output_listener = {
-  .logical_position = xdg_output_logical_position,
-  .logical_size = xdg_output_logical_size,
-  .done = xdg_output_done,
-  .name = xdg_output_name,
-  .description = xdg_output_description,
+    .logical_position = xdg_output_logical_position,
+    .logical_size = xdg_output_logical_size,
+    .done = xdg_output_done,
+    .name = xdg_output_name,
+    .description = xdg_output_description,
 };
 
-static int create_shm_file(size_t size) {
-  int fd = memfd_create("wayland-screencap", MFD_CLOEXEC);
-  if (fd < 0) {
-    return -1;
-  }
-  if (ftruncate(fd, size) < 0) {
-    close(fd);
-    return -1;
-  }
-  return fd;
-}
-
-static void frame_buffer(void* data, struct zwlr_screencopy_frame_v1* frame,
-  uint32_t format, uint32_t width, uint32_t height, uint32_t stride) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->width = width;
-  ctx->height = height;
-  ctx->stride = stride;
-  ctx->format = format;
-  ctx->shm_size = stride * height;
-  ctx->shm_fd = create_shm_file(ctx->shm_size);
-  if (ctx->shm_fd < 0) {
-    ctx->failed = 1;
-    return;
-  }
-  ctx->shm_data = (uint8_t*)mmap(NULL, ctx->shm_size, PROT_READ | PROT_WRITE, MAP_SHARED, ctx->shm_fd, 0);
-  if (ctx->shm_data == MAP_FAILED) {
-    close(ctx->shm_fd);
-    ctx->failed = 1;
-    return;
-  }
-  struct wl_shm_pool* pool = wl_shm_create_pool(ctx->shm, ctx->shm_fd, ctx->shm_size);
-  ctx->buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
-  wl_shm_pool_destroy(pool);
-  zwlr_screencopy_frame_v1_copy(frame, ctx->buffer);
-}
-
-static void frame_flags(void* data, struct zwlr_screencopy_frame_v1* frame, uint32_t flags) {
-}
-
-static void frame_ready(void* data, struct zwlr_screencopy_frame_v1* frame,
-  uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->done = 1;
-}
-
-static void frame_failed(void* data, struct zwlr_screencopy_frame_v1* frame) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->failed = 1;
-}
-
-static void frame_damage(void* data, struct zwlr_screencopy_frame_v1* frame,
-  uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
-}
-
-static void frame_linux_dmabuf(void* data, struct zwlr_screencopy_frame_v1* frame,
-  uint32_t format, uint32_t modifier_hi, uint32_t modifier_lo) {
-}
-
-static void frame_buffer_done(void* data, struct zwlr_screencopy_frame_v1* frame) {
-
-}
-
-static const struct zwlr_screencopy_frame_v1_listener frame_listener = {
-  .buffer = frame_buffer,
-  .flags = frame_flags,
-  .ready = frame_ready,
-  .failed = frame_failed,
-  .damage = frame_damage,
-  .linux_dmabuf = frame_linux_dmabuf,
-  .buffer_done = frame_buffer_done,
-};
-
-static int wayland_init_connection(wayland_screencap_t* ctx) {
-  ctx->display = wl_display_connect(NULL);
-  if (!ctx->display) {
-    return -1;
+// Portal signal handler - fixed to handle all three stages
+static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusMessage* message, void* user_data) {
+  if (!dbus_message_is_signal(message, "org.freedesktop.portal.Request", "Response")) {
+    return DBUS_HANDLER_RESULT_HANDLED;
   }
 
-  ctx->registry = wl_display_get_registry(ctx->display);
-  if (!ctx->registry) {
-    wl_display_disconnect(ctx->display);
-    return -1;
+  const char* path = dbus_message_get_path(message);
+  if (!path) {
+    return DBUS_HANDLER_RESULT_HANDLED;
   }
 
-  wl_registry_add_listener(ctx->registry, &registry_listener, ctx);
-  wl_display_roundtrip(ctx->display);
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Received Response signal from path: %s\n", path);
+#endif
 
-  if (!ctx->screencopy_manager || !ctx->output || !ctx->shm) {
-    return -1;
+  DBusMessageIter args, results_iter, dict_entry, variant_iter;
+  uint32_t response_code;
+
+  if (!dbus_message_iter_init(message, &args)) {
+    printf("Failed to initialize message iterator\n");
+    return DBUS_HANDLER_RESULT_HANDLED;
   }
 
-  if (ctx->output_manager) {
-    ctx->xdg_output = zxdg_output_manager_v1_get_xdg_output(ctx->output_manager, ctx->output);
-    if (ctx->xdg_output) {
-      zxdg_output_v1_add_listener(ctx->xdg_output, &xdg_output_listener, ctx);
+  if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_UINT32) {
+    dbus_message_iter_get_basic(&args, &response_code);
+    dbus_message_iter_next(&args);
+  }
 
-      while (!ctx->geometry_received) {
-        if (wl_display_dispatch(ctx->display) < 0) {
-          return -1;
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Response code: %u\n", response_code);
+#endif
+
+  if (response_code != 0) {
+    printf("Portal request failed with code: %u\n", response_code);
+    portal_state.failed = 1;
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  // Check if this is a CreateSession response
+  if (strstr(path, "create_") && !portal_state.create_session_done) {
+    if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_ARRAY) {
+      dbus_message_iter_recurse(&args, &results_iter);
+      while (dbus_message_iter_get_arg_type(&results_iter) == DBUS_TYPE_DICT_ENTRY) {
+        dbus_message_iter_recurse(&results_iter, &dict_entry);
+        const char* key = NULL;
+        if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_STRING) {
+          dbus_message_iter_get_basic(&dict_entry, &key);
+          dbus_message_iter_next(&dict_entry);
+          if (key && strcmp(key, "session_handle") == 0) {
+            if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_VARIANT) {
+              dbus_message_iter_recurse(&dict_entry, &variant_iter);
+              if (dbus_message_iter_get_arg_type(&variant_iter) == DBUS_TYPE_OBJECT_PATH ||
+                dbus_message_iter_get_arg_type(&variant_iter) == DBUS_TYPE_STRING) {
+                const char* session_handle;
+                dbus_message_iter_get_basic(&variant_iter, &session_handle);
+                if (portal_state.session_handle) {
+                  free(portal_state.session_handle);
+                }
+                portal_state.session_handle = strdup(session_handle);
+                portal_state.create_session_done = 1;
+#ifdef MD_SCR_DEBUG_PRINTS
+                printf("Received session handle: %s\n", portal_state.session_handle);
+#endif
+              }
+            }
+          }
         }
+        dbus_message_iter_next(&results_iter);
+      }
+    }
+  }
+  // Check if this is a SelectSources response  
+  else if (strstr(path, "select_") && !portal_state.select_sources_done) {
+    portal_state.select_sources_done = 1;
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("SelectSources completed\n");
+#endif
+  }
+  // Check if this is a Start response
+  else if (strstr(path, "start_") && !portal_state.start_done) {
+    if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_ARRAY) {
+      dbus_message_iter_recurse(&args, &results_iter);
+      while (dbus_message_iter_get_arg_type(&results_iter) == DBUS_TYPE_DICT_ENTRY) {
+        dbus_message_iter_recurse(&results_iter, &dict_entry);
+        const char* key = NULL;
+        if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_STRING) {
+          dbus_message_iter_get_basic(&dict_entry, &key);
+          dbus_message_iter_next(&dict_entry);
+          if (key && strcmp(key, "streams") == 0) {
+            if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_VARIANT) {
+              dbus_message_iter_recurse(&dict_entry, &variant_iter);
+              if (dbus_message_iter_get_arg_type(&variant_iter) == DBUS_TYPE_ARRAY) {
+                DBusMessageIter streams_iter, stream_iter;
+                dbus_message_iter_recurse(&variant_iter, &streams_iter);
+                if (dbus_message_iter_get_arg_type(&streams_iter) == DBUS_TYPE_STRUCT) {
+                  dbus_message_iter_recurse(&streams_iter, &stream_iter);
+                  if (dbus_message_iter_get_arg_type(&stream_iter) == DBUS_TYPE_UINT32) {
+                    dbus_message_iter_get_basic(&stream_iter, &portal_state.source_id);
+                    portal_state.start_done = 1;
+#ifdef MD_SCR_DEBUG_PRINTS
+                    printf("Portal source ID: %u\n", portal_state.source_id);
+#endif
+                  }
+                }
+              }
+            }
+          }
+        }
+        dbus_message_iter_next(&results_iter);
       }
     }
   }
 
-  return 0;
+  return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-static uint8_t* wayland_capture_frame(wayland_screencap_t* ctx) {
-  if (!ctx) return NULL;
-
-  // Clean up previous capture
-  if (ctx->frame) {
-    zwlr_screencopy_frame_v1_destroy(ctx->frame);
-    ctx->frame = NULL;
+static void cleanup_resources(DBusMessage* reply, DBusConnection* conn, DBusMessage* msg, DBusError* error) {
+  if (reply) dbus_message_unref(reply);
+  if (msg) dbus_message_unref(msg);
+  if (dbus_error_is_set(error)) dbus_error_free(error);
+  if (conn) {
+    dbus_connection_remove_filter(conn, portal_signal_handler, NULL);
+    dbus_connection_unref(conn);
   }
-  if (ctx->buffer) {
-    wl_buffer_destroy(ctx->buffer);
-    ctx->buffer = NULL;
+  if (portal_state.session_handle) {
+    free(portal_state.session_handle);
+    portal_state.session_handle = NULL;
   }
-  if (ctx->shm_data && ctx->shm_data != MAP_FAILED) {
-    munmap(ctx->shm_data, ctx->shm_size);
-    ctx->shm_data = NULL;
-  }
-  if (ctx->shm_fd >= 0) {
-    close(ctx->shm_fd);
-    ctx->shm_fd = -1;
-  }
-
-  ctx->done = 0;
-  ctx->failed = 0;
-
-  ctx->frame = zwlr_screencopy_manager_v1_capture_output(ctx->screencopy_manager, 0, ctx->output);
-  if (!ctx->frame) {
-    return NULL;
-  }
-
-  zwlr_screencopy_frame_v1_add_listener(ctx->frame, &frame_listener, ctx);
-
-  while (!ctx->done && !ctx->failed) {
-    if (wl_display_dispatch(ctx->display) < 0) {
-      return NULL;
-    }
-  }
-
-  if (ctx->failed || !ctx->shm_data) {
-    return NULL;
-  }
-
-  wl_display_flush(ctx->display);
-
-  return ctx->shm_data;
-}
-
-static void wayland_cleanup(wayland_screencap_t* ctx) {
-  if (!ctx) return;
-
-  if (ctx->frame) {
-    zwlr_screencopy_frame_v1_destroy(ctx->frame);
-  }
-  if (ctx->buffer) {
-    wl_buffer_destroy(ctx->buffer);
-  }
-  if (ctx->shm_data && ctx->shm_data != MAP_FAILED) {
-    munmap(ctx->shm_data, ctx->shm_size);
-  }
-  if (ctx->shm_fd >= 0) {
-    close(ctx->shm_fd);
-  }
-  if (ctx->xdg_output) {
-    zxdg_output_v1_destroy(ctx->xdg_output);
-  }
-  if (ctx->output_manager) {
-    zxdg_output_manager_v1_destroy(ctx->output_manager);
-  }
-  if (ctx->screencopy_manager) {
-    zwlr_screencopy_manager_v1_destroy(ctx->screencopy_manager);
-  }
-  if (ctx->output) {
-    wl_output_destroy(ctx->output);
-  }
-  if (ctx->shm) {
-    wl_shm_destroy(ctx->shm);
-  }
-  if (ctx->compositor) {
-    wl_compositor_destroy(ctx->compositor);
-  }
-  if (ctx->registry) {
-    wl_registry_destroy(ctx->registry);
-  }
-  if (ctx->display) {
-    wl_display_disconnect(ctx->display);
+  if (portal_state.request_path) {
+    free(portal_state.request_path);
+    portal_state.request_path = NULL;
   }
 }
-
-//-----------------------------------------wlroots-----------------------------------------
-
-
-//-----------------------------------------PipeWire-----------------------------------------
 
 static int portal_request_screenshare(MD_SCR_t* scr) {
-  DBusConnection* conn;
-  DBusMessage* msg, * reply;
+  DBusConnection* conn = NULL;
+  DBusMessage* msg = NULL;
+  DBusMessage* reply = NULL;
   DBusError error;
-  const char* session_handle;
+  int result = -1;
+  char session_token[256];
+  char start_token[256];
+  char create_token[256];
+  char select_token[256];
 
-  char session_token[64];
-  char start_token[64];
-  snprintf(session_token, sizeof(session_token), "session_%d_%ld", getpid(), time(NULL));
-  snprintf(start_token, sizeof(start_token), "start_%d_%ld", getpid(), time(NULL) + 1);
+  memset(&portal_state, 0, sizeof(portal_state));
+
+  long timestamp = time(NULL);
+  pid_t pid = getpid();
+  snprintf(session_token, sizeof(session_token), "session_%d_%ld", pid, timestamp);
+  snprintf(start_token, sizeof(start_token), "start_%d_%ld", pid, timestamp + 1);
+  snprintf(create_token, sizeof(create_token), "create_%d_%ld", pid, timestamp + 2);
+  snprintf(select_token, sizeof(select_token), "select_%d_%ld", pid, timestamp + 3);
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Using tokens: session=%s, create=%s, select=%s, start=%s\n",
+    session_token, create_token, select_token, start_token);
+#endif
 
   dbus_error_init(&error);
-
   conn = dbus_bus_get(DBUS_BUS_SESSION, &error);
   if (dbus_error_is_set(&error)) {
-#if defined(MD_SCR_DEBUG_PRINTS)
     printf("D-Bus connection error: %s\n", error.message);
-#endif
-    dbus_error_free(&error);
+    cleanup_resources(reply, conn, msg, &error);
     return -1;
   }
 
-  msg = dbus_message_new_method_call(
-    "org.freedesktop.portal.Desktop",
+  char match_rule[512];
+  snprintf(match_rule, sizeof(match_rule),
+    "type='signal',"
+    "sender='org.freedesktop.portal.Desktop',"
+    "interface='org.freedesktop.portal.Request',"
+    "member='Response'");
+
+  dbus_bus_add_match(conn, match_rule, &error);
+  if (dbus_error_is_set(&error)) {
+    printf("Failed to add match rule: %s\n", error.message);
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  dbus_connection_add_filter(conn, portal_signal_handler, NULL, NULL);
+  dbus_connection_flush(conn);
+
+  // Step 1: Create Session
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Step 1: Creating session...\n");
+#endif
+
+  msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
     "/org/freedesktop/portal/desktop",
     "org.freedesktop.portal.ScreenCast",
-    "CreateSession"
-  );
+    "CreateSession");
+  if (!msg) {
+    printf("Failed to create CreateSession message\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
   DBusMessageIter args, options, option, variant;
   dbus_message_iter_init_append(msg, &args);
 
-  dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
-
-  const char* token_key = "session_handle_token";
-  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
-  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &token_key);
-  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant);
-  dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &session_token);
-  dbus_message_iter_close_container(&option, &variant);
-  dbus_message_iter_close_container(&options, &option);
-
-  dbus_message_iter_close_container(&args, &options);
-
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
-  dbus_message_unref(msg);
-
-  if (dbus_error_is_set(&error)) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("CreateSession error: %s\n", error.message);
-#endif
-    dbus_error_free(&error);
-    dbus_connection_unref(conn);
+  if (!dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options)) {
+    cleanup_resources(reply, conn, msg, &error);
     return -1;
   }
 
-  DBusMessageIter reply_iter;
-  dbus_message_iter_init(reply, &reply_iter);
-
-  if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_OBJECT_PATH) {
-    dbus_message_iter_get_basic(&reply_iter, &session_handle);
-    scr->portal_session_handle = strdup(session_handle);
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("Session handle: %s\n", scr->portal_session_handle);
-#endif
+  const char* session_token_key = "session_handle_token";
+  const char* session_token_ptr = session_token;
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &session_token_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &session_token_ptr) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
   }
 
-  dbus_message_unref(reply);
+  const char* handle_token_key = "handle_token";
+  const char* create_token_ptr = create_token;
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &handle_token_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &create_token_ptr) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  // Wait a bit for the session to be ready - TODO correct?
-  usleep(100000); // 100ms
+  if (!dbus_message_iter_close_container(&args, &options)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  msg = dbus_message_new_method_call(
-    "org.freedesktop.portal.Desktop",
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
+  if (dbus_error_is_set(&error)) {
+    printf("CreateSession error: %s\n", error.message);
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  if (reply) {
+    dbus_message_unref(reply);
+    reply = NULL;
+  }
+  dbus_message_unref(msg);
+  msg = NULL;
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Waiting for CreateSession response...\n");
+#endif
+
+  int timeout = 15000;
+  while (!portal_state.create_session_done && !portal_state.failed && timeout > 0) {
+    dbus_connection_read_write_dispatch(conn, 100);
+    timeout -= 100;
+    usleep(100000);
+  }
+
+  if (!portal_state.create_session_done || portal_state.failed) {
+    printf("CreateSession failed or timed out\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  // Step 2: Select Sources
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Step 2: Selecting sources...\n");
+#endif
+
+  msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
     "/org/freedesktop/portal/desktop",
     "org.freedesktop.portal.ScreenCast",
-    "SelectSources"
-  );
+    "SelectSources");
+  if (!msg) {
+    printf("Failed to create SelectSources message\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
   dbus_message_iter_init_append(msg, &args);
-  dbus_message_iter_append_basic(&args, DBUS_TYPE_OBJECT_PATH, &scr->portal_session_handle);
 
-  dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
+  const char* session_handle_ptr = portal_state.session_handle;
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_OBJECT_PATH, &session_handle_ptr)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  // Set source types (monitor = 1)
+  if (!dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  const char* select_token_ptr = select_token;
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &handle_token_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &select_token_ptr) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
   const char* types_key = "types";
   uint32_t source_type = 1; // Monitor
-
-  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
-  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &types_key);
-  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant);
-  dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &source_type);
-  dbus_message_iter_close_container(&option, &variant);
-  dbus_message_iter_close_container(&options, &option);
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &types_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &source_type) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
   const char* multiple_key = "multiple";
   dbus_bool_t multiple_val = FALSE;
-  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
-  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &multiple_key);
-  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "b", &variant);
-  dbus_message_iter_append_basic(&variant, DBUS_TYPE_BOOLEAN, &multiple_val);
-  dbus_message_iter_close_container(&option, &variant);
-  dbus_message_iter_close_container(&options, &option);
-
-  dbus_message_iter_close_container(&args, &options);
-
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 10000, &error);
-  dbus_message_unref(msg);
-
-  if (dbus_error_is_set(&error)) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("SelectSources error: %s\n", error.message);
-#endif
-    dbus_error_free(&error);
-    dbus_connection_unref(conn);
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &multiple_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "b", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_BOOLEAN, &multiple_val) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
     return -1;
   }
 
-  dbus_message_unref(reply);
+  if (!dbus_message_iter_close_container(&args, &options)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  // Wait a bit more - TODO correct?
-  usleep(100000); // 100ms
+  // Send SelectSources without blocking - this triggers the user dialog
+  if (!dbus_connection_send(conn, msg, NULL)) {
+    printf("Failed to send SelectSources message\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+  dbus_connection_flush(conn);
 
-  msg = dbus_message_new_method_call(
-    "org.freedesktop.portal.Desktop",
+  dbus_message_unref(msg);
+  msg = NULL;
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Waiting for user to select sources (monitor selection dialog)...\n");
+#endif
+
+  // Wait for the user to complete source selection
+  timeout = 60000; // 60 seconds for user interaction
+  while (!portal_state.select_sources_done && !portal_state.failed && timeout > 0) {
+    dbus_connection_read_write_dispatch(conn, 100);
+    timeout -= 100;
+    usleep(100000);
+  }
+
+  if (!portal_state.select_sources_done || portal_state.failed) {
+    printf("SelectSources failed or timed out\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  // Step 3: Start screen capture
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Step 3: Starting screen capture...\n");
+#endif
+
+  msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
     "/org/freedesktop/portal/desktop",
     "org.freedesktop.portal.ScreenCast",
-    "Start"
-  );
+    "Start");
+  if (!msg) {
+    printf("Failed to create Start message\n");
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
   dbus_message_iter_init_append(msg, &args);
-  dbus_message_iter_append_basic(&args, DBUS_TYPE_OBJECT_PATH, &scr->portal_session_handle);
+
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_OBJECT_PATH, &session_handle_ptr)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
   const char* parent_window = "";
-  dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &parent_window);
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &parent_window)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options);
+  if (!dbus_message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &options)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  // Add handle_token for Start request
-  const char* handle_token_key = "handle_token";
-  dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option);
-  dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &handle_token_key);
-  dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant);
-  dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &start_token);
-  dbus_message_iter_close_container(&option, &variant);
-  dbus_message_iter_close_container(&options, &option);
+  const char* start_token_ptr = start_token;
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &handle_token_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &start_token_ptr) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  dbus_message_iter_close_container(&args, &options);
+  if (!dbus_message_iter_close_container(&args, &options)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
 
-  reply = dbus_connection_send_with_reply_and_block(conn, msg, 30000, &error); // Longer timeout for user interaction
-  dbus_message_unref(msg);
-
+  reply = dbus_connection_send_with_reply_and_block(conn, msg, -1, &error);
   if (dbus_error_is_set(&error)) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("D-Bus start error: %s\n", error.message);
-#endif
-    dbus_error_free(&error);
-    dbus_connection_unref(conn);
+    printf("Start error: %s\n", error.message);
+    cleanup_resources(reply, conn, msg, &error);
     return -1;
   }
 
-  dbus_message_iter_init(reply, &reply_iter);
-
-  // Parse response code
-  uint32_t response_code = 1; // Default to error
-  if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_UINT32) {
-    dbus_message_iter_get_basic(&reply_iter, &response_code);
-    dbus_message_iter_next(&reply_iter);
-  }
-
-  if (response_code != 0) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("Start request failed with response code: %u\n", response_code);
-#endif
+  if (reply) {
     dbus_message_unref(reply);
-    dbus_connection_unref(conn);
+    reply = NULL;
+  }
+  dbus_message_unref(msg);
+  msg = NULL;
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Waiting for Start response...\n");
+#endif
+
+  timeout = 15000;
+  while (!portal_state.start_done && !portal_state.failed && timeout > 0) {
+    dbus_connection_read_write_dispatch(conn, 100);
+    timeout -= 100;
+    usleep(100000);
+  }
+
+  if (!portal_state.start_done || portal_state.failed) {
+    printf("Start failed or timed out\n");
+    cleanup_resources(reply, conn, msg, &error);
     return -1;
   }
 
-  // Parse results to get stream information
-  if (dbus_message_iter_get_arg_type(&reply_iter) == DBUS_TYPE_ARRAY) {
-    DBusMessageIter results_iter, dict_entry, variant_iter, streams_iter;
-
-    dbus_message_iter_recurse(&reply_iter, &results_iter);
-
-    while (dbus_message_iter_get_arg_type(&results_iter) == DBUS_TYPE_DICT_ENTRY) {
-      dbus_message_iter_recurse(&results_iter, &dict_entry);
-
-      const char* result_key;
-      dbus_message_iter_get_basic(&dict_entry, &result_key);
-      dbus_message_iter_next(&dict_entry);
-
-      if (strcmp(result_key, "streams") == 0) {
-        dbus_message_iter_recurse(&dict_entry, &variant_iter);
-        dbus_message_iter_recurse(&variant_iter, &streams_iter);
-
-        if (dbus_message_iter_get_arg_type(&streams_iter) == DBUS_TYPE_STRUCT) {
-          DBusMessageIter stream_iter;
-          dbus_message_iter_recurse(&streams_iter, &stream_iter);
-
-          if (dbus_message_iter_get_arg_type(&stream_iter) == DBUS_TYPE_UINT32) {
-            dbus_message_iter_get_basic(&stream_iter, &scr->portal_source_id);
-#if defined(MD_SCR_DEBUG_PRINTS)
-            printf("Got PipeWire source ID: %u\n", scr->portal_source_id);
-#endif
-          }
-        }
-        break;
-      }
-
-      dbus_message_iter_next(&results_iter);
-    }
+  if (portal_state.session_handle) {
+    scr->portal_session_handle = strdup(portal_state.session_handle);
   }
+  scr->portal_source_id = portal_state.source_id;
+  result = 0;
 
-  dbus_message_unref(reply);
-  dbus_connection_unref(conn);
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Portal setup completed successfully. Source ID: %u\n", scr->portal_source_id);
+#endif
 
-  return scr->portal_source_id > 0 ? 0 : -1;
+  cleanup_resources(reply, conn, msg, &error);
+  return result;
 }
 
+// PipeWire implementation
 static void on_stream_param_changed(void* data, uint32_t id, const struct spa_pod* param) {
   pipewire_ctx_t* ctx = (pipewire_ctx_t*)data;
-
   if (param == NULL || id != SPA_PARAM_Format)
     return;
 
@@ -598,12 +633,44 @@ static void on_stream_param_changed(void* data, uint32_t id, const struct spa_po
 
   ctx->width = format.info.raw.size.width;
   ctx->height = format.info.raw.size.height;
-  ctx->stride = SPA_ROUND_UP_N(ctx->width * 4, 4); // Assume BGRA
-  ctx->frame_size = ctx->height * ctx->stride;
+  ctx->stride = SPA_ROUND_UP_N(format.info.raw.size.width * 4, 4);
+  ctx->frame_size = ctx->stride * ctx->height;
+  ctx->format = format.info.raw.format;
 
-#if defined(MD_SCR_DEBUG_PRINTS)
-  printf("PipeWire format: %dx%d, stride: %d\n", ctx->width, ctx->height, ctx->stride);
+#ifdef MD_SCR_DEBUG_PRINTS
+  const char* format_name = "Unknown";
+  switch (format.info.raw.format) {
+  case SPA_VIDEO_FORMAT_BGRA:
+    format_name = "BGRA";
+    break;
+  case SPA_VIDEO_FORMAT_BGRx:
+    format_name = "BGRx";
+    break;
+  case SPA_VIDEO_FORMAT_RGBA:
+    format_name = "RGBA";
+    break;
+  case SPA_VIDEO_FORMAT_RGBx:
+    format_name = "RGBx";
+    break;
+  case SPA_VIDEO_FORMAT_ARGB:
+    format_name = "ARGB";
+    break;
+  case SPA_VIDEO_FORMAT_xRGB:
+    format_name = "xRGB";
+    break;
+  }
+  printf("PipeWire format: %dx%d, stride: %d, format: %s (%d)\n",
+    ctx->width, ctx->height, ctx->stride, format_name, format.info.raw.format);
 #endif
+
+  if (ctx->frame_data) {
+    free(ctx->frame_data);
+  }
+  ctx->frame_data = (uint8_t*)malloc(ctx->frame_size);
+  if (!ctx->frame_data) {
+    ctx->capture_failed = 1;
+    return;
+  }
 }
 
 static void on_stream_process(void* data) {
@@ -612,297 +679,383 @@ static void on_stream_process(void* data) {
   struct spa_buffer* buf;
 
   if ((b = pw_stream_dequeue_buffer(ctx->stream)) == NULL) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("No buffer to dequeue\n");
-#endif
     return;
   }
 
   buf = b->buffer;
-
   if (buf->datas[0].data == NULL) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-    printf("No data in buffer\n");
-#endif
     pw_stream_queue_buffer(ctx->stream, b);
     return;
   }
 
-  if (ctx->frame_data) {
-    free(ctx->frame_data);
+  size_t copy_size = buf->datas[0].chunk->size;
+  if (copy_size > ctx->frame_size) {
+    copy_size = ctx->frame_size;
   }
 
-  ctx->frame_data = (uint8_t*)malloc(ctx->frame_size);
   if (ctx->frame_data) {
-    memcpy(ctx->frame_data, buf->datas[0].data,
-      SPA_MIN(ctx->frame_size, buf->datas[0].chunk->size));
+    memcpy(ctx->frame_data, buf->datas[0].data, copy_size);
     ctx->frame_ready = 1;
   }
 
   pw_stream_queue_buffer(ctx->stream, b);
 }
 
+static void on_stream_state_changed(void* data, enum pw_stream_state old,
+  enum pw_stream_state state, const char* error) {
+  pipewire_ctx_t* ctx = (pipewire_ctx_t*)data;
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("PipeWire stream state: %s\n", pw_stream_state_as_string(state));
+#endif
+  switch (state) {
+  case PW_STREAM_STATE_ERROR:
+  case PW_STREAM_STATE_UNCONNECTED:
+    ctx->capture_failed = 1;
+    break;
+  case PW_STREAM_STATE_STREAMING:
+    ctx->connected = 1;
+    break;
+  default:
+    break;
+  }
+}
+
 static const struct pw_stream_events stream_events = {
   PW_VERSION_STREAM_EVENTS,
   .param_changed = on_stream_param_changed,
   .process = on_stream_process,
+  .state_changed = on_stream_state_changed,
 };
 
-static int pipewire_connect(MD_SCR_t* scr) {
-  pipewire_ctx_t* ctx = (pipewire_ctx_t*)calloc(1, sizeof(pipewire_ctx_t));
+static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
   if (!ctx) return -1;
-
-  scr->pw_ctx = ctx;
 
   pw_init(NULL, NULL);
 
-  ctx->loop = pw_main_loop_new(NULL);
+  ctx->loop = pw_loop_new(NULL);
   if (!ctx->loop) {
-    free(ctx);
+    printf("Failed to create PipeWire loop\n");
     return -1;
   }
 
-  ctx->core = pw_context_connect_fd(pw_context_new(pw_main_loop_get_loop(ctx->loop), NULL, 0), -1, NULL, 0);
+  ctx->context = pw_context_new(ctx->loop, NULL, 0);
+  if (!ctx->context) {
+    printf("Failed to create PipeWire context\n");
+    pw_loop_destroy(ctx->loop);
+    return -1;
+  }
+
+  ctx->core = pw_context_connect(ctx->context, NULL, 0);
   if (!ctx->core) {
-    pw_main_loop_destroy(ctx->loop);
-    free(ctx);
+    printf("Failed to connect to PipeWire\n");
+    pw_context_destroy(ctx->context);
+    pw_loop_destroy(ctx->loop);
     return -1;
   }
 
-  char source_id_str[32];
-  snprintf(source_id_str, sizeof(source_id_str), "%u", scr->portal_source_id);
-  struct pw_properties* props = pw_properties_new(
-    PW_KEY_MEDIA_TYPE, "Video",
-    PW_KEY_MEDIA_CATEGORY, "Capture",
-    PW_KEY_MEDIA_ROLE, "Screen",
-    PW_KEY_TARGET_OBJECT, source_id_str,
-    NULL
-  );
+  // Create stream
+  ctx->stream = pw_stream_new_simple(
+    ctx->loop,
+    "screen-capture",
+    pw_properties_new(
+      PW_KEY_MEDIA_TYPE, "Video",
+      PW_KEY_MEDIA_CATEGORY, "Capture",
+      PW_KEY_MEDIA_ROLE, "Screen",
+      NULL),
+    &stream_events,
+    ctx);
 
-  ctx->stream = pw_stream_new(ctx->core, "screen-capture", props);
   if (!ctx->stream) {
+    printf("Failed to create PipeWire stream\n");
     pw_core_disconnect(ctx->core);
-    pw_main_loop_destroy(ctx->loop);
-    free(ctx);
+    pw_context_destroy(ctx->context);
+    pw_loop_destroy(ctx->loop);
     return -1;
   }
 
-  pw_stream_add_listener(ctx->stream, &ctx->stream_listener, &stream_events, ctx);
+  // Connect to the specific node (monitor source)
+  char target[64];
+  snprintf(target, sizeof(target), "%u", node_id);
 
+  const struct spa_pod* params[1];
   uint8_t buffer[1024];
   struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
 
-  const struct spa_pod* params[1];
+  struct spa_rectangle def_size = SPA_RECTANGLE(320, 240);
+  struct spa_rectangle min_size = SPA_RECTANGLE(1, 1);
+  struct spa_rectangle max_size = SPA_RECTANGLE(8192, 8192);
+
+  struct spa_fraction def_fps = SPA_FRACTION(25, 1);
+  struct spa_fraction min_fps = SPA_FRACTION(0, 1);
+  struct spa_fraction max_fps = SPA_FRACTION(1000, 1);
+
   params[0] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
     SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
     SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
     SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(5,
-      SPA_VIDEO_FORMAT_BGRx,
+    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(3,
       SPA_VIDEO_FORMAT_BGRA,
-      SPA_VIDEO_FORMAT_RGBx,
-      SPA_VIDEO_FORMAT_RGBA,
-      SPA_VIDEO_FORMAT_RGB)
-  );
+      SPA_VIDEO_FORMAT_BGRx,
+      SPA_VIDEO_FORMAT_RGBx),
+    SPA_FORMAT_VIDEO_size, SPA_POD_CHOICE_RANGE_Rectangle(&def_size, &min_size, &max_size),
+    SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(&def_fps, &min_fps, &max_fps));
+
 
   if (pw_stream_connect(ctx->stream,
     PW_DIRECTION_INPUT,
-    PW_ID_ANY,
-    (enum pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
-    PW_STREAM_FLAG_MAP_BUFFERS),
+    node_id,
+    (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
+      PW_STREAM_FLAG_MAP_BUFFERS),
     params, 1) < 0) {
+    printf("Failed to connect PipeWire stream to node %u\n", node_id);
     pw_stream_destroy(ctx->stream);
     pw_core_disconnect(ctx->core);
-    pw_main_loop_destroy(ctx->loop);
-    free(ctx);
+    pw_context_destroy(ctx->context);
+    pw_loop_destroy(ctx->loop);
     return -1;
   }
 
   return 0;
 }
 
-static MD_SCR_Method_t detect_best_method(void) {
-  if (getenv("WAYLAND_DISPLAY") && getenv("XDG_CURRENT_DESKTOP")) {
-    DBusConnection* conn;
-    DBusError error;
+static void pipewire_cleanup(pipewire_ctx_t* ctx) {
+  if (!ctx) return;
 
-    dbus_error_init(&error);
-    conn = dbus_bus_get(DBUS_BUS_SESSION, &error);
-
-    if (!dbus_error_is_set(&error) && conn) {
-      dbus_connection_unref(conn);
-      return MD_SCR_METHOD_PORTAL_PIPEWIRE;
-    }
-    dbus_error_free(&error);
-
-    // Fallback to wlr-screencopy if available
-    return MD_SCR_METHOD_WLR_SCREENCOPY;
+  if (ctx->frame_data) {
+    free(ctx->frame_data);
+    ctx->frame_data = NULL;
   }
 
-  return MD_SCR_METHOD_PORTAL_PIPEWIRE;
+  if (ctx->stream) {
+    pw_stream_destroy(ctx->stream);
+    ctx->stream = NULL;
+  }
+
+  if (ctx->core) {
+    pw_core_disconnect(ctx->core);
+    ctx->core = NULL;
+  }
+
+  if (ctx->context) {
+    pw_context_destroy(ctx->context);
+    ctx->context = NULL;
+  }
+
+  if (ctx->loop) {
+    pw_loop_destroy(ctx->loop);
+    ctx->loop = NULL;
+  }
+
+  pw_deinit();
 }
 
-//-----------------------------------------PipeWire-----------------------------------------
+sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
+  if (!Resolution) return -1;
+
+  // This is a fallback - actual resolution will be set during capture setup
+  Resolution->x = 0;
+  Resolution->y = 0;
+
+  return 0;
+}
 
 sint32_t MD_SCR_open(MD_SCR_t* scr) {
-  memset(scr, 0, sizeof(*scr));
+  if (!scr) return -1;
 
-  if (scr->method == MD_SCR_METHOD_AUTO) {
-    scr->method = detect_best_method();
-  }
+  memset(scr, 0, sizeof(MD_SCR_t));
 
-#if defined(MD_SCR_DEBUG_PRINTS)
-  printf("Using capture method: %d\n", scr->method);
+  // Determine the best method based on environment
+  const char* wayland_display = getenv("WAYLAND_DISPLAY");
+  const char* xdg_session_type = getenv("XDG_SESSION_TYPE");
+
+  if (wayland_display || (xdg_session_type && strcmp(xdg_session_type, "wayland") == 0)) {
+    // Try portal first (works on GNOME, KDE, and should work on COSMIC)
+    scr->method = MD_SCR_METHOD_PORTAL_PIPEWIRE;
+
+    // Allocate PipeWire context
+    scr->pw_ctx = (pipewire_ctx_t*)calloc(1, sizeof(pipewire_ctx_t));
+    if (!scr->pw_ctx) {
+      return -1;
+    }
+
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("Using Portal + PipeWire method\n");
 #endif
 
-  switch (scr->method) {
-  case MD_SCR_METHOD_PORTAL_PIPEWIRE:
+    // Request screen share through portal
     if (portal_request_screenshare(scr) != 0) {
-#if defined(MD_SCR_DEBUG_PRINTS)
-      printf("Portal request failed, attempting wlroots\n");
+      printf("Portal screen share request failed\n");
+      free(scr->pw_ctx);
+      scr->pw_ctx = NULL;
+
+      // Fallback to WLR screencopy if available
+      const char* compositor = getenv("XDG_CURRENT_DESKTOP");
+      if (compositor && (strcasecmp(compositor, "sway") == 0 ||
+        strcasecmp(compositor, "hyprland") == 0 ||
+        strstr(compositor, "wlroots"))) {
+        scr->method = MD_SCR_METHOD_WLR_SCREENCOPY;
+        scr->wl_ctx = (wayland_screencap_t*)calloc(1, sizeof(wayland_screencap_t));
+        if (!scr->wl_ctx) {
+          return -1;
+        }
+#ifdef MD_SCR_DEBUG_PRINTS
+        printf("Falling back to WLR screencopy method\n");
 #endif
-      scr->method = MD_SCR_METHOD_WLR_SCREENCOPY;
-      goto try_wlroots;
+      }
+      else {
+        return -1;
+      }
     }
 
-    if (pipewire_connect(scr) != 0) {
-      printf("PipeWire connection failed\n");
-      return -1;
+    // Initialize PipeWire stream if using portal method
+    if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE) {
+      if (pipewire_init_stream(scr->pw_ctx, scr->portal_source_id) != 0) {
+        printf("Failed to initialize PipeWire stream\n");
+        if (scr->portal_session_handle) {
+          free(scr->portal_session_handle);
+        }
+        free(scr->pw_ctx);
+        return -1;
+      }
+
+      // Wait for stream to be ready
+      int timeout = 5000;
+      while (!scr->pw_ctx->connected && !scr->pw_ctx->capture_failed && timeout > 0) {
+        pw_loop_iterate(scr->pw_ctx->loop, 100);
+        timeout -= 100;
+      }
+
+      if (scr->pw_ctx->capture_failed || !scr->pw_ctx->connected) {
+        printf("PipeWire stream failed to connect\n");
+        pipewire_cleanup(scr->pw_ctx);
+        free(scr->pw_ctx);
+        if (scr->portal_session_handle) {
+          free(scr->portal_session_handle);
+        }
+        return -1;
+      }
+
+      // Set geometry from PipeWire stream
+      scr->Geometry.Resolution.x = scr->pw_ctx->width;
+      scr->Geometry.Resolution.y = scr->pw_ctx->height;
+      scr->Geometry.LineSize = scr->pw_ctx->stride;
     }
-    break;
-
-  case MD_SCR_METHOD_WLR_SCREENCOPY:
-  try_wlroots:
-    scr->wl_ctx = (wayland_screencap_t*)calloc(1, sizeof(wayland_screencap_t));
-    if (!scr->wl_ctx) return -1;
-
-    scr->wl_ctx->shm_fd = -1;
-
-    if (wayland_init_connection(scr->wl_ctx) != 0) {
-      wayland_cleanup(scr->wl_ctx);
-      free(scr->wl_ctx);
-      scr->wl_ctx = NULL;
-      return -1;
-    }
-
-    scr->Geometry.Resolution.x = scr->wl_ctx->width > 0 ? scr->wl_ctx->width : 1920;
-    scr->Geometry.Resolution.y = scr->wl_ctx->height > 0 ? scr->wl_ctx->height : 1080;
-    scr->Geometry.LineSize = scr->wl_ctx->stride > 0 ? scr->wl_ctx->stride : (scr->Geometry.Resolution.x * 4);
-
-    break;
-
-  default:
+  }
+  else {
     return -1;
   }
 
   return 0;
 }
-
 
 void MD_SCR_close(MD_SCR_t* scr) {
   if (!scr) return;
 
-  switch (scr->method) {
-  case MD_SCR_METHOD_PORTAL_PIPEWIRE: {
-    pipewire_ctx_t* ctx = scr->pw_ctx;
-    if (ctx) {
-      if (ctx->frame_data) {
-        free(ctx->frame_data);
-      }
-      if (ctx->stream) {
-        pw_stream_destroy(ctx->stream);
-      }
-      if (ctx->core) {
-        pw_core_disconnect(ctx->core);
-      }
-      if (ctx->loop) {
-        pw_main_loop_destroy(ctx->loop);
-      }
-      free(ctx);
-    }
-
-    if (scr->portal_session_handle) {
-      free(scr->portal_session_handle);
-    }
-
-    pw_deinit();
-    break;
+  if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE && scr->pw_ctx) {
+    pipewire_cleanup(scr->pw_ctx);
+    free(scr->pw_ctx);
+    scr->pw_ctx = NULL;
   }
 
-  case MD_SCR_METHOD_WLR_SCREENCOPY:
-    if (scr->wl_ctx) {
-      wayland_cleanup(scr->wl_ctx);
-      free(scr->wl_ctx);
-      scr->wl_ctx = NULL;
+  if (scr->method == MD_SCR_METHOD_WLR_SCREENCOPY && scr->wl_ctx) {
+    // Cleanup Wayland resources
+    if (scr->wl_ctx->buffer) {
+      wl_buffer_destroy(scr->wl_ctx->buffer);
     }
-    break;
-
-  default:
-    break;
+    if (scr->wl_ctx->shm_data && scr->wl_ctx->shm_data != MAP_FAILED) {
+      munmap(scr->wl_ctx->shm_data, scr->wl_ctx->shm_size);
+    }
+    if (scr->wl_ctx->shm_fd >= 0) {
+      close(scr->wl_ctx->shm_fd);
+    }
+    if (scr->wl_ctx->frame) {
+      zwlr_screencopy_frame_v1_destroy(scr->wl_ctx->frame);
+    }
+    if (scr->wl_ctx->xdg_output) {
+      zxdg_output_v1_destroy(scr->wl_ctx->xdg_output);
+    }
+    if (scr->wl_ctx->output_manager) {
+      zxdg_output_manager_v1_destroy(scr->wl_ctx->output_manager);
+    }
+    if (scr->wl_ctx->screencopy_manager) {
+      zwlr_screencopy_manager_v1_destroy(scr->wl_ctx->screencopy_manager);
+    }
+    if (scr->wl_ctx->shm) {
+      wl_shm_destroy(scr->wl_ctx->shm);
+    }
+    if (scr->wl_ctx->compositor) {
+      wl_compositor_destroy(scr->wl_ctx->compositor);
+    }
+    if (scr->wl_ctx->registry) {
+      wl_registry_destroy(scr->wl_ctx->registry);
+    }
+    if (scr->wl_ctx->display) {
+      wl_display_disconnect(scr->wl_ctx->display);
+    }
+    free(scr->wl_ctx);
+    scr->wl_ctx = NULL;
   }
 
-  memset(scr, 0, sizeof(*scr));
+  if (scr->portal_session_handle) {
+    free(scr->portal_session_handle);
+    scr->portal_session_handle = NULL;
+  }
+
+  memset(scr, 0, sizeof(MD_SCR_t));
 }
 
 uint8_t* MD_SCR_read(MD_SCR_t* scr) {
   if (!scr) return NULL;
 
-  switch (scr->method) {
-  case MD_SCR_METHOD_PORTAL_PIPEWIRE: {
-    pipewire_ctx_t* ctx = scr->pw_ctx;
-    if (!ctx) return NULL;
+  if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE && scr->pw_ctx) {
+    printf("reading\n");
+    // Process PipeWire events
+    scr->pw_ctx->frame_ready = 0;
 
-    ctx->frame_ready = 0;
-
-    struct timespec timeout = { 1, 0 }; // 1 second frame timeout
-    while (!ctx->frame_ready && !ctx->capture_failed) {
-      struct pw_loop *loop = pw_main_loop_get_loop(ctx->loop);
-      if (pw_loop_iterate(loop, 100) < 0) {
-        break;
-      }
+    int timeout = 1000; // 1 second timeout
+    while (!scr->pw_ctx->frame_ready && !scr->pw_ctx->capture_failed && timeout > 0) {
+      pw_loop_iterate(scr->pw_ctx->loop, 10);
+      timeout -= 10;
+    }
+    printf("finish\n");
+    if (scr->pw_ctx->capture_failed) {
+      printf("PipeWire capture failed\n");
+      return NULL;
     }
 
-    if (ctx->frame_ready && ctx->frame_data) {
-      scr->Geometry.Resolution.x = ctx->width;
-      scr->Geometry.Resolution.y = ctx->height;
-      scr->Geometry.LineSize = ctx->stride;
-      return ctx->frame_data;
+    if (!scr->pw_ctx->frame_ready) {
+#ifdef MD_SCR_DEBUG_PRINTS
+      printf("No frame ready (timeout)\n");
+#endif
+      return NULL;
     }
-    break;
+    printf("%p\n", scr->pw_ctx->frame_data);
+    return scr->pw_ctx->frame_data;
   }
 
-  case MD_SCR_METHOD_WLR_SCREENCOPY: {
-    wayland_screencap_t* ctx = scr->wl_ctx;
-    if (!ctx) return NULL;
-
-    uint8_t* frame_data = wayland_capture_frame(ctx);
-    if (frame_data) {
-      scr->Geometry.Resolution.x = ctx->width;
-      scr->Geometry.Resolution.y = ctx->height;
-      scr->Geometry.LineSize = ctx->stride;
-    }
-    return frame_data;
-  }
-
-  default:
-    break;
+  if (scr->method == MD_SCR_METHOD_WLR_SCREENCOPY && scr->wl_ctx) {
+    printf("WLR screencopy read not fully implemented, implement can be found from older wayland.h\n");
+    return NULL;
   }
 
   return NULL;
 }
-sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
-  MD_SCR_t temp_scr;
-  memset(&temp_scr, 0, sizeof(temp_scr));
-  temp_scr.method = MD_SCR_METHOD_AUTO;
 
-  if (MD_SCR_open(&temp_scr) == 0) {
-    Resolution->x = temp_scr.Geometry.Resolution.x;
-    Resolution->y = temp_scr.Geometry.Resolution.y;
-    MD_SCR_close(&temp_scr);
-    return 0;
+static const char* detect_desktop_environment() {
+  const char* desktop = getenv("XDG_CURRENT_DESKTOP");
+  if (desktop) {
+    if (strcasestr(desktop, "gnome")) return "GNOME";
+    if (strcasestr(desktop, "kde")) return "KDE";
+    if (strcasestr(desktop, "cosmic")) return "COSMIC";
+    if (strcasestr(desktop, "sway")) return "Sway";
+    if (strcasestr(desktop, "hyprland")) return "Hyprland";
   }
 
-  Resolution->x = 0;
-  Resolution->y = 0;
-  return -1;
+  const char* gdm_session = getenv("GDMSESSION");
+  if (gdm_session) {
+    if (strcasestr(gdm_session, "gnome")) return "GNOME";
+    if (strcasestr(gdm_session, "cosmic")) return "COSMIC";
+  }
+
+  return "Unknown";
 }
