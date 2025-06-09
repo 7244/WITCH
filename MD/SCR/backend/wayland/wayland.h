@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <time.h>
 #include <iostream>
+//#include <gio/gio.h>
 #define MD_SCR_DEBUG_PRINTS
 
 // Wayland protocol headers - generated from .xml files
@@ -760,6 +761,8 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
       PW_KEY_MEDIA_TYPE, "Video",
       PW_KEY_MEDIA_CATEGORY, "Capture",
       PW_KEY_MEDIA_ROLE, "Screen",
+      PW_KEY_NODE_LATENCY, "512/48000",     // Add low latency
+      PW_KEY_NODE_MAX_LATENCY, "1024/48000", // Add max latency
       NULL),
     &stream_events,
     ctx);
@@ -784,15 +787,16 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
   struct spa_rectangle min_size = SPA_RECTANGLE(1, 1);
   struct spa_rectangle max_size = SPA_RECTANGLE(8192, 8192);
 
-  struct spa_fraction def_fps = SPA_FRACTION(25, 1);
+  struct spa_fraction def_fps = SPA_FRACTION(60, 1);
   struct spa_fraction min_fps = SPA_FRACTION(0, 1);
-  struct spa_fraction max_fps = SPA_FRACTION(1000, 1);
+  struct spa_fraction max_fps = SPA_FRACTION(144, 1);
 
   params[0] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
     SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
     SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
     SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(3,
+    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(4,
+      SPA_VIDEO_FORMAT_BGRx,
       SPA_VIDEO_FORMAT_BGRA,
       SPA_VIDEO_FORMAT_BGRx,
       SPA_VIDEO_FORMAT_RGBx),
@@ -860,6 +864,7 @@ sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
 
 sint32_t MD_SCR_open(MD_SCR_t* scr) {
   if (!scr) return -1;
+printf("AAA\n");
   memset(scr, 0, sizeof(MD_SCR_t));
 
   // Determine the best method based on environment
@@ -1009,10 +1014,10 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
     // Process PipeWire events
     scr->pw_ctx->frame_ready = 0;
 
-    int timeout = 1000; // 1 second timeout
+    int timeout = 100; // 1 second timeout
     while (!scr->pw_ctx->frame_ready && !scr->pw_ctx->capture_failed && timeout > 0) {
-      pw_loop_iterate(scr->pw_ctx->loop, 10);
-      timeout -= 10;
+      pw_loop_iterate(scr->pw_ctx->loop, 5);
+      timeout -= 5;
     }
     if (scr->pw_ctx->capture_failed) {
       printf("PipeWire capture failed\n");
