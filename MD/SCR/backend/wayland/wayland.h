@@ -706,6 +706,9 @@ static void on_stream_state_changed(void* data, enum pw_stream_state old,
   pipewire_ctx_t* ctx = (pipewire_ctx_t*)data;
 #ifdef MD_SCR_DEBUG_PRINTS
   printf("PipeWire stream state: %s\n", pw_stream_state_as_string(state));
+  if (state == PW_STREAM_STATE_ERROR && error) {
+    printf("PipeWire stream error: %s\n", error);
+  }
 #endif
   switch (state) {
   case PW_STREAM_STATE_ERROR:
