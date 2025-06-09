@@ -280,7 +280,7 @@ _ETC_VEDC_Encode_Encoder_x264_Write(
             Frame->Data[i] = A_resize(0, x * y);
           }
 
-          pixfconv_st_convert(
+          if (pixfconv_st_convert(
             ParameterFrame->Properties.PixelFormat,
             PIXF_YUV420p,
             Frame->Properties.SizeX,
@@ -288,7 +288,9 @@ _ETC_VEDC_Encode_Encoder_x264_Write(
             (const uint32_t *)ParameterFrame->Properties.Stride,
             (const uint32_t *)Frame->Properties.Stride,
             (const uint8_t *const *)ParameterFrame->Data,
-            (uint8_t *const *)Frame->Data);
+            (uint8_t *const *)Frame->Data)) {
+            return ETC_VEDC_Encode_Error_NotImplemented;
+          }
         }
         else{
           Frame = ParameterFrame;
