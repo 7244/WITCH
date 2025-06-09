@@ -1,14 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include <sys/stat.h>
 #include <sys/mman.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <time.h>
-#include <iostream>
-//#include <gio/gio.h>
 #define MD_SCR_DEBUG_PRINTS
+
 
 // Wayland protocol headers - generated from .xml files
 // https://raw.githubusercontent.com/swaywm/wlr-protocols/master/unstable/wlr-screencopy-unstable-v1.xml
@@ -79,7 +72,6 @@ typedef enum {
   MD_SCR_METHOD_WLR_SCREENCOPY,
 } MD_SCR_Method_t;
 
-
 typedef struct {
   MD_SCR_Method_t method;
   MD_SCR_Geometry_t Geometry;
@@ -89,7 +81,6 @@ typedef struct {
   uint32_t portal_source_id;
 } MD_SCR_t;
 
-// Portal state tracking
 typedef struct {
   char* session_handle;
   uint32_t source_id;
@@ -102,61 +93,6 @@ typedef struct {
 
 static portal_state_t portal_state = { 0 };
 
-// Wayland screencopy implementation (keeping your existing code)
-static void registry_global(void* data, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  if (strcmp(interface, wl_compositor_interface.name) == 0) {
-    ctx->compositor = (struct wl_compositor*)wl_registry_bind(registry, id, &wl_compositor_interface, 4);
-  }
-  else if (strcmp(interface, wl_shm_interface.name) == 0) {
-    ctx->shm = (struct wl_shm*)wl_registry_bind(registry, id, &wl_shm_interface, 1);
-  }
-  else if (strcmp(interface, wl_output_interface.name) == 0) {
-    ctx->output = (struct wl_output*)wl_registry_bind(registry, id, &wl_output_interface, 3);
-  }
-  else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
-    ctx->screencopy_manager = (struct zwlr_screencopy_manager_v1*)wl_registry_bind(
-      registry, id, &zwlr_screencopy_manager_v1_interface, 3);
-  }
-  else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
-    ctx->output_manager = (struct zxdg_output_manager_v1*)wl_registry_bind(
-      registry, id, &zxdg_output_manager_v1_interface, 2);
-  }
-}
-
-static void registry_global_remove(void* data, struct wl_registry* registry, uint32_t id) {}
-
-static const struct wl_registry_listener registry_listener = {
-    .global = registry_global,
-    .global_remove = registry_global_remove,
-};
-
-static void xdg_output_logical_position(void* data, struct zxdg_output_v1* output, int32_t x, int32_t y) {}
-
-static void xdg_output_logical_size(void* data, struct zxdg_output_v1* output, int32_t width, int32_t height) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->width = width;
-  ctx->height = height;
-  ctx->geometry_received = 1;
-}
-
-static void xdg_output_done(void* data, struct zxdg_output_v1* output) {
-  wayland_screencap_t* ctx = (wayland_screencap_t*)data;
-  ctx->geometry_received = 1;
-}
-
-static void xdg_output_name(void* data, struct zxdg_output_v1* output, const char* name) {}
-static void xdg_output_description(void* data, struct zxdg_output_v1* output, const char* desc) {}
-
-static const struct zxdg_output_v1_listener xdg_output_listener = {
-    .logical_position = xdg_output_logical_position,
-    .logical_size = xdg_output_logical_size,
-    .done = xdg_output_done,
-    .name = xdg_output_name,
-    .description = xdg_output_description,
-};
-
-// Portal signal handler - fixed to handle all three stages
 static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusMessage* message, void* user_data) {
   if (!dbus_message_is_signal(message, "org.freedesktop.portal.Request", "Response")) {
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -194,7 +130,6 @@ static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusM
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
-  // Check if this is a CreateSession response
   if (strstr(path, "create_") && !portal_state.create_session_done) {
     if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_ARRAY) {
       dbus_message_iter_recurse(&args, &results_iter);
@@ -227,14 +162,12 @@ static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusM
       }
     }
   }
-  // Check if this is a SelectSources response  
   else if (strstr(path, "select_") && !portal_state.select_sources_done) {
     portal_state.select_sources_done = 1;
 #ifdef MD_SCR_DEBUG_PRINTS
     printf("SelectSources completed\n");
 #endif
   }
-  // Check if this is a Start response
   else if (strstr(path, "start_") && !portal_state.start_done) {
     if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_ARRAY) {
       dbus_message_iter_recurse(&args, &results_iter);
@@ -340,7 +273,6 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   dbus_connection_add_filter(conn, portal_signal_handler, NULL, NULL);
   dbus_connection_flush(conn);
 
-  // Step 1: Create Session
 #ifdef MD_SCR_DEBUG_PRINTS
   printf("Step 1: Creating session...\n");
 #endif
@@ -423,7 +355,6 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
     return -1;
   }
 
-  // Step 2: Select Sources
 #ifdef MD_SCR_DEBUG_PRINTS
   printf("Step 2: Selecting sources...\n");
 #endif
@@ -506,8 +437,7 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   printf("Waiting for user to select sources (monitor selection dialog)...\n");
 #endif
 
-  // Wait for the user to complete source selection
-  timeout = 60000; // 60 seconds for user interaction
+  timeout = 60000; // 60 seconds for screen selection
   while (!portal_state.select_sources_done && !portal_state.failed && timeout > 0) {
     dbus_connection_read_write_dispatch(conn, 100);
     timeout -= 100;
@@ -614,53 +544,84 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   return result;
 }
 
-// PipeWire implementation
 static void on_stream_param_changed(void* data, uint32_t id, const struct spa_pod* param) {
   pipewire_ctx_t* ctx = (pipewire_ctx_t*)data;
+  
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Stream param changed, id: %u\n", id);
+#endif
+  
   if (param == NULL || id != SPA_PARAM_Format)
     return;
 
   struct spa_video_info format;
-  if (spa_format_parse(param, &format.media_type, &format.media_subtype) < 0)
+  if (spa_format_parse(param, &format.media_type, &format.media_subtype) < 0) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("Failed to parse format\n");
+#endif
     return;
+  }
 
   if (format.media_type != SPA_MEDIA_TYPE_video ||
-    format.media_subtype != SPA_MEDIA_SUBTYPE_raw)
+    format.media_subtype != SPA_MEDIA_SUBTYPE_raw) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("Invalid media type/subtype: %u/%u\n", format.media_type, format.media_subtype);
+#endif
     return;
+  }
 
-  if (spa_format_video_raw_parse(param, &format.info.raw) < 0)
+  if (spa_format_video_raw_parse(param, &format.info.raw) < 0) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("Failed to parse video format\n");
+#endif
     return;
+  }
 
   ctx->width = format.info.raw.size.width;
   ctx->height = format.info.raw.size.height;
-  ctx->stride = SPA_ROUND_UP_N(format.info.raw.size.width * 4, 4);
-  ctx->frame_size = ctx->stride * ctx->height;
   ctx->format = format.info.raw.format;
+  
+  uint32_t bpp = 4;
+  switch (format.info.raw.format) {
+    case SPA_VIDEO_FORMAT_BGRA:
+    case SPA_VIDEO_FORMAT_BGRx:
+    case SPA_VIDEO_FORMAT_RGBA:
+    case SPA_VIDEO_FORMAT_RGBx:
+    case SPA_VIDEO_FORMAT_ARGB:
+    case SPA_VIDEO_FORMAT_xRGB:
+    case SPA_VIDEO_FORMAT_ABGR:
+    case SPA_VIDEO_FORMAT_xBGR:
+      bpp = 4;
+      break;
+    case SPA_VIDEO_FORMAT_RGB:
+    case SPA_VIDEO_FORMAT_BGR:
+      bpp = 3;
+      break;
+    default:
+      bpp = 4; // Safe default
+      break;
+  }
+  
+  ctx->stride = SPA_ROUND_UP_N(ctx->width * bpp, 4);
+  ctx->frame_size = ctx->stride * ctx->height;
 
 #ifdef MD_SCR_DEBUG_PRINTS
   const char* format_name = "Unknown";
   switch (format.info.raw.format) {
-  case SPA_VIDEO_FORMAT_BGRA:
-    format_name = "BGRA";
-    break;
-  case SPA_VIDEO_FORMAT_BGRx:
-    format_name = "BGRx";
-    break;
-  case SPA_VIDEO_FORMAT_RGBA:
-    format_name = "RGBA";
-    break;
-  case SPA_VIDEO_FORMAT_RGBx:
-    format_name = "RGBx";
-    break;
-  case SPA_VIDEO_FORMAT_ARGB:
-    format_name = "ARGB";
-    break;
-  case SPA_VIDEO_FORMAT_xRGB:
-    format_name = "xRGB";
-    break;
+  case SPA_VIDEO_FORMAT_BGRA: format_name = "BGRA"; break;
+  case SPA_VIDEO_FORMAT_BGRx: format_name = "BGRx"; break;
+  case SPA_VIDEO_FORMAT_RGBA: format_name = "RGBA"; break;
+  case SPA_VIDEO_FORMAT_RGBx: format_name = "RGBx"; break;
+  case SPA_VIDEO_FORMAT_ARGB: format_name = "ARGB"; break;
+  case SPA_VIDEO_FORMAT_xRGB: format_name = "xRGB"; break;
+  case SPA_VIDEO_FORMAT_ABGR: format_name = "ABGR"; break;
+  case SPA_VIDEO_FORMAT_xBGR: format_name = "xBGR"; break;
+  case SPA_VIDEO_FORMAT_RGB: format_name = "RGB"; break;
+  case SPA_VIDEO_FORMAT_BGR: format_name = "BGR"; break;
+  default: format_name = "Unknown"; break;
   }
-  printf("PipeWire format: %dx%d, stride: %d, format: %s (%d)\n",
-    ctx->width, ctx->height, ctx->stride, format_name, format.info.raw.format);
+  printf("PipeWire format negotiated: %dx%d, stride: %d, format: %s (%d), bpp: %u\n",
+    ctx->width, ctx->height, ctx->stride, format_name, format.info.raw.format, bpp);
 #endif
 
   if (ctx->frame_data) {
@@ -668,9 +629,14 @@ static void on_stream_param_changed(void* data, uint32_t id, const struct spa_po
   }
   ctx->frame_data = (uint8_t*)malloc(ctx->frame_size);
   if (!ctx->frame_data) {
+    printf("Failed to allocate frame buffer of size %zu\n", ctx->frame_size);
     ctx->capture_failed = 1;
     return;
   }
+  
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Frame buffer allocated: %zu bytes\n", ctx->frame_size);
+#endif
 }
 
 static void on_stream_process(void* data) {
@@ -678,25 +644,153 @@ static void on_stream_process(void* data) {
   struct pw_buffer* b;
   struct spa_buffer* buf;
 
+#ifdef MD_SCR_DEBUG_PRINTS
+  static int process_count = 0;
+  process_count++;
+  if (process_count <= 10) {
+    printf("on_stream_process called #%d\n", process_count);
+  }
+#endif
+
   if ((b = pw_stream_dequeue_buffer(ctx->stream)) == NULL) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (process_count <= 10) {
+      printf("  No buffer available\n");
+    }
+#endif
     return;
   }
 
   buf = b->buffer;
-  if (buf->datas[0].data == NULL) {
+  
+  if (buf->n_datas == 0) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (process_count <= 10) {
+      printf("  No data planes in buffer\n");
+    }
+#endif
     pw_stream_queue_buffer(ctx->stream, b);
     return;
   }
 
-  size_t copy_size = buf->datas[0].chunk->size;
-  if (copy_size > ctx->frame_size) {
-    copy_size = ctx->frame_size;
+  void* data_ptr = buf->datas[0].data;
+  uint32_t chunk_size = buf->datas[0].chunk ? buf->datas[0].chunk->size : 0;
+  uint32_t max_size = buf->datas[0].maxsize;
+  
+#ifdef MD_SCR_DEBUG_PRINTS
+  if (process_count <= 10) {
+    printf("  Buffer details:\n");
+    printf("    n_datas: %u\n", buf->n_datas);
+    printf("    data[0].data: %p\n", data_ptr);
+    printf("    data[0].chunk: %p\n", (void*)buf->datas[0].chunk);
+    printf("    chunk_size: %u\n", chunk_size);
+    printf("    maxsize: %u\n", max_size);
+    printf("    type: %u\n", buf->datas[0].type);
+    printf("    fd: %d\n", buf->datas[0].fd);
+    printf("    flags: 0x%x\n", buf->datas[0].flags);
+    if (buf->datas[0].chunk) {
+      printf("    chunk->offset: %u\n", buf->datas[0].chunk->offset);
+      printf("    chunk->stride: %d\n", buf->datas[0].chunk->stride);
+    }
+  }
+#endif
+
+  if (data_ptr != NULL) {
+    size_t copy_size = chunk_size;
+    if (copy_size == 0) {
+      copy_size = max_size;
+    }
+    
+    if (ctx->frame_size > 0 && copy_size > ctx->frame_size) {
+      copy_size = ctx->frame_size;
+    }
+
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (process_count <= 10) {
+      printf("  Using PipeWire-mapped data, copy_size=%zu\n", copy_size);
+    }
+#endif
+
+    if (ctx->frame_data && copy_size > 0) {
+      memcpy(ctx->frame_data, data_ptr, copy_size);
+      ctx->frame_ready = 1;
+#ifdef MD_SCR_DEBUG_PRINTS
+      if (process_count <= 10) {
+        printf("  SUCCESS: Frame copied (%zu bytes), frame_ready=1\n", copy_size);
+        uint8_t* bytes = (uint8_t*)ctx->frame_data;
+        printf("  First 16 bytes: ");
+        for (int i = 0; i < 16 && i < copy_size; i++) {
+          printf("%02x ", bytes[i]);
+        }
+        printf("\n");
+      }
+#endif
+    }
+    
+    pw_stream_queue_buffer(ctx->stream, b);
+    return;
   }
 
-  if (ctx->frame_data) {
-    memcpy(ctx->frame_data, buf->datas[0].data, copy_size);
-    ctx->frame_ready = 1;
+  if (buf->datas[0].type == SPA_DATA_DmaBuf || buf->datas[0].type == SPA_DATA_MemFd) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (process_count <= 10) {
+      printf("  Detected DMA/MemFd buffer (type=%u)\n", buf->datas[0].type);
+      printf("  COSMIC portal known issue: DMA buffers not properly exposed to clients\n");
+      printf("  This is a limitation of the current COSMIC desktop portal implementation\n");
+    }
+#endif
   }
+
+  if (buf->datas[0].fd >= 0 && chunk_size > 0) {
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (process_count <= 5) {  // Reduce spam
+      printf("  Attempting manual mmap of fd %d, size %u\n", buf->datas[0].fd, chunk_size);
+    }
+#endif
+    
+    uint32_t offset = buf->datas[0].chunk ? buf->datas[0].chunk->offset : 0;
+    size_t map_size = chunk_size;
+    
+    void* mapped = mmap(NULL, map_size, PROT_READ, MAP_SHARED, buf->datas[0].fd, offset);
+    if (mapped != MAP_FAILED) {
+#ifdef MD_SCR_DEBUG_PRINTS
+      if (process_count <= 5) {
+        printf("  Manual mmap SUCCESS at %p (offset=%u)\n", mapped, offset);
+      }
+#endif
+      
+      if (ctx->frame_data) {
+        size_t copy_size = chunk_size;
+        if (copy_size > ctx->frame_size) {
+          copy_size = ctx->frame_size;
+        }
+        memcpy(ctx->frame_data, mapped, copy_size);
+        ctx->frame_ready = 1;
+        
+#ifdef MD_SCR_DEBUG_PRINTS
+        if (process_count <= 5) {
+          printf("  SUCCESS: Manual mmap frame copied (%zu bytes)\n", copy_size);
+          uint8_t* bytes = (uint8_t*)ctx->frame_data;
+          printf("  First 16 bytes: ");
+          for (int i = 0; i < 16 && i < copy_size; i++) {
+            printf("%02x ", bytes[i]);
+          }
+          printf("\n");
+        }
+#endif
+      }
+      
+      munmap(mapped, map_size);
+      pw_stream_queue_buffer(ctx->stream, b);
+      return;
+    }
+  }
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  if (process_count <= 5) {
+    printf("  No accessible buffer data - COSMIC portal limitation\n");
+  }
+#endif
 
   pw_stream_queue_buffer(ctx->stream, b);
 }
@@ -733,6 +827,10 @@ static const struct pw_stream_events stream_events = {
 static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
   if (!ctx) return -1;
 
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Initializing PipeWire stream for node %u\n", node_id);
+#endif
+
   pw_init(NULL, NULL);
 
   ctx->loop = pw_loop_new(NULL);
@@ -764,8 +862,6 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
       PW_KEY_MEDIA_TYPE, "Video",
       PW_KEY_MEDIA_CATEGORY, "Capture",
       PW_KEY_MEDIA_ROLE, "Screen",
-      PW_KEY_NODE_LATENCY, "512/48000",     // Add low latency
-      PW_KEY_NODE_MAX_LATENCY, "1024/48000", // Add max latency
       NULL),
     &stream_events,
     ctx);
@@ -778,48 +874,69 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
     return -1;
   }
 
-  // Connect to the specific node (monitor source)
-  char target[64];
-  snprintf(target, sizeof(target), "%u", node_id);
-
   const struct spa_pod* params[1];
   uint8_t buffer[1024];
   struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
 
-  struct spa_rectangle def_size = SPA_RECTANGLE(320, 240);
+  // Very flexible constraints
   struct spa_rectangle min_size = SPA_RECTANGLE(1, 1);
-  struct spa_rectangle max_size = SPA_RECTANGLE(8192, 8192);
+  struct spa_rectangle max_size = SPA_RECTANGLE(16384, 16384);
+  struct spa_fraction min_fps = SPA_FRACTION(1, 1);
+  struct spa_fraction max_fps = SPA_FRACTION(60, 1);
 
-  struct spa_fraction def_fps = SPA_FRACTION(60, 1);
-  struct spa_fraction min_fps = SPA_FRACTION(0, 1);
-  struct spa_fraction max_fps = SPA_FRACTION(144, 1);
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("Building flexible format parameters...\n");
+#endif
 
   params[0] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
     SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
     SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
     SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(4,
-      SPA_VIDEO_FORMAT_BGRx,
+    
+    SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(8,
       SPA_VIDEO_FORMAT_BGRA,
       SPA_VIDEO_FORMAT_BGRx,
-      SPA_VIDEO_FORMAT_RGBx),
-    SPA_FORMAT_VIDEO_size, SPA_POD_CHOICE_RANGE_Rectangle(&def_size, &min_size, &max_size),
-    SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(&def_fps, &min_fps, &max_fps));
-
+      SPA_VIDEO_FORMAT_RGBA,
+      SPA_VIDEO_FORMAT_RGBx,
+      SPA_VIDEO_FORMAT_ARGB,
+      SPA_VIDEO_FORMAT_xRGB,
+      SPA_VIDEO_FORMAT_ABGR,
+      SPA_VIDEO_FORMAT_xBGR),
+    
+    SPA_FORMAT_VIDEO_size, SPA_POD_CHOICE_RANGE_Rectangle(
+      &min_size, &min_size, &max_size),
+    SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(
+      &min_fps, &min_fps, &max_fps)
+  );
 
   if (pw_stream_connect(ctx->stream,
     PW_DIRECTION_INPUT,
     node_id,
-    (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT |
-      PW_STREAM_FLAG_MAP_BUFFERS),
+    (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT | 
+                      PW_STREAM_FLAG_MAP_BUFFERS |
+                      PW_STREAM_FLAG_RT_PROCESS),
     params, 1) < 0) {
     printf("Failed to connect PipeWire stream to node %u\n", node_id);
-    pw_stream_destroy(ctx->stream);
-    pw_core_disconnect(ctx->core);
-    pw_context_destroy(ctx->context);
-    pw_loop_destroy(ctx->loop);
-    return -1;
+    
+    // Try alternative connection without MAP_BUFFERS flag
+    printf("Retrying without MAP_BUFFERS flag...\n");
+    if (pw_stream_connect(ctx->stream,
+        PW_DIRECTION_INPUT,
+        node_id,
+        (pw_stream_flags)(PW_STREAM_FLAG_AUTOCONNECT),
+        params, 1) < 0) {
+      printf("Alternative connection also failed\n");
+      pw_stream_destroy(ctx->stream);
+      pw_core_disconnect(ctx->core);
+      pw_context_destroy(ctx->context);
+      pw_loop_destroy(ctx->loop);
+      return -1;
+    }
   }
+
+#ifdef MD_SCR_DEBUG_PRINTS
+  printf("PipeWire stream connection initiated\n");
+#endif
 
   return 0;
 }
@@ -855,28 +972,36 @@ static void pipewire_cleanup(pipewire_ctx_t* ctx) {
   pw_deinit();
 }
 
+// TODO
 sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
   if (!Resolution) return -1;
-
-  // This is a fallback - actual resolution will be set during capture setup
   Resolution->x = 0;
   Resolution->y = 0;
-
   return 0;
 }
 
 sint32_t MD_SCR_open(MD_SCR_t* scr) {
   if (!scr) return -1;
-printf("AAA\n");
+
   memset(scr, 0, sizeof(MD_SCR_t));
 
   // Determine the best method based on environment
   const char* wayland_display = getenv("WAYLAND_DISPLAY");
   const char* xdg_session_type = getenv("XDG_SESSION_TYPE");
+  const char* desktop = getenv("XDG_CURRENT_DESKTOP");
 
   if (wayland_display || (xdg_session_type && strcmp(xdg_session_type, "wayland") == 0)) {
-    // Try portal first (works on GNOME, KDE, and should work on COSMIC)
     scr->method = MD_SCR_METHOD_PORTAL_PIPEWIRE;
+
+    // Apply COSMIC-specific workarounds
+    if (desktop && strstr(desktop, "cosmic")) {
+#ifdef MD_SCR_DEBUG_PRINTS
+      printf("COSMIC detected - applying compatibility settings\n");
+#endif
+      setenv("COSMIC_PORTAL_FORCE_SOFTWARE", "1", 0);  // Don't override if already set
+      setenv("PIPEWIRE_LATENCY", "512/48000", 0);
+      setenv("PIPEWIRE_RATE", "48000", 0);
+    }
 
     // Allocate PipeWire context
     scr->pw_ctx = (pipewire_ctx_t*)calloc(1, sizeof(pipewire_ctx_t));
@@ -888,63 +1013,59 @@ printf("AAA\n");
     printf("Using Portal + PipeWire method\n");
 #endif
 
-    // Request screen share through portal
     if (portal_request_screenshare(scr) != 0) {
       printf("Portal screen share request failed\n");
       free(scr->pw_ctx);
       scr->pw_ctx = NULL;
-
-      // Fallback to WLR screencopy if available
-      const char* compositor = getenv("XDG_CURRENT_DESKTOP");
-      if (compositor && (strcasecmp(compositor, "sway") == 0 ||
-        strcasecmp(compositor, "hyprland") == 0 ||
-        strstr(compositor, "wlroots"))) {
-        scr->method = MD_SCR_METHOD_WLR_SCREENCOPY;
-        scr->wl_ctx = (wayland_screencap_t*)calloc(1, sizeof(wayland_screencap_t));
-        if (!scr->wl_ctx) {
-          return -1;
-        }
-#ifdef MD_SCR_DEBUG_PRINTS
-        printf("Falling back to WLR screencopy method\n");
-#endif
-      }
-      else {
-        return -1;
-      }
+      return -1;
     }
 
-    // Initialize PipeWire stream if using portal method
-    if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE) {
-      if (pipewire_init_stream(scr->pw_ctx, scr->portal_source_id) != 0) {
-        printf("Failed to initialize PipeWire stream\n");
-        if (scr->portal_session_handle) {
-          free(scr->portal_session_handle);
-        }
-        free(scr->pw_ctx);
-        return -1;
+    if (pipewire_init_stream(scr->pw_ctx, scr->portal_source_id) != 0) {
+      printf("Failed to initialize PipeWire stream\n");
+      if (scr->portal_session_handle) {
+        free(scr->portal_session_handle);
       }
+      free(scr->pw_ctx);
+      return -1;
+    }
 
-      // Wait for stream to be ready
-      int timeout = 5000;
-      while (!scr->pw_ctx->connected && !scr->pw_ctx->capture_failed && timeout > 0) {
+    // Wait for stream to be ready
+    int timeout = 5000;
+    while (!scr->pw_ctx->connected && !scr->pw_ctx->capture_failed && timeout > 0) {
+      pw_loop_iterate(scr->pw_ctx->loop, 100);
+      timeout -= 100;
+    }
+
+    if (scr->pw_ctx->capture_failed || !scr->pw_ctx->connected) {
+      printf("PipeWire stream failed to connect\n");
+      pipewire_cleanup(scr->pw_ctx);
+      free(scr->pw_ctx);
+      if (scr->portal_session_handle) {
+        free(scr->portal_session_handle);
+      }
+      return -1;
+    }
+
+    scr->Geometry.Resolution.x = scr->pw_ctx->width;
+    scr->Geometry.Resolution.y = scr->pw_ctx->height;
+    scr->Geometry.LineSize = scr->pw_ctx->stride;
+
+#ifdef MD_SCR_DEBUG_PRINTS
+    printf("Screen capture initialized: %dx%d, stride=%u\n",
+           scr->Geometry.Resolution.x, scr->Geometry.Resolution.y, scr->Geometry.LineSize);
+#endif
+
+    // For COSMIC, give extra time for buffers to become available
+    if (desktop && strstr(desktop, "cosmic")) {
+#ifdef MD_SCR_DEBUG_PRINTS
+      printf("COSMIC: Waiting extra time for buffer stability...\n");
+#endif
+      usleep(2000000); // 2 seconds extra wait for COSMIC
+      
+      // Try to flush any pending buffers
+      for (int i = 0; i < 10; i++) {
         pw_loop_iterate(scr->pw_ctx->loop, 100);
-        timeout -= 100;
       }
-
-      if (scr->pw_ctx->capture_failed || !scr->pw_ctx->connected) {
-        printf("PipeWire stream failed to connect\n");
-        pipewire_cleanup(scr->pw_ctx);
-        free(scr->pw_ctx);
-        if (scr->portal_session_handle) {
-          free(scr->portal_session_handle);
-        }
-        return -1;
-      }
-
-      // Set geometry from PipeWire stream
-      scr->Geometry.Resolution.x = scr->pw_ctx->width;
-      scr->Geometry.Resolution.y = scr->pw_ctx->height;
-      scr->Geometry.LineSize = scr->pw_ctx->stride;
     }
   }
   else {
@@ -963,45 +1084,6 @@ void MD_SCR_close(MD_SCR_t* scr) {
     scr->pw_ctx = NULL;
   }
 
-  if (scr->method == MD_SCR_METHOD_WLR_SCREENCOPY && scr->wl_ctx) {
-    // Cleanup Wayland resources
-    if (scr->wl_ctx->buffer) {
-      wl_buffer_destroy(scr->wl_ctx->buffer);
-    }
-    if (scr->wl_ctx->shm_data && scr->wl_ctx->shm_data != MAP_FAILED) {
-      munmap(scr->wl_ctx->shm_data, scr->wl_ctx->shm_size);
-    }
-    if (scr->wl_ctx->shm_fd >= 0) {
-      close(scr->wl_ctx->shm_fd);
-    }
-    if (scr->wl_ctx->frame) {
-      zwlr_screencopy_frame_v1_destroy(scr->wl_ctx->frame);
-    }
-    if (scr->wl_ctx->xdg_output) {
-      zxdg_output_v1_destroy(scr->wl_ctx->xdg_output);
-    }
-    if (scr->wl_ctx->output_manager) {
-      zxdg_output_manager_v1_destroy(scr->wl_ctx->output_manager);
-    }
-    if (scr->wl_ctx->screencopy_manager) {
-      zwlr_screencopy_manager_v1_destroy(scr->wl_ctx->screencopy_manager);
-    }
-    if (scr->wl_ctx->shm) {
-      wl_shm_destroy(scr->wl_ctx->shm);
-    }
-    if (scr->wl_ctx->compositor) {
-      wl_compositor_destroy(scr->wl_ctx->compositor);
-    }
-    if (scr->wl_ctx->registry) {
-      wl_registry_destroy(scr->wl_ctx->registry);
-    }
-    if (scr->wl_ctx->display) {
-      wl_display_disconnect(scr->wl_ctx->display);
-    }
-    free(scr->wl_ctx);
-    scr->wl_ctx = NULL;
-  }
-
   if (scr->portal_session_handle) {
     free(scr->portal_session_handle);
     scr->portal_session_handle = NULL;
@@ -1014,51 +1096,88 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
   if (!scr) return NULL;
 
   if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE && scr->pw_ctx) {
-    // Process PipeWire events
     scr->pw_ctx->frame_ready = 0;
 
-    int timeout = 100; // 1 second timeout
-    while (!scr->pw_ctx->frame_ready && !scr->pw_ctx->capture_failed && timeout > 0) {
-      pw_loop_iterate(scr->pw_ctx->loop, 5);
-      timeout -= 5;
+    const char* desktop = getenv("XDG_CURRENT_DESKTOP");
+    int is_cosmic = (desktop && strstr(desktop, "cosmic"));
+
+#ifdef MD_SCR_DEBUG_PRINTS
+    static int read_attempts = 0;
+    read_attempts++;
+    if (read_attempts <= 5) {
+      printf("MD_SCR_read attempt #%d%s\n", read_attempts, is_cosmic ? " (COSMIC mode)" : "");
     }
+#endif
+
+    int timeout = is_cosmic ? 2000 : 1000; // Seconds
+    int iterations = 0;
+    int max_iterations = is_cosmic ? 200 : 100;
+    
+    while (!scr->pw_ctx->frame_ready && !scr->pw_ctx->capture_failed && timeout > 0 && iterations < max_iterations) {
+      int iterate_time = is_cosmic ? 100 : 10;
+      int result = pw_loop_iterate(scr->pw_ctx->loop, iterate_time);
+      iterations++;
+      timeout -= iterate_time;
+      
+#ifdef MD_SCR_DEBUG_PRINTS
+      if (read_attempts <= 3 && iterations % (is_cosmic ? 5 : 10) == 0) {
+        printf("  iteration %d, timeout=%d, frame_ready=%d, pw_loop_iterate result=%d\n", 
+               iterations, timeout, scr->pw_ctx->frame_ready, result);
+      }
+#endif
+      
+      // For COSMIC, try triggering the stream more frequently
+      if (is_cosmic && iterations % 10 == 0 && scr->pw_ctx->stream) {
+        pw_stream_trigger_process(scr->pw_ctx->stream);
+      }
+      
+      // If we've been waiting a while, try longer iterations
+      if (iterations > (is_cosmic ? 20 : 50) && iterations % 20 == 0) {
+        pw_loop_iterate(scr->pw_ctx->loop, is_cosmic ? 200 : 50);
+      }
+    }
+    
     if (scr->pw_ctx->capture_failed) {
-      printf("PipeWire capture failed\n");
+      printf("PipeWire capture failed during read\n");
       return NULL;
     }
 
     if (!scr->pw_ctx->frame_ready) {
 #ifdef MD_SCR_DEBUG_PRINTS
-      printf("No frame ready (timeout)\n");
+      if (read_attempts <= 5) {
+        printf("No frame ready after %d iterations (timeout=%d)\n", iterations, timeout);
+        printf("Stream state: connected=%d, failed=%d\n", 
+               scr->pw_ctx->connected, scr->pw_ctx->capture_failed);
+        if (is_cosmic) {
+          printf("COSMIC limitation: Portal may not be providing accessible buffers\n");
+          printf("This is a known issue with COSMIC's current portal implementation\n");
+        }
+      }
 #endif
-      return NULL;
+      
+      // Try triggering the stream manually one more time
+      if (scr->pw_ctx->stream) {
+        pw_stream_trigger_process(scr->pw_ctx->stream);
+        int final_attempts = is_cosmic ? 20 : 10;
+        for (int i = 0; i < final_attempts && !scr->pw_ctx->frame_ready; i++) {
+          pw_loop_iterate(scr->pw_ctx->loop, is_cosmic ? 100 : 10);
+        }
+      }
+      
+      if (!scr->pw_ctx->frame_ready) {
+        return NULL;
+      }
     }
+
+#ifdef MD_SCR_DEBUG_PRINTS
+    if (read_attempts <= 3) {
+      printf("SUCCESS: Frame ready after %d iterations, frame_data=%p, size=%zu\n", 
+             iterations, (void*)scr->pw_ctx->frame_data, scr->pw_ctx->frame_size);
+    }
+#endif
+
     return scr->pw_ctx->frame_data;
   }
 
-  if (scr->method == MD_SCR_METHOD_WLR_SCREENCOPY && scr->wl_ctx) {
-    printf("WLR screencopy read not fully implemented, implement can be found from older wayland.h\n");
-    return NULL;
-  }
-
   return NULL;
-}
-
-static const char* detect_desktop_environment() {
-  const char* desktop = getenv("XDG_CURRENT_DESKTOP");
-  if (desktop) {
-    if (strcasestr(desktop, "gnome")) return "GNOME";
-    if (strcasestr(desktop, "kde")) return "KDE";
-    if (strcasestr(desktop, "cosmic")) return "COSMIC";
-    if (strcasestr(desktop, "sway")) return "Sway";
-    if (strcasestr(desktop, "hyprland")) return "Hyprland";
-  }
-
-  const char* gdm_session = getenv("GDMSESSION");
-  if (gdm_session) {
-    if (strcasestr(gdm_session, "gnome")) return "GNOME";
-    if (strcasestr(gdm_session, "cosmic")) return "COSMIC";
-  }
-
-  return "Unknown";
 }
