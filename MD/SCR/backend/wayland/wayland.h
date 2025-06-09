@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <time.h>
 #include <iostream>
-#include <gio/gio.h>
 #define MD_SCR_DEBUG_PRINTS
 
 // Wayland protocol headers - generated from .xml files
@@ -861,7 +860,6 @@ sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t* Resolution) {
 
 sint32_t MD_SCR_open(MD_SCR_t* scr) {
   if (!scr) return -1;
-
   memset(scr, 0, sizeof(MD_SCR_t));
 
   // Determine the best method based on environment
@@ -1008,7 +1006,6 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
   if (!scr) return NULL;
 
   if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE && scr->pw_ctx) {
-    printf("reading\n");
     // Process PipeWire events
     scr->pw_ctx->frame_ready = 0;
 
@@ -1017,7 +1014,6 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
       pw_loop_iterate(scr->pw_ctx->loop, 10);
       timeout -= 10;
     }
-    printf("finish\n");
     if (scr->pw_ctx->capture_failed) {
       printf("PipeWire capture failed\n");
       return NULL;
@@ -1029,7 +1025,6 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
 #endif
       return NULL;
     }
-    printf("%p\n", scr->pw_ctx->frame_data);
     return scr->pw_ctx->frame_data;
   }
 
