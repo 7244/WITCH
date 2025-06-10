@@ -76,10 +76,6 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
     Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
     Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = EncoderSetting->RateControl.VBR.bps;
     Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps * 1.2;
-    int idr_interval_seconds = 2;
-    Encoder->InternalSetting.encodeConfig->gopLength =  EncoderSetting->InputFrameRate * idr_interval_seconds;
-    Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.idrPeriod = 
-      Encoder->InternalSetting.encodeConfig->gopLength;
 
     Encoder->en.CreateEncoder(&Encoder->InternalSetting);
   }
@@ -153,23 +149,12 @@ _ETC_VEDC_Encode_Encoder_nvenc_SetRateControl(
     return ETC_VEDC_Encode_Error_InvalidRateControl;
   }
 
-  auto fps = Encoder->InternalSetting.frameRateNum / Encoder->InternalSetting.frameRateDen;
-
-
   NV_ENC_RECONFIGURE_PARAMS params{ NV_ENC_RECONFIGURE_PARAMS_VER };
-  Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
+  Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
   Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = RateControl->VBR.bps;
-  Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = RateControl->VBR.bps * 1.2;
+  Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = RateControl->VBR.bps;
   Encoder->InternalSetting.encodeConfig->rcParams.vbvBufferSize = RateControl->VBR.bps;
-
-  int idr_interval_seconds = 2;
-  Encoder->InternalSetting.encodeConfig->gopLength = fps * idr_interval_seconds;
-  Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.idrPeriod =
-  Encoder->InternalSetting.encodeConfig->gopLength;
-
   params.reInitEncodeParams = Encoder->InternalSetting;
-  params.reInitEncodeParams.encodeConfig = Encoder->InternalSetting.encodeConfig;
-  params.forceIDR = 1;
   Encoder->en.Reconfigure(&params);
 
   return ETC_VEDC_Encode_Error_Success;
@@ -183,23 +168,9 @@ _ETC_VEDC_Encode_Encoder_nvenc_SetInputFrameRate(
   _ETC_VEDC_Encode_Encoder_nvenc_t* Encoder = (_ETC_VEDC_Encode_Encoder_nvenc_t*)*EncoderData;
 
   NV_ENC_RECONFIGURE_PARAMS params{ NV_ENC_RECONFIGURE_PARAMS_VER };
-  Encoder->InternalSetting.frameRateDen = 1000;
-  Encoder->InternalSetting.frameRateNum = (uint32_t)(fps * Encoder->InternalSetting.frameRateDen);
-  Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
-  Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = Encoder->encodeConfig.rcParams.averageBitRate;
-  Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate =  Encoder->encodeConfig.rcParams.maxBitRate;
-  int idr_interval_seconds = 2;
-  Encoder->InternalSetting.encodeConfig->gopLength = fps * idr_interval_seconds;
-  Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.idrPeriod =
-    Encoder->InternalSetting.encodeConfig->gopLength;
+  Encoder->InternalSetting.frameRateNum = fps * 1000;
   params.reInitEncodeParams = Encoder->InternalSetting;
-  params.reInitEncodeParams.encodeConfig = Encoder->InternalSetting.encodeConfig;
-  params.forceIDR = 1;
-  bool status = Encoder->en.Reconfigure(&params);
-
-  if (status == false) {
-    return ETC_VEDC_Encode_Error_EncoderError;
-  }
+  Encoder->en.Reconfigure(&params);
 
   return ETC_VEDC_Encode_Error_Success;
 }
