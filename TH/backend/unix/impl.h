@@ -56,16 +56,16 @@ static void *_TH_newstack_orphan(uintptr_t size){
   #endif
 }
 
-static sint32_t TH_newthread_orphan(void *func, void *param){
+static sint32_t TH_newthread_orphan(void(*func)(void*), void *param){
   void *stack = _TH_newstack_orphan(0x8000);
 
   #if defined(__i386__)
-    ((void **)stack)[0] = func;
+    ((void **)stack)[0] = (void *)func;
     ((void **)stack)[1] = param;
   #elif defined(__x86_64__)
-    ((void **)stack)[0] = _TH_newthread_orphan_entry;
+    ((void **)stack)[0] = (void *)_TH_newthread_orphan_entry;
     ((void **)stack)[1] = param;
-    ((void **)stack)[2] = func;
+    ((void **)stack)[2] = (void *)func;
   #else
     #error ?
   #endif
