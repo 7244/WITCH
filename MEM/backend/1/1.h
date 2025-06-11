@@ -89,7 +89,7 @@ static uint8_t *MEM_findchr0(
 static uintptr_t MEM_cstreu(
   const void *cstr
 ){
-  return __builtin_strlen(cstr);
+  return _builtin_strlen(cstr);
 }
 
 static uint8_t *MEM_cstrep(

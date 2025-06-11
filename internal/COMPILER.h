@@ -54,6 +54,10 @@
   #define __compiler
 #endif
 
+#if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
+  #define _builtin_strlen(p) __builtin_strlen((const char *)(p))
+#endif
+
 #include _WITCH_PATH(internal/WOS.h)
 
 #ifndef ENDIAN
