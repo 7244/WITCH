@@ -2,6 +2,7 @@
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14) || \
   (defined(__compiler_clang) && __clang_major__ >= 18 && __clang_major__ <= 19)
 
+  __no_name_mangling
   void memset(
     void *dst,
     uint8_t byte,
@@ -18,6 +19,7 @@
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14) || \
   (defined(__compiler_clang) && __clang_major__ >= 18 && __clang_major__ <= 19)
 
+  __no_name_mangling
   void memcpy(
     void * __restrict_or_nothing dst,
     const void * __restrict_or_nothing src,
@@ -34,6 +36,7 @@
   (defined(__compiler_gcc) && __GNUC__ >= 10 && __GNUC__ <= 15) || \
   (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
 
+  __no_name_mangling
   #if \
     (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
 

@@ -16,6 +16,7 @@
     }s;
   }_WITCH_COMPILER_udwords;
 
+  __no_name_mangling
   unsigned long long __udivmoddi4(unsigned long long a, unsigned long long b, unsigned long long *rem){
     const unsigned n_uword_bits = sizeof(unsigned) * 8;
     const unsigned n_udword_bits = sizeof(unsigned long long) * 8;
@@ -135,12 +136,14 @@
     return q.all;
   }
 
+  __no_name_mangling
   unsigned long long __umoddi3(unsigned long long a, unsigned long long b) {
     unsigned long long r;
     __udivmoddi4(a, b, &r);
     return r;
   }
 
+  __no_name_mangling
   unsigned long long __udivdi3(unsigned long long a, unsigned long long b) {
     return __udivmoddi4(a, b, 0);
   }
@@ -149,6 +152,7 @@
 #if \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14)
 
+  __no_name_mangling
   unsigned __popcountsi2(unsigned a){
     a = a - ((a >> 1) & 0x55555555);
     a = ((a >> 2) & 0x33333333) + (a & 0x33333333);
