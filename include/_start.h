@@ -1,3 +1,4 @@
+__no_name_mangling
 __attribute__((noreturn))
 __attribute((naked))
 void

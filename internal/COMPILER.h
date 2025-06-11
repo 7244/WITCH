@@ -21,6 +21,12 @@
   #define __restrict_or_nothing
 #endif
 
+#if defined(__language_c)
+  #define __no_name_mangling
+#elif defined(__language_cpp)
+  #define __no_name_mangling extern "C"
+#endif
+
 #ifndef __compiler
   #if defined(__clang__)
     #define __compiler_clang
