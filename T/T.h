@@ -15,6 +15,16 @@
     /* rdtsc */
     #include <intrin.h>
   #endif
+#elif !defined(__platform_libc) && defined(__platform_unix_linux)
+  #define CLOCK_REALTIME 0
+  #define CLOCK_MONOTONIC 1
+  #define CLOCK_PROCESS_CPUTIME_ID 2
+  #define CLOCK_THREAD_CPUTIME_ID 3
+
+  typedef struct{
+    uint64_t tv_sec;
+    uintptr_t tv_nsec;
+  }_T_timespec_t;
 #endif
 
 static uint64_t T_rdtsc(void){
@@ -72,8 +82,8 @@ static uint64_t T_nowi(void){
     ktime_get_raw_ts64(&ts);
     return ((uint64_t)ts.tv_sec * 1000000000) + ts.tv_nsec;
   #elif defined(__platform_unix_linux)
-    struct timespec t;
-    sintptr_t err = syscall2(__NR_clock_gettime, CLOCK_MONOTONIC, &t);
+    _T_timespec_t t;
+    sintptr_t err = syscall2(__NR_clock_gettime, CLOCK_MONOTONIC, (uintptr_t)&t);
     if(err){
       __abort();
     }
@@ -85,30 +95,7 @@ static uint64_t T_nowi(void){
 
 #ifndef WITCH_float_is_disabled
   static f64_t T_nowf(void){
-    #if defined(__platform_unix) && defined(__platform_libc)
-      struct timespec t;
-      clock_gettime(CLOCK_MONOTONIC, &t);
-      return (f64_t)t.tv_sec + (f64_t)t.tv_nsec / 1000000000;
-    #elif defined(__platform_windows)
-      LARGE_INTEGER t;
-      if(QueryPerformanceCounter(&t) == 0){
-        __abort();
-      }
-      return (f64_t)t.QuadPart / _T_time_freqf;
-    #elif defined(__platform_linux_kernel_module)
-      struct timespec64 ts;
-      ktime_get_raw_ts64(&ts);
-      return (f64_t)ts.tv_sec + (f64_t)ts.tv_nsec / 1000000000;
-    #elif defined(__platform_unix_linux)
-      struct timespec t;
-      sintptr_t err = syscall2(__NR_clock_gettime, CLOCK_MONOTONIC, &t);
-      if(err){
-        __abort();
-      }
-      return (f64_t)t.tv_sec + (f64_t)t.tv_nsec / 1000000000;
-    #else
-      #error ?
-    #endif
+    return (f64_t)T_nowi() / 1000000000;
   }
 #endif
 
