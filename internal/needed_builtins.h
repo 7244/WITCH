@@ -1,4 +1,5 @@
 #if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14) || \
   (defined(__compiler_clang) && __clang_major__ >= 18 && __clang_major__ <= 19)
 
@@ -16,6 +17,7 @@
 #endif
 
 #if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14) || \
   (defined(__compiler_clang) && __clang_major__ >= 18 && __clang_major__ <= 19)
 
@@ -33,23 +35,51 @@
 #endif
 
 #if \
-  (defined(__compiler_gcc) && __GNUC__ >= 10 && __GNUC__ <= 15) || \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
+  (defined(__compiler_gcc) && __GNUC__ >= 15 && __GNUC__ <= 15) || \
   (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
 
   __no_name_mangling
-  #if \
-    (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
-
-    static
-  #endif
-  uintptr_t strlen(
-    const void *cstr
+  void memmove(
+    void *dst,
+    const void *src,
+    uintptr_t size
   ){
-    uintptr_t i = 0;
-    while(EXPECT(((const uint8_t *)cstr)[i], 1)){
-      i++;
+    uint8_t *d = (uint8_t *)dst;
+    const uint8_t *s = (const uint8_t *)src;
+
+    if(d < s){
+      while(size--){
+        *d++ = *s++;
+      }
     }
-    return i;
+    else{
+      d += size;
+      s += size;
+
+      while(size--){
+        *--d = *--s;
+      }
+    }
   }
+
+#endif
+
+#if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
+  (defined(__compiler_gcc) && __GNUC__ >= 10 && __GNUC__ <= 15) || \
+  (defined(__compiler_clang) && __clang_major__ >= 19 && __clang_major__ <= 19)
+
+  __no_name_mangling_begin
+    uintptr_t strlen(
+      const void *cstr
+    ){
+      uintptr_t i = 0;
+      while(EXPECT(((const uint8_t *)cstr)[i], 1)){
+        i++;
+      }
+      return i;
+    }
+  __no_name_mangling_end
 
 #endif

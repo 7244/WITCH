@@ -1,4 +1,5 @@
 #if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14)
 
   __no_name_mangling

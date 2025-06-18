@@ -1,5 +1,5 @@
-
 #if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
   (defined(__compiler_clang) && __clang_major__ >= 18 && __clang_major__ <= 19) || \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14)
 
@@ -150,6 +150,7 @@
 #endif
 
 #if \
+  (!defined(__WITCH_DEVELOPER) || !__WITCH_DEVELOPER) || \
   (defined(__compiler_gcc) && __GNUC__ >= 14 && __GNUC__ <= 14)
 
   __no_name_mangling

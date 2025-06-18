@@ -23,8 +23,14 @@
 
 #if defined(__language_c)
   #define __no_name_mangling
+
+  #define __no_name_mangling_begin
+  #define __no_name_mangling_end
 #elif defined(__language_cpp)
   #define __no_name_mangling extern "C"
+
+  #define __no_name_mangling_begin extern "C"{
+  #define __no_name_mangling_end }
 #endif
 
 #ifndef __compiler
