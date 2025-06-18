@@ -1,3 +1,7 @@
+#ifndef _WITCH__start_func_name
+  #define _WITCH__start_func_name main
+#endif
+
 __no_name_mangling
 __attribute__((noreturn))
 __attribute((naked))
@@ -11,12 +15,12 @@ _start(void *stack){
       "push %%ecx\n"
       "push %%esi\n"
       "call %P0\n"
-      : : "i" (main)
+      : : "i" (_WITCH__start_func_name)
     #elif defined(__x86_64__)
       "mov 0(%%rsp), %%rdi\n"
       "lea 8(%%rsp), %%rsi\n"
       "call %P0\n"
-      : : "i" (main)
+      : : "i" (_WITCH__start_func_name)
     #else
       #error ?
     #endif
@@ -24,3 +28,5 @@ _start(void *stack){
 
   #include _WITCH_PATH(include/end_of_naked.h)
 }
+
+#undef _WITCH__start_func_name
