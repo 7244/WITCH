@@ -48,6 +48,7 @@
     #if !defined(__GNUC__)
       #error ?
     #endif
+  #elif defined(_MSC_VER)
   #else
     #error failed to find __compiler
   #endif
