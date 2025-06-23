@@ -65,22 +65,52 @@ _ETC_VEDC_Encode_Encoder_nvenc_Open(
     goto gt_err0;
   }
 
+  /*
+  Encoder->InternalSetting.encodeConfig->rcParams.zeroReorderDelay = 1; // No frame reordering
+  Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.disableDeblockingFilterIDC = 1; // Disable deblocking for speed
+
+  // For better quality at high resolutions (if you have GPU power):
+  // Encoder->en.CreateDefaultEncoderParams(&Encoder->InternalSetting, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_P4_GUID); // Slower but better quality
+
+  // For variable bitrate (if CBR doesn't work well for your content):
+  // Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
+  // Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps * 1.2;
+
+  // For very fast motion/gaming content:
+  // Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.adaptiveTransformMode = NV_ENC_H264_ADAPTIVE_TRANSFORM_ENABLE;
+  // Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.fmoMode = NV_ENC_H264_FMO_DISABLE;
+
+  // For text-heavy content (higher quality):
+  // Encoder->InternalSetting.encodeConfig->rcParams.initialRCQP.qpIntra = 20;  // Lower = higher quality
+  // Encoder->InternalSetting.encodeConfig->rcParams.initialRCQP.qpInterP = 22;
+  // Encoder->InternalSetting.encodeConfig->rcParams.aqStrength = 10; // Higher strength for text
+  */
+
   std::construct_at(&Encoder->en, Encoder->Context, EncoderSetting->FrameSizeX, EncoderSetting->FrameSizeY, NV_ENC_BUFFER_FORMAT_ARGB);
   {
     Encoder->InternalSetting = { NV_ENC_INITIALIZE_PARAMS_VER };
     Encoder->encodeConfig = { NV_ENC_CONFIG_VER };
     Encoder->InternalSetting.encodeConfig = &Encoder->encodeConfig;
-    Encoder->en.CreateDefaultEncoderParams(&Encoder->InternalSetting, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+
+    Encoder->en.CreateDefaultEncoderParams(&Encoder->InternalSetting, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HQ_GUID);
+
     Encoder->InternalSetting.frameRateDen = 1000;
     Encoder->InternalSetting.frameRateNum = EncoderSetting->InputFrameRate * Encoder->InternalSetting.frameRateDen;
+
     Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
     Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = EncoderSetting->RateControl.VBR.bps;
-    Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps * 1.2;
+    Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = EncoderSetting->RateControl.VBR.bps;
+
+    Encoder->InternalSetting.encodeConfig->gopLength = NVENC_INFINITE_GOPLENGTH;
+    Encoder->InternalSetting.encodeConfig->frameIntervalP = 1; // No B-frames
+
+    Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.repeatSPSPPS = 1;
+    Encoder->InternalSetting.encodeConfig->encodeCodecConfig.h264Config.idrPeriod = NVENC_INFINITE_GOPLENGTH;
 
     Encoder->en.CreateEncoder(&Encoder->InternalSetting);
   }
+  
   std::construct_at(&Encoder->wrd.vPacket);
-
   Encoder->wrd.Readed = 1;
 
   return ETC_VEDC_Encode_Error_Success;
@@ -150,7 +180,7 @@ _ETC_VEDC_Encode_Encoder_nvenc_SetRateControl(
   }
 
   NV_ENC_RECONFIGURE_PARAMS params{ NV_ENC_RECONFIGURE_PARAMS_VER };
-  Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+  Encoder->InternalSetting.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
   Encoder->InternalSetting.encodeConfig->rcParams.averageBitRate = RateControl->VBR.bps;
   Encoder->InternalSetting.encodeConfig->rcParams.maxBitRate = RateControl->VBR.bps;
   Encoder->InternalSetting.encodeConfig->rcParams.vbvBufferSize = RateControl->VBR.bps;

@@ -1,4 +1,5 @@
-#if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
+ // With windows clang build there can be msvc and clang both defined
+#if (defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)) && !defined(__compiler_msvc)
   /* nothing to do */
 #elif defined(__compiler_msvc)
   /* TODO check c++11 */

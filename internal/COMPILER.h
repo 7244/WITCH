@@ -48,7 +48,12 @@
     #if !defined(__GNUC__)
       #error ?
     #endif
-  #elif defined(_MSC_VER)
+  #else
+    #error failed to find __compiler
+  #endif
+
+  // With windows clang build there can be msvc and clang both defined
+  #if defined(_MSC_VER)
     #define __compiler_msvc
 
     #ifndef __builtin_memset
@@ -60,9 +65,8 @@
     #ifndef __builtin_memmove
       #define __builtin_memmove memmove
     #endif
-  #else
-    #error failed to find __compiler
   #endif
+
   #define __compiler
 #endif
 
