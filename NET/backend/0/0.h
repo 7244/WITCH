@@ -56,6 +56,47 @@
 
 #define NET_SOL_SOCKET 1
 
+#define NET_SOL_IP 0
+#define NET_SOL_TCP 6
+#define NET_SOL_UDP 17
+#define NET_SOL_IPV6 41
+#define NET_SOL_ICMPV6 58
+#define NET_SOL_SCTP 132
+#define NET_SOL_UDPLITE 136
+#define NET_SOL_RAW 255
+#define NET_SOL_IPX 256
+#define NET_SOL_AX25 257
+#define NET_SOL_ATALK 258
+#define NET_SOL_NETROM 259
+#define NET_SOL_ROSE 260
+#define NET_SOL_DECNET 261
+#define NET_SOL_X25 262
+#define NET_SOL_PACKET 263
+#define NET_SOL_ATM 264
+#define NET_SOL_AAL 265
+#define NET_SOL_IRDA 266
+#define NET_SOL_NETBEUI 267
+#define NET_SOL_LLC 268
+#define NET_SOL_DCCP 269
+#define NET_SOL_NETLINK 270
+#define NET_SOL_TIPC 271
+#define NET_SOL_RXRPC 272
+#define NET_SOL_PPPOL2TP 273
+#define NET_SOL_BLUETOOTH 274
+#define NET_SOL_PNPIPE 275
+#define NET_SOL_RDS 276
+#define NET_SOL_IUCV 277
+#define NET_SOL_CAIF 278
+#define NET_SOL_ALG 279
+#define NET_SOL_NFC 280
+#define NET_SOL_KCM 281
+#define NET_SOL_TLS 282
+#define NET_SOL_XDP 283
+#define NET_SOL_MPTCP 284
+#define NET_SOL_MCTP 285
+#define NET_SOL_SMC 286
+#define NET_SOL_VSOCK 287
+
 #define NET_SO_DEBUG 1
 #define NET_SO_REUSEADDR 2
 #define NET_SO_TYPE 3
@@ -101,6 +142,36 @@
 #define NET_ETH_P_CAIF 0x00F7
 #define NET_ETH_P_XDSA 0x00F8
 #define NET_ETH_P_MAP 0x00F9
+
+#define NET_PACKET_ADD_MEMBERSHIP 1
+#define NET_PACKET_DROP_MEMBERSHIP 2
+#define NET_PACKET_RECV_OUTPUT 3
+#define NET_PACKET_RX_RING 5
+#define NET_PACKET_STATISTICS 6
+#define NET_PACKET_COPY_THRESH 7
+#define NET_PACKET_AUXDATA 8
+#define NET_PACKET_ORIGDEV 9
+#define NET_PACKET_VERSION 10
+#define NET_PACKET_HDRLEN 11
+#define NET_PACKET_RESERVE 12
+#define NET_PACKET_TX_RING 13
+#define NET_PACKET_LOSS 14
+#define NET_PACKET_VNET_HDR 15
+#define NET_PACKET_TX_TIMESTAMP 16
+#define NET_PACKET_TIMESTAMP 17
+#define NET_PACKET_FANOUT 18
+#define NET_PACKET_TX_HAS_OFF 19
+#define NET_PACKET_QDISC_BYPASS 20
+#define NET_PACKET_ROLLOVER_STATS 21
+#define NET_PACKET_FANOUT_DATA 22
+#define NET_PACKET_IGNORE_OUTGOING 23
+#define NET_PACKET_VNET_HDR_SZ 24
+
+typedef enum{
+  NET_TPACKET_V1,
+  NET_TPACKET_V2,
+  NET_TPACKET_V3
+}NET_tpacket_versions_t;
 
 enum{
   NET_SHUT_RD = 0,
@@ -296,6 +367,35 @@ typedef struct{
   };
 }NET_ifreq_t;
 
+#define NET_TP_STATUS_AVAILABLE 0
+#define NET_TP_STATUS_SEND_REQUEST (1 << 0)
+#define NET_TP_STATUS_SENDING (1 << 1)
+#define NET_TP_STATUS_WRONG_FORMAT (1 << 2)
+
+#define NET_TPACKET_ALIGNMENT 16
+#define NET_TPACKET_ALIGN(x) (((x)+NET_TPACKET_ALIGNMENT-1)&~(NET_TPACKET_ALIGNMENT-1))
+#define NET_TPACKET_HDRLEN (NET_TPACKET_ALIGN(sizeof(NET_tpacket_hdr_t)) + sizeof(NET_sockaddr_ll_t))
+
+typedef struct{
+  uint32_t tp_block_size;
+  uint32_t tp_block_nr;
+  uint32_t tp_frame_size;
+  uint32_t tp_frame_nr;
+}NET_tpacket_req_t;
+
+typedef struct{
+	uint32_t tp_status;
+	uint32_t tp_len;
+	uint32_t tp_snaplen;
+	uint16_t tp_mac;
+	uint16_t tp_net;
+	uint32_t tp_sec;
+	uint32_t tp_nsec;
+	uint16_t tp_vlan_tci;
+	uint16_t tp_vlan_tpid;
+	uint8_t tp_padding[4];
+}NET_tpacket2_hdr_t;
+
 typedef struct{
   IO_fd_t fd;
 }NET_socket_t;
@@ -385,6 +485,10 @@ IO_ssize_t NET_recvfrom(const NET_socket_t *sock, void *data, IO_size_t size, NE
 
 sint32_t NET_listen(const NET_socket_t *sock){
   return syscall2(__NR_listen, sock->fd.fd, 0x80000000 - 0x40);
+}
+
+sint32_t NET_setsockopt_raw(const NET_socket_t *sock, sint32_t level, sint32_t optname, void *value, uintptr_t value_size){
+  return syscall5(__NR_setsockopt, sock->fd.fd, level, optname, (uintptr_t)value, value_size);
 }
 
 sint32_t NET_setsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optname, sint32_t value){

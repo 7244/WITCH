@@ -17,6 +17,12 @@ typedef struct{
 }NET_addr4prefix_t;
 
 typedef struct{
+  uint8_t src[6];
+  uint8_t dst[6];
+  uint16_t prot;
+}NET_machdr_t;
+
+typedef struct{
   #if defined(__BYTE_ORDER_BIG)
     uint8_t version:4, ihl:4;
   #elif defined(__BYTE_ORDER_LITTLE)
