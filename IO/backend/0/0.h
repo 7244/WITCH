@@ -285,6 +285,13 @@ static int IO_epoll_create(int flags){
   return syscall1(__NR_epoll_create1, flags);
 }
 
+static sintptr_t IO_ctl3(IO_fd_t *fd, uint32_t op, void *val){
+  return syscall3(__NR_ioctl, fd->fd, op, (uintptr_t)val);
+}
+static sintptr_t IO_ctl2(IO_fd_t *fd, uint32_t op){
+  return syscall2(__NR_ioctl, fd->fd, op);
+}
+
 static sintptr_t IO_mmap(void *addr, IO_size_t length, int prot, int flags, int fd, IO_off_t offset){
   return syscall6(__NR_mmap, (uintptr_t)addr, length, prot, flags, fd, offset);
 }

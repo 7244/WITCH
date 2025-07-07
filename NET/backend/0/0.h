@@ -1,11 +1,55 @@
 #include _WITCH_PATH(IO/IO.h)
 #include _WITCH_PATH(include/syscall.h)
 
-#define	NET_INADDR_ANY ((uint32_t)0)
+#define NET_INADDR_ANY ((uint32_t)0)
 
 #define NET_PF_LOCAL 1
 #define NET_PF_UNIX NET_PF_LOCAL
 #define NET_PF_INET 2
+#define NET_AF_AX25 3
+#define NET_AF_IPX 4
+#define NET_AF_APPLETALK 5
+#define NET_AF_NETROM 6
+#define NET_AF_BRIDGE 7
+#define NET_AF_ATMPVC 8
+#define NET_AF_X25 9
+#define NET_AF_INET6 10
+#define NET_AF_ROSE 11
+#define NET_AF_DECnet 12
+#define NET_AF_NETBEUI 13
+#define NET_AF_SECURITY 14
+#define NET_AF_KEY 15
+#define NET_AF_NETLINK 1
+#define NET_AF_ROUTE AF_NETLINK
+#define NET_AF_PACKET 17
+#define NET_AF_ASH 18
+#define NET_AF_ECONET 19
+#define NET_AF_ATMSVC 20
+#define NET_AF_RDS 21
+#define NET_AF_SNA 22
+#define NET_AF_IRDA 23
+#define NET_AF_PPPOX 24
+#define NET_AF_WANPIPE 25
+#define NET_AF_LLC 26
+#define NET_AF_IB 27
+#define NET_AF_MPLS 28
+#define NET_AF_CAN 29
+#define NET_AF_TIPC 30
+#define NET_AF_BLUETOOTH 31
+#define NET_AF_IUCV 32
+#define NET_AF_RXRPC 33
+#define NET_AF_ISDN 34
+#define NET_AF_PHONET 35
+#define NET_AF_IEEE802154 36
+#define NET_AF_CAIF 37
+#define NET_AF_ALG 38
+#define NET_AF_NFC 39
+#define NET_AF_VSOCK 40
+#define NET_AF_KCM 41
+#define NET_AF_QIPCRTR 42
+#define NET_AF_SMC 43
+#define NET_AF_XDP 44
+#define NET_AF_MCTP 4
 
 #define NET_AF_UNIX NET_PF_UNIX
 #define NET_AF_INET NET_PF_INET
@@ -29,6 +73,34 @@
 #define NET_SO_LINGER 13
 #define NET_SO_BSDCOMPAT 14
 #define NET_SO_REUSEPORT 15
+
+#define NET_ETH_P_802_3 0x0001
+#define NET_ETH_P_AX25 0x0002
+#define NET_ETH_P_ALL 0x0003
+#define NET_ETH_P_802_2 0x0004
+#define NET_ETH_P_SNAP 0x0005
+#define NET_ETH_P_DDCMP 0x0006
+#define NET_ETH_P_WAN_PPP 0x0007
+#define NET_ETH_P_PPP_MP 0x0008
+#define NET_ETH_P_LOCALTALK 0x0009
+#define NET_ETH_P_CAN 0x000C
+#define NET_ETH_P_CANFD 0x000D
+#define NET_ETH_P_CANXL 0x000E
+#define NET_ETH_P_PPPTALK 0x0010
+#define NET_ETH_P_TR_802_2 0x0011
+#define NET_ETH_P_MOBITEX 0x0015
+#define NET_ETH_P_CONTROL 0x0016
+#define NET_ETH_P_IRDA 0x0017
+#define NET_ETH_P_ECONET 0x0018
+#define NET_ETH_P_HDLC 0x0019
+#define NET_ETH_P_ARCNET 0x001A
+#define NET_ETH_P_DSA 0x001B
+#define NET_ETH_P_TRAILER 0x001C
+#define NET_ETH_P_PHONET 0x00F5
+#define NET_ETH_P_IEEE802154 0x00F6
+#define NET_ETH_P_CAIF 0x00F7
+#define NET_ETH_P_XDSA 0x00F8
+#define NET_ETH_P_MAP 0x00F9
 
 enum{
   NET_SHUT_RD = 0,
@@ -140,6 +212,27 @@ typedef struct{
   uint8_t sin_zero[8];
 }_NET_sockaddr_in_t;
 
+typedef struct{
+  uint16_t sa_family;
+  union{
+    sint8_t sa_data_min[14];
+    struct{
+      struct{}__empty_sa_data;
+      char sa_data[];
+    };
+  };
+}NET_sockaddr_t;
+
+typedef struct{
+  uint16_t sll_family;
+  uint16_t sll_protocol;
+  sint32_t sll_ifindex;
+  uint16_t sll_hatype;
+  uint8_t sll_pkttype;
+  uint8_t sll_halen;
+  uint8_t sll_addr[8];
+}NET_sockaddr_ll_t;
+
 void _NET_sockaddr_in_TO_addr(_NET_sockaddr_in_t *src, NET_addr_t *dst){
   dst->ip = e0swap32(src->sin_addr);
   dst->port = e0swap16(src->sin_port);
@@ -170,6 +263,38 @@ typedef struct{
   NET_msghdr_t msg_hdr;
   uint32_t msg_len;
 }NET_mmsghdr_t;
+
+#define NET_IFNAMSIZ 16
+
+#define NET_SIOCGIFINDEX 0x8933
+
+typedef struct{
+  uintptr_t mem_start;
+  uintptr_t mem_end;
+  uint16_t base_addr;
+  uint8_t irq;
+  uint8_t dma;
+  uint8_t port;
+}NET_ifmap_t;
+
+typedef struct{
+  sint8_t ifr_name[NET_IFNAMSIZ];
+  union{
+    NET_sockaddr_t ifr_addr;
+    NET_sockaddr_t ifr_dstaddr;
+    NET_sockaddr_t ifr_broadaddr;
+    NET_sockaddr_t ifr_netmask;
+    NET_sockaddr_t ifr_hwaddr;
+    sint16_t ifr_flags;
+    sint32_t ifr_ifindex;
+    sint32_t ifr_metric;
+    sint32_t ifr_mtu;
+    NET_ifmap_t ifr_map;
+    sint8_t ifr_slave[NET_IFNAMSIZ];
+    sint8_t ifr_newname[NET_IFNAMSIZ];
+    sint8_t *ifr_data;
+  };
+}NET_ifreq_t;
 
 typedef struct{
   IO_fd_t fd;
@@ -204,6 +329,10 @@ sint32_t NET_accept(const NET_socket_t *ssock, NET_addr_t *addr, uint32_t flag, 
     return 0;
   }
   return err;
+}
+
+sintptr_t NET_bind_raw(const NET_socket_t *sock, void *addr, uintptr_t size){
+  return syscall3(__NR_bind, sock->fd.fd, (uintptr_t)addr, size);
 }
 
 sint32_t NET_bind(const NET_socket_t *sock, NET_addr_t *addr){
@@ -269,4 +398,11 @@ sint32_t NET_getsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optna
 
 sint32_t NET_sockpair(NET_socket_t *socks){
   return syscall4(__NR_socketpair, NET_AF_UNIX, NET_SOCK_STREAM, 0, (uintptr_t)socks);
+}
+
+static sintptr_t NET_ctl3(NET_socket_t *sock, uint32_t op, void *val){
+  return IO_ctl3(&sock->fd, op, val);
+}
+static sintptr_t NET_ctl2(NET_socket_t *sock, uint32_t op){
+  return IO_ctl2(&sock->fd, op);
 }
