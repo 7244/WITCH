@@ -17,8 +17,8 @@ typedef struct{
 }NET_addr4prefix_t;
 
 typedef struct{
-  uint8_t src[6];
   uint8_t dst[6];
+  uint8_t src[6];
   uint16_t prot;
 }NET_machdr_t;
 
