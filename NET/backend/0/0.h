@@ -337,7 +337,89 @@ typedef struct{
 
 #define NET_IFNAMSIZ 16
 
+#define NET_SIOCADDRT 0x890B
+#define NET_SIOCDELRT 0x890C
+#define NET_SIOCRTMSG 0x890D
+#define NET_SIOCGIFNAME 0x8910
+#define NET_SIOCSIFLINK 0x8911
+#define NET_SIOCGIFCONF 0x8912
+#define NET_SIOCGIFFLAGS 0x8913
+#define NET_SIOCSIFFLAGS 0x8914
+#define NET_SIOCGIFADDR 0x8915
+#define NET_SIOCSIFADDR 0x8916
+#define NET_SIOCGIFDSTADDR 0x8917
+#define NET_SIOCSIFDSTADDR 0x8918
+#define NET_SIOCGIFBRDADDR 0x8919
+#define NET_SIOCSIFBRDADDR 0x891a
+#define NET_SIOCGIFNETMASK 0x891b
+#define NET_SIOCSIFNETMASK 0x891c
+#define NET_SIOCGIFMETRIC 0x891d
+#define NET_SIOCSIFMETRIC 0x891e
+#define NET_SIOCGIFMEM 0x891f
+#define NET_SIOCSIFMEM 0x8920
+#define NET_SIOCGIFMTU 0x8921
+#define NET_SIOCSIFMTU 0x8922
+#define NET_SIOCSIFNAME 0x8923
+#define NET_SIOCSIFHWADDR 0x8924
+#define NET_SIOCGIFENCAP 0x8925
+#define NET_SIOCSIFENCAP 0x8926
+#define NET_SIOCGIFHWADDR 0x8927
+#define NET_SIOCGIFSLAVE 0x8929
+#define NET_SIOCSIFSLAVE 0x893
+#define NET_SIOCADDMULTI 0x8931
+#define NET_SIOCDELMULTI 0x893
 #define NET_SIOCGIFINDEX 0x8933
+#define NET_SIOGIFINDEX SIOCGIFINDEX
+#define NET_SIOCSIFPFLAGS 0x8934
+#define NET_SIOCGIFPFLAGS 0x893
+#define NET_SIOCDIFADDR 0x8936
+#define NET_SIOCSIFHWBROADCAST 0x8937
+#define NET_SIOCGIFCOUNT 0x8938
+#define NET_SIOCGIFBR 0x8940
+#define NET_SIOCSIFBR 0x8941
+#define NET_SIOCGIFTXQLEN 0x8942
+#define NET_SIOCSIFTXQLEN 0x8943
+#define NET_SIOCETHTOOL 0x8946
+#define NET_SIOCGMIIPHY 0x8947
+#define NET_SIOCGMIIREG 0x8948
+#define NET_SIOCSMIIREG 0x8949
+#define NET_SIOCWANDEV 0x894A
+#define NET_SIOCOUTQNSD 0x894B
+#define NET_SIOCGSKNS 0x894C
+#define NET_SIOCDARP 0x8953
+#define NET_SIOCGARP 0x8954
+#define NET_SIOCSARP 0x8955
+#define NET_SIOCDRARP 0x8960
+#define NET_SIOCGRARP 0x8961
+#define NET_SIOCSRARP 0x8962
+#define NET_SIOCGIFMAP 0x8970
+#define NET_SIOCSIFMAP 0x8971
+#define NET_SIOCADDDLCI 0x8980
+#define NET_SIOCDELDLCI 0x8981
+#define NET_SIOCGIFVLAN 0x8982
+#define NET_SIOCSIFVLAN 0x8983
+#define NET_SIOCBONDENSLAVE 0x8990
+#define NET_SIOCBONDRELEASE 0x8991
+#define NET_SIOCBONDSETHWADDR 0x8992
+#define NET_SIOCBONDSLAVEINFOQUERY 0x8993
+#define NET_SIOCBONDINFOQUERY 0x8994
+#define NET_SIOCBONDCHANGEACTIVE 0x8995
+#define NET_SIOCBRADDBR 0x89a0
+#define NET_SIOCBRDELBR 0x89a1
+#define NET_SIOCBRADDIF 0x89a2
+#define NET_SIOCBRDELIF 0x89a3
+#define NET_SIOCSHWTSTAMP 0x89b0
+#define NET_SIOCGHWTSTAMP 0x89b1
+#define NET_SIOCDEVPRIVATE 0x89F0
+#define NET_SIOCPROTOPRIVATE 0x89E0
+
+typedef struct{
+  NET_sockaddr_t arp_pa;
+  NET_sockaddr_t arp_ha;
+  uint32_t arp_flags;
+  NET_sockaddr_t arp_netmask;
+  sint8_t arp_dev[NET_IFNAMSIZ];
+}NET_arpreq_t;
 
 typedef struct{
   uintptr_t mem_start;
@@ -384,16 +466,16 @@ typedef struct{
 }NET_tpacket_req_t;
 
 typedef struct{
-	uint32_t tp_status;
-	uint32_t tp_len;
-	uint32_t tp_snaplen;
-	uint16_t tp_mac;
-	uint16_t tp_net;
-	uint32_t tp_sec;
-	uint32_t tp_nsec;
-	uint16_t tp_vlan_tci;
-	uint16_t tp_vlan_tpid;
-	uint8_t tp_padding[4];
+  uint32_t tp_status;
+  uint32_t tp_len;
+  uint32_t tp_snaplen;
+  uint16_t tp_mac;
+  uint16_t tp_net;
+  uint32_t tp_sec;
+  uint32_t tp_nsec;
+  uint16_t tp_vlan_tci;
+  uint16_t tp_vlan_tpid;
+  uint8_t tp_padding[4];
 }NET_tpacket2_hdr_t;
 
 typedef struct{
