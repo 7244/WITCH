@@ -15,3 +15,32 @@
 #else
   #error ?
 #endif
+
+static sint32_t _STR_ParseCStringAsBool(const void *cstr, bool *val){
+  if(!STR_casecmp("0", cstr)){
+    *val = 0;
+  }
+  else if(!STR_casecmp("1", cstr)){
+    *val = 1;
+  }
+  else if(!STR_casecmp("false", cstr)){
+    *val = 0;
+  }
+  else if(!STR_casecmp("true", cstr)){
+    *val = 1;
+  }
+  else{
+    return 1;
+  }
+
+  return 0;
+}
+
+static bool STR_ParseCStringAsBool_abort(const void *cstr){
+  bool ret;
+  if(_STR_ParseCStringAsBool(cstr, &ret)){
+    __abort();
+  }
+
+  return ret;
+}

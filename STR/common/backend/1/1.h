@@ -43,6 +43,24 @@ static bool STR_ncasecmp(const void *s0, const void *s1, uintptr_t n){
   return 0;
 }
 
+static sintptr_t STR_casecmp(const void *s0, const void *s1){
+  uintptr_t i = 0;
+
+  do{
+    if(((uint8_t *)s0)[i] != ((uint8_t *)s1)[i]){
+      return 1;
+    }
+
+    if(((uint8_t *)s0)[i] == 0){
+      break;
+    }
+
+    i++;
+  }while(1);
+
+  return 0;
+}
+
 static bool STR_ncmp(const void *s0, const void *s1, uintptr_t n){
   for(uintptr_t i = 0; i < n; i++){
     if(((uint8_t *)s0)[i] != ((uint8_t *)s1)[i]){

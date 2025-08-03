@@ -17,6 +17,16 @@ static bool STR_ncasecmp(const void *s0, const void *s1, uintptr_t n){
   #endif
 }
 
+static sintptr_t STR_casecmp(const void *s0, const void *s1){
+  #if defined(__platform_unix)
+    return strcasecmp((const char *)s0, (const char *)s1, n);
+  #elif defined(__platform_windows)
+    return _stricmp((const char *)s0, (const char *)s1, n);
+  #else
+    #error ?
+  #endif
+}
+
 static bool STR_ncmp(const void *s0, const void *s1, uintptr_t n){
   return !!strncmp((const char *)s0, (const char *)s1, n);
 }
