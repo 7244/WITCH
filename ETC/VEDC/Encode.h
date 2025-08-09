@@ -170,6 +170,10 @@ typedef struct{
 #ifdef ETC_VEDC_Encode_DefineEncoder_nvenc
   #include "Encode/Encoder/nvenc/nvenc.h"
 #endif
+#ifdef ETC_VEDC_Encode_DefineEncoder_amf
+  // AMD
+  #include "Encode/Encoder/amf/amf.h"
+#endif
 
 _ETC_VEDC_EncoderInfo _ETC_VEDC_EncoderList[] = {
   {
@@ -229,6 +233,21 @@ _ETC_VEDC_EncoderInfo _ETC_VEDC_EncoderList[] = {
       .IsReadable_cb = _ETC_VEDC_Encode_Encoder_nvenc_IsReadable,
       .Read_cb = _ETC_VEDC_Encode_Encoder_nvenc_Read
     }
+  #endif
+  #ifdef ETC_VEDC_Encode_DefineEncoder_amf
+  ,{
+    .Name = "amf",
+    .Open_cb = _ETC_VEDC_Encode_Encoder_amf_Open,
+    .GetUnique_cb = _ETC_VEDC_Encode_Encoder_amf_GetUnique,
+    .Close_cb = _ETC_VEDC_Encode_Encoder_amf_Close,
+    .SetFrameSize_cb = _ETC_VEDC_Encode_Encoder_amf_SetFrameSize,
+    .SetRateControl_cb = _ETC_VEDC_Encode_Encoder_amf_SetRateControl,
+    .SetInputFrameRate_cb = _ETC_VEDC_Encode_Encoder_amf_SetInputFrameRate,
+    .IsWriteType_cb = _ETC_VEDC_Encode_Encoder_amf_IsWriteType,
+    .Write_cb = _ETC_VEDC_Encode_Encoder_amf_Write,
+    .IsReadable_cb = _ETC_VEDC_Encode_Encoder_amf_IsReadable,
+    .Read_cb = _ETC_VEDC_Encode_Encoder_amf_Read
+  }
   #endif
 };
 

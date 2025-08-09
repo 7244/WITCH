@@ -108,6 +108,13 @@ typedef struct{
 #ifdef ETC_VEDC_Decoder_DefineCodec_va
   #include "Decoder/Codec/va/va.h"
 #endif
+#ifdef ETC_VEDC_Decoder_DefineCodec_amf
+  //AMD
+  #include "Decoder/Codec/amf/amf.h"
+#endif
+#ifdef ETC_VEDC_Decoder_DefineCodec_va
+  #include "Decoder/Codec/va/va.h"
+#endif
 
 _ETC_VEDC_DecoderInfo _ETC_VEDC_DecoderList[] = {
   {
@@ -150,19 +157,33 @@ _ETC_VEDC_DecoderInfo _ETC_VEDC_DecoderList[] = {
       .ReadClear_cb = _ETC_VEDC_Decoder_Codec_cuvid_ReadClear
     }
   #endif
+  #ifdef ETC_VEDC_Decoder_DefineCodec_amf
+  ,{
+    .Name = "amf",
+    .Open_cb = _ETC_VEDC_Decoder_Codec_amf_Open,
+    .GetUnique_cb = _ETC_VEDC_Decoder_Codec_amf_GetUnique,
+    .Close_cb = _ETC_VEDC_Decoder_Codec_amf_Close,
+    .Write_cb = _ETC_VEDC_Decoder_Codec_amf_Write,
+    .IsReadable_cb = _ETC_VEDC_Decoder_Codec_amf_IsReadable,
+    .IsReadType_cb = _ETC_VEDC_Decoder_Codec_amf_IsReadType,
+    .GetReadImageProperties_cb = _ETC_VEDC_Decoder_Codec_amf_GetReadImageProperties,
+    .Read_cb = _ETC_VEDC_Decoder_Codec_amf_Read,
+    .ReadClear_cb = _ETC_VEDC_Decoder_Codec_amf_ReadClear
+  }
+  #endif
   #ifdef ETC_VEDC_Decoder_DefineCodec_va
-    ,{
-      .Name = "va",
-      .Open_cb = _ETC_VEDC_Decoder_Codec_va_Open,
-      .GetUnique_cb = _ETC_VEDC_Decoder_Codec_va_GetUnique,
-      .Close_cb = _ETC_VEDC_Decoder_Codec_va_Close,
-      .Write_cb = _ETC_VEDC_Decoder_Codec_va_Write,
-      .IsReadable_cb = _ETC_VEDC_Decoder_Codec_va_IsReadable,
-      .IsReadType_cb = _ETC_VEDC_Decoder_Codec_va_IsReadType,
-      .GetReadImageProperties_cb = _ETC_VEDC_Decoder_Codec_va_GetReadImageProperties,
-      .Read_cb = _ETC_VEDC_Decoder_Codec_va_Read,
-      .ReadClear_cb = _ETC_VEDC_Decoder_Codec_va_ReadClear
-    }
+  ,{
+    .Name = "va",
+    .Open_cb = _ETC_VEDC_Decoder_Codec_va_Open,
+    .GetUnique_cb = _ETC_VEDC_Decoder_Codec_va_GetUnique,
+    .Close_cb = _ETC_VEDC_Decoder_Codec_va_Close,
+    .Write_cb = _ETC_VEDC_Decoder_Codec_va_Write,
+    .IsReadable_cb = _ETC_VEDC_Decoder_Codec_va_IsReadable,
+    .IsReadType_cb = _ETC_VEDC_Decoder_Codec_va_IsReadType,
+    .GetReadImageProperties_cb = _ETC_VEDC_Decoder_Codec_va_GetReadImageProperties,
+    .Read_cb = _ETC_VEDC_Decoder_Codec_va_Read,
+    .ReadClear_cb = _ETC_VEDC_Decoder_Codec_va_ReadClear
+  }
   #endif
 };
 
