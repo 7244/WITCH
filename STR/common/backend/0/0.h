@@ -19,9 +19,9 @@ static bool STR_ncasecmp(const void *s0, const void *s1, uintptr_t n){
 
 static sintptr_t STR_casecmp(const void *s0, const void *s1){
   #if defined(__platform_unix)
-    return strcasecmp((const char *)s0, (const char *)s1, n);
+    return strcasecmp((const char *)s0, (const char *)s1);
   #elif defined(__platform_windows)
-    return _stricmp((const char *)s0, (const char *)s1, n);
+    return _stricmp((const char *)s0, (const char *)s1);
   #else
     #error ?
   #endif
