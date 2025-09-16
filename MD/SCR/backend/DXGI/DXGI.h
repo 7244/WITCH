@@ -5,7 +5,7 @@
 #include _WITCH_PATH(include/windows/DXGI1_2.h)
 #include _WITCH_PATH(include/windows/D3D11.h)
 
-sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t *Resolution){
+static sint32_t MD_SCR_Get_Resolution(MD_SCR_Resolution_t *Resolution){
   RECT desktop;
   const HWND hDesktop = GetDesktopWindow();
   GetWindowRect(hDesktop, &desktop);
@@ -26,7 +26,7 @@ typedef struct{
 
   MD_SCR_Geometry_t Geometry;
 }MD_SCR_t;
-sint32_t MD_SCR_open(MD_SCR_t *scr){
+static sint32_t MD_SCR_open(MD_SCR_t *scr){
   scr->duplication = 0;
   scr->texture = 0;
   scr->device = 0;
@@ -184,14 +184,14 @@ sint32_t MD_SCR_open(MD_SCR_t *scr){
 
   return 0;
 }
-void MD_SCR_close(MD_SCR_t *scr){
+static void MD_SCR_close(MD_SCR_t *scr){
   scr->context->Release();
   scr->device->Release();
   scr->texture->Release();
   scr->duplication->Release();
 }
 
-uint8_t *MD_SCR_read(MD_SCR_t *scr){
+static uint8_t *MD_SCR_read(MD_SCR_t *scr){
   if (scr->imDed) {
     if (MD_SCR_open(scr)) {
       return 0;

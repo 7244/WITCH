@@ -113,20 +113,222 @@ void PrintSupportedAMFDecoders(amf::AMFFactory* factory, amf::AMFContextPtr cont
   }
 }
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxguid.lib")  // This contains the GUID definitions
+#pragma comment(lib, "mfplat.lib")  // For Media Foundation
+#pragma comment(lib, "mfuuid.lib")  // For Media Foundation UUIDs
+
+#include <d3d11.h>
+#include <d3d9.h>
+#include <dxva2api.h>
+
+void IdentifyDecoderProfile(const GUID& profile, int index) {
+    printf("Profile %d: ", index);
+    
+    // H.264 Profiles
+    if (IsEqualGUID(profile, {0x1b81be68, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("H.264 VLD NoFGT\n");
+    } else if (IsEqualGUID(profile, {0x1b81be69, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("H.264 VLD FGT\n");
+    } else if (IsEqualGUID(profile, {0x1b81bea3, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("H.264 VLD Stereo Progressive No FGT\n");
+    } else if (IsEqualGUID(profile, {0x1b81bea4, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("H.264 VLD Stereo No FGT\n");
+    }
+    // HEVC/H.265 Profiles
+    else if (IsEqualGUID(profile, {0x5b11d51b, 0x2f4c, 0x4452, {0xbc, 0xc3, 0x09, 0xf2, 0xa1, 0x16, 0x0c, 0xc0}})) {
+        printf("HEVC Main\n");
+    } else if (IsEqualGUID(profile, {0x107af0e0, 0xef1a, 0x4d19, {0xab, 0xa8, 0x67, 0xa1, 0x63, 0x07, 0x3d, 0x13}})) {
+        printf("HEVC Main 10\n");
+    } else if (IsEqualGUID(profile, {0x463707f8, 0xa1d0, 0x4585, {0x87, 0x6d, 0x83, 0xaa, 0x6d, 0x60, 0xb8, 0x9e}})) {
+        printf("HEVC Main 10 (Alt)\n");
+    } else if (IsEqualGUID(profile, {0xa4c749ef, 0x6ecf, 0x48aa, {0x84, 0x48, 0x50, 0xa7, 0xa1, 0x16, 0x5f, 0xf7}})) {
+        printf("HEVC Main Still Picture\n");
+    }
+    // MPEG-2 Profiles  
+    else if (IsEqualGUID(profile, {0x86695f12, 0x340e, 0x4f04, {0x9f, 0xd3, 0x92, 0x53, 0xdd, 0x32, 0x74, 0x60}})) {
+        printf("MPEG-2 VLD\n");
+    } else if (IsEqualGUID(profile, {0xee27417f, 0x5e28, 0x4e65, {0xbe, 0xea, 0x1d, 0x26, 0xb5, 0x08, 0xad, 0xc9}})) {
+        printf("MPEG-2 & VC-1 VLD\n");
+    }
+    // VC-1 Profiles
+    else if (IsEqualGUID(profile, {0x6f3ec719, 0x3735, 0x42cc, {0x80, 0x63, 0x65, 0xcc, 0x3c, 0xb3, 0x66, 0x16}})) {
+        printf("VC-1 Main\n");
+    } else if (IsEqualGUID(profile, {0x1b81bea0, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("VC-1 PostProc\n");
+    } else if (IsEqualGUID(profile, {0x1b81bea1, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("VC-1 MoComp\n");
+    } else if (IsEqualGUID(profile, {0x1b81bea2, 0xa0c7, 0x11d3, {0xb9, 0x84, 0x00, 0xc0, 0x4f, 0x2e, 0x73, 0xc5}})) {
+        printf("VC-1 IDCT\n");
+    }
+    // AV1 Profiles (Your system shows 0, but just in case)
+    else if (IsEqualGUID(profile, {0xb8be4ccb, 0xcf53, 0x46ba, {0x8d, 0x59, 0xd6, 0xb8, 0xa6, 0xda, 0x5d, 0x2a}})) {
+        printf("AV1 Profile 0\n");
+    } else if (IsEqualGUID(profile, {0x6936ff0f, 0x45b1, 0x4163, {0x9c, 0xc1, 0x64, 0x6e, 0xf6, 0x94, 0x61, 0x08}})) {
+        printf("AV1 Profile 1\n");
+    }
+    // Additional common profiles
+    else if (IsEqualGUID(profile, {0x9947ec6f, 0x689b, 0x11dc, {0xa3, 0x20, 0x00, 0x19, 0xdb, 0xbc, 0x41, 0x84}})) {
+        printf("H.264 SVC VLD\n");
+    } else if (IsEqualGUID(profile, {0x32fcfe3f, 0xde46, 0x4a49, {0x86, 0x1b, 0xac, 0x71, 0x11, 0x06, 0x49, 0xd5}})) {
+        printf("JPEG VLD\n");
+    } else if (IsEqualGUID(profile, {0x33fcfe41, 0xde46, 0x4a49, {0x86, 0x1b, 0xac, 0x71, 0x11, 0x06, 0x49, 0xd5}})) {
+        printf("Motion JPEG VLD\n");
+    }
+    // Unknown profile
+    else {
+        wchar_t guidStr[40];
+        StringFromGUID2(profile, guidStr, 40);
+        printf("Unknown GUID: %ls\n", guidStr);
+    }
+}
+
+void EnumerateWindowsHardwareDecoders() {
+    ID3D11Device* device = nullptr;
+    ID3D11VideoDevice* videoDevice = nullptr;
+    
+    HRESULT hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+        D3D11_CREATE_DEVICE_VIDEO_SUPPORT, nullptr, 0, D3D11_SDK_VERSION,
+        &device, nullptr, nullptr);
+    
+    if (SUCCEEDED(hr)) {
+        hr = device->QueryInterface(&videoDevice);
+        if (SUCCEEDED(hr)) {
+            UINT profileCount = videoDevice->GetVideoDecoderProfileCount();
+            printf("Found %u decoder profiles:\n", profileCount);
+            
+            // Summary counters
+            int h264Count = 0, hevcCount = 0, av1Count = 0, mpeg2Count = 0, vc1Count = 0, otherCount = 0;
+            
+            for (UINT i = 0; i < profileCount; i++) {
+                GUID profile;
+                hr = videoDevice->GetVideoDecoderProfile(i, &profile);
+                if (SUCCEEDED(hr)) {
+                    IdentifyDecoderProfile(profile, i);
+                    
+                    // Count codec types
+                    wchar_t guidStr[40];
+                    StringFromGUID2(profile, guidStr, 40);
+                    std::wstring guidString(guidStr);
+                    
+                    if (guidString.find(L"1B81BE6") != std::wstring::npos || 
+                        guidString.find(L"1B81BEA") != std::wstring::npos) {
+                        h264Count++;
+                    } else if (guidString.find(L"5B11D51B") != std::wstring::npos || 
+                               guidString.find(L"107AF0E0") != std::wstring::npos ||
+                               guidString.find(L"463707F8") != std::wstring::npos ||
+                               guidString.find(L"A4C749EF") != std::wstring::npos) {
+                        hevcCount++;
+                    } else if (guidString.find(L"B8BE4CCB") != std::wstring::npos ||
+                               guidString.find(L"6936FF0F") != std::wstring::npos) {
+                        av1Count++;
+                    } else if (guidString.find(L"86695F12") != std::wstring::npos) {
+                        mpeg2Count++;
+                    } else if (guidString.find(L"1B81BEA0") != std::wstring::npos ||
+                               guidString.find(L"1B81BEA1") != std::wstring::npos ||
+                               guidString.find(L"1B81BEA2") != std::wstring::npos) {
+                        vc1Count++;
+                    } else {
+                        otherCount++;
+                    }
+                }
+            }
+            
+            // Print summary
+            printf("\n=== DECODER SUMMARY ===\n");
+            printf("H.264 profiles: %d\n", h264Count);
+            printf("HEVC/H.265 profiles: %d\n", hevcCount);
+            printf("AV1 profiles: %d\n", av1Count);
+            printf("MPEG-2 profiles: %d\n", mpeg2Count);
+            printf("VC-1 profiles: %d\n", vc1Count);
+            printf("Other/Unknown profiles: %d\n", otherCount);
+            printf("Total profiles: %d\n", profileCount);
+            
+            videoDevice->Release();
+        } else {
+            printf("Failed to get video device interface\n");
+        }
+        device->Release();
+    } else {
+        printf("Failed to create D3D11 device with video support\n");
+    }
+}
+// Add this function to your decoder code
+void EnumerateAllAMFComponents(amf::AMFFactory* factory, amf::AMFContextPtr context) {
+    printf("=== Enumerating ALL AMF Components ===\n");
+    
+    // Use the SAME naming convention as your encoder
+    const wchar_t* allPossibleComponents[] = {
+        // Try encoder-style naming for decoders
+        L"AMFVideoDecoderVCE_AVC",        // Match your encoder style
+        L"AMFVideoDecoderVCE_H264",       
+        L"AMFVideoDecoderVCN_AVC",        // VCN variants
+        L"AMFVideoDecoderVCN_H264",
+        
+        // Your current decoder attempts
+        L"AMFVideoDecoderHW_H264",
+        L"AMFVideoDecoderUVD_H264", 
+        L"AMFVideoDecoder_H264",
+        
+        // Generic variants
+        L"AMFVideoDecoder",
+        L"AMFVideoDecoderAVC",
+        
+        // AV1 (which works)
+        L"AMFVideoDecoderHW_AV1",
+        L"AMFVideoDecoderVCN_AV1",
+        
+        // For comparison - try some encoder names to see what's available
+        L"AMFVideoEncoderVCE_AVC",        // Your working encoder
+        L"AMFVideoEncoderHW_H264",
+        L"AMFVideoEncoderVCN_H264",
+        
+        nullptr
+    };
+    
+    for (int i = 0; allPossibleComponents[i] != nullptr; i++) {
+        amf::AMFComponent* testComponent = nullptr;
+        AMF_RESULT res = factory->CreateComponent(context, allPossibleComponents[i], &testComponent);
+        
+        if (res == AMF_OK && testComponent != nullptr) {
+            printf("  ✓ %ls - AVAILABLE\n", allPossibleComponents[i]);
+            testComponent->Terminate();
+        } else {
+            printf("  ✗ %ls - NOT AVAILABLE (error: %d)\n", allPossibleComponents[i], res);
+        }
+    }
+    printf("=== End Component Enumeration ===\n");
+}
+
 // Improved decoder creation with fallback
 AMF_RESULT CreateBestAvailableDecoder(amf::AMFFactory* factory,
   amf::AMFContextPtr context,
   const wchar_t* preferredCodec,
   amf::AMFComponent** outComponent) {
-
+  EnumerateWindowsHardwareDecoders();
   // First try the preferred decoder types for the requested codec
   const wchar_t** decodersToTry = nullptr;
 
   if (wcsstr(preferredCodec, L"H264") || wcsstr(preferredCodec, L"h264")) {
     static const wchar_t* h264Decoders[] = {
+        // Try VCE style first (matches your encoder)
+        L"AMFVideoDecoderVCE_AVC",
+        L"AMFVideoDecoderVCE_H264",
+        
+        // Try VCN variants (newer AMD GPUs)
+        L"AMFVideoDecoderVCN_AVC", 
+        L"AMFVideoDecoderVCN_H264",
+        
+        // Your original attempts
         L"AMFVideoDecoderHW_H264",
         L"AMFVideoDecoderUVD_H264",
         L"AMFVideoDecoder_H264",
+        
+        // Generic fallbacks
+        L"AMFVideoDecoder",
+        L"AMFVideoDecoderAVC",
+        
         nullptr
     };
     decodersToTry = h264Decoders;

@@ -51,8 +51,9 @@ typedef enum{
 
 typedef enum{
   #ifdef __GPU_CUDA
-    ETC_VEDC_Decoder_UniqueType_CudaContext
+    ETC_VEDC_Decoder_UniqueType_CudaContext,
   #endif
+    ETC_VEDC_Decoder_UniqueType_D3D11Device,
 }ETC_VEDC_Decoder_UniqueType;
 
 typedef ETC_VEDC_Decoder_Error (*_ETC_VEDC_Decoder_Open_cb)(
