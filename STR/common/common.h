@@ -44,3 +44,64 @@ static bool STR_ParseCStringAsBool_abort(const void *cstr){
 
   return ret;
 }
+
+/* returns how many skip left */
+static
+uintptr_t
+STR_GetIndexAfterSkipNXCharacters_safe(
+  const void *ptr,
+  uintptr_t *ptr_index,
+  uintptr_t ptr_size,
+  uintptr_t skip_amount,
+  uint8_t character
+){
+  uint8_t *byte_ptr = (uint8_t *)ptr;
+
+  while(skip_amount){
+    if(*ptr_index >= ptr_size){
+      break;
+    }
+
+    if(byte_ptr[*ptr_index] == character){
+      skip_amount--;
+    }
+
+    (*ptr_index)++;
+  }
+
+  return skip_amount;
+}
+
+static
+uintptr_t
+STR_FindCharacterIndexN_safe(
+  const void *ptr,
+  uintptr_t *ptr_index,
+  uintptr_t ptr_size,
+  uintptr_t hit_amount,
+  uint8_t character
+){
+  uint8_t *byte_ptr = (uint8_t *)ptr;
+
+  if(!hit_amount){
+    return 0;
+  }
+
+  while(1){
+    if(*ptr_index >= ptr_size){
+      break;
+    }
+
+    if(byte_ptr[*ptr_index] == character){
+      hit_amount--;
+
+      if(!hit_amount){
+        break;
+      }
+    }
+
+    (*ptr_index)++;
+  }
+
+  return hit_amount;
+}
