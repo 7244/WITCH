@@ -7,6 +7,7 @@ WITCH is crossplatform all in one library which provides basic functionality (li
 - stdint.h like types. integers must have s or u in begin like `sint32_t`. floating point data types are `f32_t` `f64_t` `f128_t` `f_t`
 - c data types are only allowed if external library uses it.
 - `__unreachable();` used if code never gonna reach the place.
+- `__unreachable_or(...);` same as `__unreachable();` it expands args if platform or compiler doesnt support `unreachable` hint.
 - `__cta(condition);` compile time assert. same as static_assert.
 - `__sanit` define means if program gonna use a sanitizer eg valgrind. it will be defined as 0 if WITCH can't find any hint for debug. `__sanit` also can be defined by user.
 - `__platform_*` defines. `__platform_unix` is defined for every unix based system including linux. check `internal/WOS.h` for more information about `__platform_*` defines.

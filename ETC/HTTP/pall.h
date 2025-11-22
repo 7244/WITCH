@@ -152,7 +152,9 @@ ETC_HTTP_pall_p(Parse)
           }
         }
         default:{
-          __unreachable();
+          __unreachable_or(
+            return 0;
+          );
         }
       }
     }

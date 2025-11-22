@@ -20,7 +20,7 @@
 
 #define __abort() do{ \
   PR_abort(); \
-  __unreachable(); \
+  __unreachable_or(); \
 }while(0)
 
 #endif

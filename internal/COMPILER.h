@@ -319,19 +319,6 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
-#ifndef __unreachable
-  #if defined(__compiler_clang) || defined(__compiler_gcc)
-    #define __unreachable() __builtin_unreachable()
-  #elif defined(__compiler_tinyc)
-    #warning __compiler_tinyc doesnt support __unreachable(). expect future warning/error
-    #define __unreachable()
-  #elif defined(__compiler_msvc)
-    #define __unreachable() __assume(0)
-  #else
-    #error ?
-  #endif
-#endif
-
 #if defined(__language_cpp)
   #define WITCH_c(_m) _m
 #else
@@ -341,13 +328,40 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 /* compile time assert */
 #ifndef __cta
   #if defined(__language_cpp)
-    #define __cta(X) static_assert(X)
+    #define __cta(v) static_assert(v)
   #else
     /* taken from stackoverflow.com/a/3385694 */
     #define __cta_static_assert(COND,MSG) typedef char __cta_##MSG[(!!(COND))*2-1]
     #define __cta_3(X,L) __cta_static_assert(X,static_assertion_at_line_##L)
     #define __cta_2(X,L) __cta_3(X,L)
     #define __cta(X) __cta_2(X,__LINE__)
+  #endif
+#endif
+
+#ifndef __unreachable
+  #if defined(__platform_bpf)
+    #define __unreachable() __cta(false)
+  #elif defined(__compiler_clang) || defined(__compiler_gcc)
+    #define __unreachable() __builtin_unreachable()
+  #elif defined(__compiler_tinyc)
+    #define __unreachable(...) __cta(false)
+  #elif defined(__compiler_msvc)
+    #define __unreachable() __assume(0)
+  #else
+    #error ?
+  #endif
+#endif
+#ifndef __unreachable_or
+  #if defined(__platform_bpf)
+    #define __unreachable_or(...) __VA_ARGS__
+  #elif defined(__compiler_clang) || defined(__compiler_gcc)
+    #define __unreachable_or(...) __unreachable()
+  #elif defined(__compiler_tinyc)
+    #define __unreachable_or(...) __VA_ARGS__
+  #elif defined(__compiler_msvc)
+    #define __unreachable() __assume(0)
+  #else
+    #error ?
   #endif
 #endif
 
@@ -415,11 +429,11 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 
 #ifndef __abort
   #if defined(__platform_bpf)
-    #define __abort() __abort()
+    #define __abort() __cta(false)
   #else
     #define __abort() do{ \
       __simplest_abort(); \
-      __unreachable(); \
+      __unreachable_or(); \
     }while(0)
 
     #if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)

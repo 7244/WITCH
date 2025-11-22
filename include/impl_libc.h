@@ -21,9 +21,8 @@ static void _WITCH_impl_libc_main(uintptr_t argc, const uint8_t **argv){
   int ret = main(argc, (const char **)argv);
 
   PR_exit(ret);
-  __unreachable();
+  __unreachable_or();
 }
 
 #define _WITCH__start_func_name _WITCH_impl_libc_main
 #include <WITCH/include/_start.h>
-
