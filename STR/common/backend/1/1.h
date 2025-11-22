@@ -78,6 +78,20 @@ static bool STR_n0cmp(const void *s0, const void *s1){
   return STR_ncmp(s0, s1, MEM_cstreu(s0));
 }
 
+static sintptr_t STR_n0ncmp(const void *s0, const void *s1, uintptr_t s1_size){
+  if(MEM_cstreu(s0) != s1_size){
+    return -1;
+  }
+
+  for(uintptr_t i = 0; i < s1_size; i++){
+    if(((const uint8_t *)s0)[i] != ((const uint8_t *)s1)[i]){
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 /* n is length of first argument */
 /* increase s1 with n if success */
 static bool STR_n0cmp_inc1(const void *s0, const void **s1){
