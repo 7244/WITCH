@@ -1,5 +1,7 @@
 #include _WITCH_PATH(generic_alloc.h)
 
+#include _WITCH_PATH(T/T.h)
+
 #if defined(__x86_64__)
   __attribute((naked))
   static sintptr_t _TH_newthread_orphan_entry(void *stack){
@@ -71,4 +73,11 @@ static sint32_t TH_newthread_orphan(void(*func)(void*), void *param){
   #endif
 
   return _TH_newthread_orphan(stack);
+}
+
+static void TH_sleep(uintptr_t ns){
+  _T_timespec_t timespec;
+  timespec.tv_sec = ns / 1000000000;
+  timespec.tv_nsec = ns % 1000000000;
+  syscall1(__NR_nanosleep, (uintptr_t)&timespec);
 }
