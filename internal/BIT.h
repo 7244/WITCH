@@ -1,9 +1,5 @@
 #pragma once
 
-#if defined(__compiler_msvc)
-  #include <intrin.h>
-#endif
-
 static uint8_t CTZ32(uint32_t x){
   #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
     return __builtin_ctzl(x);

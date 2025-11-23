@@ -1,7 +1,3 @@
-#if defined(__compiler_msvc)
-  #include <intrin.h>
-#endif
-
 #ifndef __clz32
   #if defined(__compiler_clang) || \
     defined(__compiler_gcc) || \

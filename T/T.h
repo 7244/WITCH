@@ -11,10 +11,6 @@
 
 #if defined(__platform_windows)
   #include _WITCH_PATH(include/windows/windows.h)
-  #ifdef _MSC_VER
-    /* rdtsc */
-    #include <intrin.h>
-  #endif
 #elif !defined(__platform_libc) && defined(__platform_unix_linux)
   #define CLOCK_REALTIME 0
   #define CLOCK_MONOTONIC 1
