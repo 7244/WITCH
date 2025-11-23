@@ -306,11 +306,11 @@ typedef struct{
   uint8_t sll_addr[8];
 }NET_sockaddr_ll_t;
 
-void _NET_sockaddr_in_TO_addr(_NET_sockaddr_in_t *src, NET_addr_t *dst){
+static void _NET_sockaddr_in_TO_addr(_NET_sockaddr_in_t *src, NET_addr_t *dst){
   dst->ip = e0swap32(src->sin_addr);
   dst->port = e0swap16(src->sin_port);
 }
-void _NET_addr_TO_sockaddr_in(const NET_addr_t *src, _NET_sockaddr_in_t *dst){
+static void _NET_addr_TO_sockaddr_in(const NET_addr_t *src, _NET_sockaddr_in_t *dst){
   dst->sin_family = NET_AF_INET;
   dst->sin_port = e0swap16(src->port);
   dst->sin_addr = e0swap32(src->ip);
@@ -484,14 +484,14 @@ typedef struct{
   IO_fd_t fd;
 }NET_socket_t;
 
-sint32_t NET_shutdown(const NET_socket_t *sock){
+static sint32_t NET_shutdown(const NET_socket_t *sock){
   return syscall2(__NR_shutdown, sock->fd.fd, NET_SHUT_RDWR);
 }
-void NET_close(const NET_socket_t *sock){
+static void NET_close(const NET_socket_t *sock){
   IO_close(&sock->fd);
 }
 
-sint32_t NET_accept(const NET_socket_t *ssock, NET_addr_t *addr, uint32_t flag, NET_socket_t *csock){
+static sint32_t NET_accept(const NET_socket_t *ssock, NET_addr_t *addr, uint32_t flag, NET_socket_t *csock){
   _NET_sockaddr_in_t rawaddr;
   uint32_t op_size = sizeof(_NET_sockaddr_in_t);
   sint32_t err;
@@ -515,23 +515,23 @@ sint32_t NET_accept(const NET_socket_t *ssock, NET_addr_t *addr, uint32_t flag, 
   return err;
 }
 
-sintptr_t NET_bind_raw(const NET_socket_t *sock, void *addr, uintptr_t size){
+static sintptr_t NET_bind_raw(const NET_socket_t *sock, void *addr, uintptr_t size){
   return syscall3(__NR_bind, sock->fd.fd, (uintptr_t)addr, size);
 }
 
-sint32_t NET_bind(const NET_socket_t *sock, NET_addr_t *addr){
+static sint32_t NET_bind(const NET_socket_t *sock, NET_addr_t *addr){
   _NET_sockaddr_in_t rawaddr;
   _NET_addr_TO_sockaddr_in(addr, &rawaddr);
   return syscall3(__NR_bind, sock->fd.fd, (uintptr_t)&rawaddr, sizeof(_NET_sockaddr_in_t));
 }
 
-sint32_t NET_connect(const NET_socket_t *sock, NET_addr_t *addr){
+static sint32_t NET_connect(const NET_socket_t *sock, NET_addr_t *addr){
   _NET_sockaddr_in_t rawaddr;
   _NET_addr_TO_sockaddr_in(addr, &rawaddr);
   return syscall3(__NR_connect, sock->fd.fd, (uintptr_t)&rawaddr, sizeof(_NET_sockaddr_in_t));
 }
 
-sint32_t NET_socket2(uint32_t domain, uint32_t type, uint32_t protocol, NET_socket_t *sock){
+static sint32_t NET_socket2(uint32_t domain, uint32_t type, uint32_t protocol, NET_socket_t *sock){
   sint32_t err = syscall3(__NR_socket, domain, type, protocol);
   if(err >= 0){
     sock->fd.fd = err;
@@ -540,7 +540,7 @@ sint32_t NET_socket2(uint32_t domain, uint32_t type, uint32_t protocol, NET_sock
   return err;
 }
 
-IO_ssize_t NET_sendto(const NET_socket_t *sock, const void *data, IO_size_t size, const NET_addr_t *addr){
+static IO_ssize_t NET_sendto(const NET_socket_t *sock, const void *data, IO_size_t size, const NET_addr_t *addr){
   _NET_sockaddr_in_t rawaddr;
   _NET_addr_TO_sockaddr_in(addr, &rawaddr);
   IO_ssize_t len = syscall6(__NR_sendto, sock->fd.fd, (uintptr_t)data, size, 0, (uintptr_t)&rawaddr, sizeof(rawaddr));
@@ -552,11 +552,11 @@ IO_ssize_t NET_sendto(const NET_socket_t *sock, const void *data, IO_size_t size
   return len;
 }
 
-sintptr_t NET_sendmmsg(const NET_socket_t *sock, NET_mmsghdr_t *msgvec, uint32_t vlen, uint32_t flags){
+static sintptr_t NET_sendmmsg(const NET_socket_t *sock, NET_mmsghdr_t *msgvec, uint32_t vlen, uint32_t flags){
   return syscall4(__NR_sendmmsg, sock->fd.fd, (uintptr_t)msgvec, vlen, flags);
 }
 
-IO_ssize_t NET_recvfrom(const NET_socket_t *sock, void *data, IO_size_t size, NET_addr_t *addr){
+static IO_ssize_t NET_recvfrom(const NET_socket_t *sock, void *data, IO_size_t size, NET_addr_t *addr){
   _NET_sockaddr_in_t rawaddr;
   sint32_t addrlen = sizeof(rawaddr);
   IO_ssize_t len = syscall6(__NR_recvfrom, sock->fd.fd, (uintptr_t)data, size, 0, (uintptr_t)&rawaddr, (uintptr_t)&addrlen);
@@ -567,24 +567,24 @@ IO_ssize_t NET_recvfrom(const NET_socket_t *sock, void *data, IO_size_t size, NE
   return len;
 }
 
-sint32_t NET_listen(const NET_socket_t *sock){
+static sint32_t NET_listen(const NET_socket_t *sock){
   return syscall2(__NR_listen, sock->fd.fd, 0x80000000 - 0x40);
 }
 
-sint32_t NET_setsockopt_raw(const NET_socket_t *sock, sint32_t level, sint32_t optname, void *value, uintptr_t value_size){
+static sint32_t NET_setsockopt_raw(const NET_socket_t *sock, sint32_t level, sint32_t optname, void *value, uintptr_t value_size){
   return syscall5(__NR_setsockopt, sock->fd.fd, level, optname, (uintptr_t)value, value_size);
 }
 
-sint32_t NET_setsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optname, sint32_t value){
+static sint32_t NET_setsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optname, sint32_t value){
   return syscall5(__NR_setsockopt, sock->fd.fd, level, optname, (uintptr_t)&value, sizeof(sint32_t));
 }
 
-sint32_t NET_getsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optname, void *value){
+static sint32_t NET_getsockopt(const NET_socket_t *sock, sint32_t level, sint32_t optname, void *value){
   sint32_t optlen = sizeof(sint32_t);
   return syscall5(__NR_getsockopt, sock->fd.fd, level, optname, (uintptr_t)value, (uintptr_t)&optlen);
 }
 
-sint32_t NET_sockpair(NET_socket_t *socks){
+static sint32_t NET_sockpair(NET_socket_t *socks){
   return syscall4(__NR_socketpair, NET_AF_UNIX, NET_SOCK_STREAM, 0, (uintptr_t)socks);
 }
 
