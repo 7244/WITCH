@@ -8,6 +8,8 @@ WITCH is crossplatform all in one library which provides basic functionality (li
 - c data types are only allowed if external library uses it.
 - `__unreachable();` used if code never gonna reach the place.
 - `__unreachable_or(...);` same as `__unreachable();` it expands args if platform or compiler doesnt support `unreachable` hint.
+- `__flush_compiler_memory()` flushes compiler's memory operations.
+- `__flush_compiler_variable_*()` flushes compiler's operations on variable.
 - `__cta(condition);` compile time assert. same as static_assert.
 - `__sanit` define means if program gonna use a sanitizer eg valgrind. it will be defined as 0 if WITCH can't find any hint for debug. `__sanit` also can be defined by user.
 - `__platform_*` defines. `__platform_unix` is defined for every unix based system including linux. check `internal/WOS.h` for more information about `__platform_*` defines.

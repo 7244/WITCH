@@ -365,6 +365,34 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+#if defined(__compiler_gcc) || defined(__compiler_clang) || defined(__compiler_tinyc)
+  #ifndef __flush_compiler_memory
+    #define __flush_compiler_memory() __asm__ __volatile__("" ::: "memory")
+  #endif
+  #ifndef __flush_compiler_variable_r
+    #define __flush_compiler_variable_r(v) __asm__ __volatile__("" : "m" (v))
+  #endif
+  #ifndef __flush_compiler_variable_w
+    #define __flush_compiler_variable_w(v) __asm__ __volatile__("" : "=m" (v))
+  #endif
+  #ifndef __flush_compiler_variable_rw
+    #define __flush_compiler_variable_rw(v) __asm__ __volatile__("" : "+m" (v))
+  #endif
+#elif defined(__compiler_msvc)
+  #ifndef __flush_compiler_memory
+    #define __flush_compiler_memory() _ReadWriteBarrier()
+  #endif
+  #ifndef __flush_compiler_variable_r
+    #define __flush_compiler_variable_r(v) _ReadWriteBarrier()
+  #endif
+  #ifndef __flush_compiler_variable_w
+    #define __flush_compiler_variable_w(v) _ReadWriteBarrier()
+  #endif
+  #ifndef __flush_compiler_variable_rw
+    #define __flush_compiler_variable_rw(v) _ReadWriteBarrier()
+  #endif
+#endif
+
 #include "clz.h"
 #include "compile_time_log.h"
 #include "fast_log.h"
