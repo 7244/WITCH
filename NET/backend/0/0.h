@@ -683,7 +683,7 @@ static sint32_t NET_GetDefaultRouteMacAddress_ifname_cstr(const void *ifname_cst
       __abort();
     }
   
-    sint32_t err = NET_ctl3(NULL, NET_SIOCGARP, &areq);
+    sint32_t err = NET_ctl3(&sock, NET_SIOCGARP, &areq);
   
     NET_close(&sock);
   
