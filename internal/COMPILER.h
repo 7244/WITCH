@@ -361,7 +361,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #elif defined(__compiler_tinyc)
     #define __unreachable_or(...) __VA_ARGS__
   #elif defined(__compiler_msvc)
-    #define __unreachable() __assume(0)
+    #define __unreachable_or(...) __assume(0)
   #else
     #error ?
   #endif
