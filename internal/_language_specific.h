@@ -1,28 +1,28 @@
 #if defined(__language_cpp)
-  #ifndef remove_reference
-    #define remove_reference remove_reference
+  #ifndef __remove_reference
+    #define __remove_reference __remove_reference
 
     template<typename T>
-    struct remove_reference {
+    struct __remove_reference {
       using type = T;
     };
 
     template<typename T>
-    struct remove_reference<T&> {
+    struct __remove_reference<T&> {
       using type = T;
     };
 
     template<typename T>
-    struct remove_reference<T&&> {
+    struct __remove_reference<T&&> {
       using type = T;
     };
   #endif
 
-  #ifndef remove_reference_t
-    #define remove_reference_t remove_reference_t
+  #ifndef __remove_reference_t
+    #define __remove_reference_t __remove_reference_t
 
     template<typename T>
-    using remove_reference_t = typename remove_reference<T>::type;
+    using __remove_reference_t = typename __remove_reference<T>::type;
   #endif
 
   #ifndef __is_type_same
