@@ -1,5 +1,7 @@
 #pragma once
 
+#include "_auto_generated.h"
+
 #ifdef __STDC_VERSION__
   #define __language_c __STDC_VERSION__
 
