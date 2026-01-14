@@ -595,87 +595,90 @@ static sintptr_t NET_ctl2(NET_socket_t *sock, uint32_t op){
   return IO_ctl2(&sock->fd, op);
 }
 
-static sint32_t NET_GetDefaultRouteMacAddress_ifname_cstr(const void *ifname_cstr, void *mac_addr){
+static sint32_t NET_GetDefaultGateway32_ifname_cstr(uint32_t *gateway32, const void *ifname_cstr){
   IO_fd_t fd;
 
-  {
-    sint32_t err = IO_open("/proc/net/route", O_RDONLY, &fd);
-    if(err){
-      return err;
-    }
+  sint32_t err = IO_open("/proc/net/route", O_RDONLY, &fd);
+  if(err){
+    return err;
   }
 
-  uint32_t gateway_ip32;
+  uint8_t buff[2048];
 
-  {
-    uint8_t buff[2048];
-  
-    IO_ssize_t read_size = IO_read(&fd, buff, sizeof(buff));
-    if(read_size < 0){
+  IO_ssize_t read_size = IO_read(&fd, buff, sizeof(buff));
+  if(read_size < 0){
+    goto gt_fail_after_fd_open;
+  }
+
+  uintptr_t index = 0;
+  while(1){
+    if(STR_GetIndexAfterSkipNXCharacters_safe(buff, &index, read_size, 1, '\n')){
+      /* TODO read more */
       goto gt_fail_after_fd_open;
     }
-  
-  
-    uintptr_t index = 0;
-    while(1){
-      if(STR_GetIndexAfterSkipNXCharacters_safe(buff, &index, read_size, 1, '\n')){
-        /* TODO read more */
-        __abort();
-        goto gt_fail_after_fd_open;
-      }
-  
-      uintptr_t ifname_index = index;
-  
-      if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
-        /* TODO read more */
-        __abort();
-        goto gt_fail_after_fd_open;
-      }
-  
-      if(STR_n0ncmp(ifname_cstr, &buff[ifname_index], index - ifname_index)){
-        continue;
-      }
-  
-      index++;
-  
-      uintptr_t destination_index = index;
-  
-      if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
-        /* TODO read more */
-        __abort();
-        goto gt_fail_after_fd_open;
-      }
-  
-      uint32_t dstip32 = STR_psh32_digit(&buff[destination_index], index - destination_index);
-  
-      if(dstip32 != 0){
-        continue;
-      }
-  
-      index++;
-  
-      uintptr_t gateway_index = index;
-  
-      if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
-        /* TODO read more */
-        __abort();
-        goto gt_fail_after_fd_open;
-      }
-  
-      gateway_ip32 = STR_psh32_digit(&buff[gateway_index], index - gateway_index);
-  
-      break;
+
+    uintptr_t ifname_index = index;
+
+    if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
+      /* TODO read more */
+      goto gt_fail_after_fd_open;
     }
-  
-    IO_close(&fd);
+
+    if(STR_n0ncmp(ifname_cstr, &buff[ifname_index], index - ifname_index)){
+      continue;
+    }
+
+    index++;
+
+    uintptr_t destination_index = index;
+
+    if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
+      /* TODO read more */
+      goto gt_fail_after_fd_open;
+    }
+
+    uint32_t dstip32 = STR_psh32_digit(&buff[destination_index], index - destination_index);
+
+    if(dstip32 != 0){
+      continue;
+    }
+
+    index++;
+
+    uintptr_t gateway_index = index;
+
+    if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
+      /* TODO read more */
+      goto gt_fail_after_fd_open;
+    }
+
+    *gateway32 = STR_psh32_digit(&buff[gateway_index], index - gateway_index);
+
+    break;
+
+    gt_fail_after_fd_open:;
+    err = -1;
+
+    break;
   }
 
+  IO_close(&fd);
+
+  return err;
+}
+
+
+static sint32_t NET_GetMacAddressByGateway32_ifname_cstr(
+  void *mac_addr,
+  uint32_t gateway32,
+  const void *ifname_cstr
+){
   NET_arpreq_t areq = {};
   __builtin_memcpy(areq.arp_dev, ifname_cstr, MEM_cstreu(ifname_cstr) + 1);
 
   _NET_sockaddr_in_t *sin = (_NET_sockaddr_in_t *)&areq.arp_pa;
   sin->sin_family = NET_AF_INET;
-  sin->sin_addr = gateway_ip32;
+  sin->sin_addr = gateway32;
 
   {
     NET_socket_t sock;
@@ -688,25 +691,32 @@ static sint32_t NET_GetDefaultRouteMacAddress_ifname_cstr(const void *ifname_cst
     NET_close(&sock);
   
     if(err != 0){
-      goto gt_fail;
+      return err;
     }
   }
 
   __builtin_memcpy(mac_addr, areq.arp_ha.sa_data, 6);
 
   return 0;
+}
 
-  gt_fail_after_fd_open:;
-
-  IO_close(&fd);
-
-  gt_fail:;
-
-  if(STR_n0cmp("lo", ifname_cstr)){
-    return __LINE__;
+static sint32_t NET_GetDefaultRouteMacAddress_ifname_cstr(void *mac_addr, const void *ifname_cstr){
+  uint32_t gateway32;
+  sint32_t errs32 = NET_GetDefaultGateway32_ifname_cstr(&gateway32, ifname_cstr);
+  if(errs32){
+    return errs32;
   }
 
-  __builtin_memset(mac_addr, 0, 6);
+  errs32 = NET_GetMacAddressByGateway32_ifname_cstr(mac_addr, gateway32, ifname_cstr);
+  if(errs32 != 0){
+    if(STR_n0cmp("lo", ifname_cstr)){
+      return errs32;
+    }
 
-  return 0;
+    __builtin_memset(mac_addr, 0, 6);
+
+    return 0;
+  }
+
+  return errs32;
 }
