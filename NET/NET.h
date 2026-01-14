@@ -90,6 +90,31 @@ static uint16_t NET_ntoh16(uint16_t p){
   #endif
 }
 
+static void _NET_mac6_from_string(void *out, const void *str, uintptr_t *index){
+  uint8_t i = 0;
+  while(1){
+    /* TODO not safe function */
+    *((uint8_t *)out + i) = STR_psh32_digit(((uint8_t *)str + *index), 2);
+    *index += 2;
+
+    if(i < 5 && ((uint8_t *)str)[*index] != ':'){
+      __abort();
+    }
+
+    i++;
+    if(i >= 6){
+      break;
+    }
+
+    *index += 1;
+  }
+}
+
+static void NET_mac6_from_string(void *out, const void *str){
+  uintptr_t index = 0;
+  _NET_mac6_from_string(out, str, &index);
+}
+
 static uint32_t _NET_addr4_from_string(const void *str, uintptr_t *index){
   uint32_t ret;
 
