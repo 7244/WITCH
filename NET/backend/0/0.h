@@ -678,7 +678,7 @@ static sint32_t NET_GetMacAddressByGateway32_ifname_cstr(
 
   _NET_sockaddr_in_t *sin = (_NET_sockaddr_in_t *)&areq.arp_pa;
   sin->sin_family = NET_AF_INET;
-  sin->sin_addr = gateway32;
+  sin->sin_addr = NET_hton32(gateway32);
 
   {
     NET_socket_t sock;
