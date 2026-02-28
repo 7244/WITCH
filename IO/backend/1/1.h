@@ -1,3 +1,7 @@
+#define _IO_RAWFD_STDIN 0
+#define _IO_RAWFD_STDOUT 1
+#define _IO_RAWFD_STDERR 2
+
 #ifndef IO_set_fd_limit
   /* i read somewhere windows only can open 0x200 fd */
   /* but i also read windows can open 0xffff sockets */
@@ -486,6 +490,13 @@ static sint32_t IO_access(const void *path){
 
 static bool IO_IsPathExists(const void *path){
   return GetFileAttributes((LPCSTR)path) != INVALID_FILE_ATTRIBUTES;
+}
+
+static sint32_t _IO_printf(const char *format, ...){
+  va_list argv;
+  va_start(argv, format);
+  vprintf(format, argv);
+  va_end(argv);
 }
 
 static void _IO_internal_open(){

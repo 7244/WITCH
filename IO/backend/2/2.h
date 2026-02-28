@@ -1,3 +1,7 @@
+#define _IO_RAWFD_STDIN 0
+#define _IO_RAWFD_STDOUT 1
+#define _IO_RAWFD_STDERR 2
+
 #include _WITCH_PATH(MEM/MEM.h)
 
 #include _WITCH_PATH(include/syscall.h)
@@ -238,6 +242,17 @@ static sint32_t IO_rename(const void *src, const void *dst){
 
 static sint32_t IO_access(const void *path){
   return -syscall2_noerr(SYS_access, path, F_OK);
+}
+
+#include "../../print.h"
+static sint32_t _IO_printf(const char *format, ...){
+  IO_fd_t fd_stdout;
+  IO_fd_set(&fd_stdout, _IO_RAWFD_STDOUT);
+  va_list argv;
+  va_start(argv, format);
+  /* TODO need printf */
+  IO_vprint(&fd_stdout, format, argv);
+  va_end(argv);
 }
 
 static void _IO_internal_open(){}
