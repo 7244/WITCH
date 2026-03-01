@@ -652,7 +652,7 @@ static sint32_t NET_GetDefaultGateway32_ifname_cstr(uint32_t *gateway32, const v
       goto gt_fail_after_fd_open;
     }
 
-    *gateway32 = STR_psh32_digit(&buff[gateway_index], index - gateway_index);
+    *gateway32 = NET_ntoh32(STR_psh32_digit(&buff[gateway_index], index - gateway_index));
 
     break;
 
