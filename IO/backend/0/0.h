@@ -216,10 +216,16 @@ static IO_off_t IO_ltell(const IO_fd_t *fd){
 }
 
 static IO_ssize_t IO_write(const IO_fd_t *fd, const void *data, IO_size_t size){
+  gt_begin:;
+
   IO_ssize_t r = syscall3(__NR_write, fd->fd, (uintptr_t)data, size);
   if(r < 0){
     if(r == -EAGAIN){
       return 0;
+    }
+    if(r == -ENOBUFS){
+      __processor_relax();
+      goto gt_begin;
     }
   }
   return r;
