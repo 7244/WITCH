@@ -447,6 +447,27 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   #endif
 #endif
 
+/* lowers cortisol */
+#ifndef __processor_relax
+  #define __processor_relax __processor_relax
+
+  static
+  void
+  __processor_relax(){
+    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
+      #if defined(__x86_64__) || defined(__i386__)
+        __builtin_ia32_pause();
+      #else
+        #error ?
+      #endif
+    #elif defined(__compiler_msvc)
+      _mm_pause();
+    #else
+      #error ?
+    #endif
+  }
+#endif
+
 #define lstd_preprocessor_get_argn(p0, p1, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, n, ...) n
 #define lstd_preprocessor_get_arg_count(...) EXPAND(lstd_preprocessor_get_argn(__VA_ARGS__, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 
