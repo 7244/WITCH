@@ -79,3 +79,5 @@ static int TH_signal(TH_cond_t *cond){
 static int TH_join(TH_id_t id){
   return pthread_join(id, 0);
 }
+
+#include "../_unix_raw/impl.h"
