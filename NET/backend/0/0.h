@@ -720,3 +720,30 @@ static sint32_t NET_GetDefaultRouteMacAddress_ifname_cstr(void *mac_addr, const 
 
   return errs32;
 }
+
+static sint32_t NET_GetIFIndexByInterfaceName_cstr(const char *name_cstr){
+  NET_socket_t s;
+  sint32_t err = NET_socket2(NET_AF_INET, NET_SOCK_DGRAM, 0, &s);
+  if(err){
+    return err;
+  }
+
+  NET_ifreq_t ifreq;
+  if(MEM_cstreu(name_cstr) + 1 > sizeof(ifreq.ifr_name)){
+    err = -ENAMETOOLONG;
+    goto gt_done;
+  }
+  __builtin_memcpy(ifreq.ifr_name, name_cstr, MEM_cstreu(name_cstr) + 1);
+  err = (sint32_t)NET_ctl3(&s, NET_SIOCGIFINDEX, &ifreq);
+  if(err){
+    goto gt_done;
+  }
+
+  err = ifreq.ifr_ifindex;
+
+  gt_done:;
+
+  NET_close(&s);
+
+  return err;
+}
