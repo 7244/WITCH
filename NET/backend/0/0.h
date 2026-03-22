@@ -747,3 +747,27 @@ static sint32_t NET_GetIFIndexByInterfaceName_cstr(const char *name_cstr){
 
   return err;
 }
+
+static sint32_t NET_GetSRCMACFromIFName_cstr(const char *ifname_cstr, uint8_t *mac_addr){
+  NET_socket_t s;
+  sint32_t err = NET_socket2(NET_AF_INET, NET_SOCK_DGRAM, 0, &s);
+  if(err){
+    return err;
+  }
+
+  NET_ifreq_t ifr;
+  __builtin_memcpy(ifr.ifr_name, ifname_cstr, MEM_cstreu(ifname_cstr) + 1);
+
+  err = NET_ctl3(&s, NET_SIOCGIFHWADDR, &ifr);
+  if(err){
+    goto gt_done;
+  }
+
+  __builtin_memcpy(mac_addr, ifr.ifr_hwaddr.sa_data, 6);
+
+  gt_done:;
+
+  NET_close(&s);
+
+  return err;
+}
