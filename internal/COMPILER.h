@@ -454,9 +454,15 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
   static
   void
   __processor_relax(){
-    #if defined(__compiler_clang) || defined(__compiler_gcc) || defined(__compiler_tinyc)
+    #if defined(__compiler_clang) || defined(__compiler_gcc)
       #if defined(__x86_64__) || defined(__i386__)
         __builtin_ia32_pause();
+      #else
+        #error ?
+      #endif
+    #elif defined(__compiler_tinyc)
+      #if defined(__x86_64__) || defined(__i386__)
+        __asm__ __volatile__("pause" ::: "memory");
       #else
         #error ?
       #endif
