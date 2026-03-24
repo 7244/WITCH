@@ -805,7 +805,7 @@ static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t
       return __LINE__;
     }
 
-    uint8_t check[] = {0,0,0,0,1,0,0,1,0,0,1,0};
+    uint8_t check[] = {0,0,0,0,1,0,0,1,0,0,2,0};
     if(r - i != sizeof(check)){
       return __LINE__;
     }
@@ -816,8 +816,13 @@ static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t
           return __LINE__;
         }
       }
-      else{
+      else if(check[c] == 1){
         if(buf[i + c] != ':'){
+          return __LINE__;
+        }
+      }
+      else if(check[c] == 2){
+        if(buf[i + c] != '.'){
           return __LINE__;
         }
       }
