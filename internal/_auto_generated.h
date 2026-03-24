@@ -1,3 +1,9 @@
+#ifndef _PP_ARG_FIRST_OR_SECOND
+  #define _PP_ARG_FIRST_OR_SECOND_1(_1, ...) _1
+  #define _PP_ARG_FIRST_OR_SECOND_2(_1, _2) _2
+  #define _PP_ARG_FIRST_OR_SECOND(_1, ...) CONCAT(_PP_ARG_FIRST_OR_SECOND_, _PP_NARG(__VA_ARGS__))(_1, __VA_ARGS__)
+#endif
+
 #if defined(__compiler_msvc)
   #define _PP_NARG(...) _PP_NARG_(__VA_ARGS__, _PP_RSEQ_N())
   #define _PP_NARG_(...) _PP_ARG_N(__VA_ARGS__)
