@@ -29,6 +29,18 @@ static sint32_t _STR_ParseCStringAsBool(const void *cstr, bool *val){
   else if(!STR_casecmp("true", cstr)){
     *val = 1;
   }
+  else if(!STR_casecmp("no", cstr)){
+    *val = 0;
+  }
+  else if(!STR_casecmp("yes", cstr)){
+    *val = 1;
+  }
+  else if(!STR_casecmp("n", cstr)){
+    *val = 0;
+  }
+  else if(!STR_casecmp("y", cstr)){
+    *val = 1;
+  }
   else{
     return 1;
   }
