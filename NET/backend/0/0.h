@@ -771,3 +771,60 @@ static sint32_t NET_GetSRCMACFromIFName_cstr(const char *ifname_cstr, uint8_t *m
 
   return err;
 }
+
+/* pci_string needs to be at least (4 + 1 + 2 + 1 + 2 + 1 + 1) sized */
+static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t *pci_string){  
+  const char bun_top[] = "/sys/class/net/";
+  const char bun_bottom[] = "/device";
+  
+  uint8_t rl_path[sizeof(bun_top) - 1 + NET_IFNAMSIZ - 1 + sizeof(bun_bottom) - 1 + 1];
+
+  {
+    uint8_t *p = rl_path;
+    _memcpy_cstr_sumret(p, bun_top);
+    _memcpy_cstr_sumret(p, ifname_cstr);
+    _memcpy_cstr_sumret(p, bun_bottom, +1);
+  }
+
+  uint8_t buf[PATH_MAX];
+  sintptr_t r = IO_readlink_cstr(rl_path, buf, sizeof(buf));
+  if(r < 0){
+    return r;
+  }
+
+  {
+    uintptr_t i = r - 1;
+    while(i != (uintptr_t)-1){
+      if(buf[i] == '/'){
+        i++;
+        break;
+      }
+      i--;
+    }
+    if(i == (uintptr_t)-1){
+      return __LINE__;
+    }
+
+    uint8_t check[] = {0,0,0,0,1,0,0,1,0,0,1,0};
+    if(r - i != sizeof(check)){
+      return __LINE__;
+    }
+
+    for(uintptr_t c = 0; c < sizeof(check); c++){
+      if(check[c] == 0){
+        if(!STR_ischar_hexdigit(buf[i + c])){
+          return __LINE__;
+        }
+      }
+      else{
+        if(buf[i + c] != ':'){
+          return __LINE__;
+        }
+      }
+    }
+
+    __builtin_memcpy(pci_string, &buf[i], sizeof(check));
+  }
+
+  return 0;
+}
