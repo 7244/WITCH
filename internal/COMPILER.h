@@ -259,6 +259,41 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #define LITERAL(type_m, num_m) \
   (type_m)CONCAT(num_m, CONCAT(_LITERAL_, type_m))
 
+#ifndef _memcpy_stackarr_sumret
+  static uintptr_t _memcpy_stackarr_sumret(void *dst, const void *src, uintptr_t size){
+    __builtin_memcpy(dst, src, size);
+    return size;
+  }
+  #define _memcpy_stackarr_sumret(dst, src, ...) do{ \
+    dst += _memcpy_stackarr_sumret((void *)(dst), (const void *)(src), (uintptr_t)sizeof(src) + (uintptr_t)(_PP_ARG_FIRST_OR_SECOND(0, ##__VA_ARGS__))); \
+  }while(0)
+#endif
+
+#ifndef _memcpy_cstrarr_sumret
+  static uintptr_t _memcpy_cstrarr_sumret(void *dst, const char *src, uintptr_t size){
+    __builtin_memcpy(dst, src, size);
+    return size;
+  }
+  #define _memcpy_cstrarr_sumret(dst, src, ...) do{ \
+    dst += _memcpy_cstrarr_sumret((void *)(dst), (src), (uintptr_t)sizeof(src) - 1 + (uintptr_t)(_PP_ARG_FIRST_OR_SECOND(0, ##__VA_ARGS__))); \
+  }while(0)
+#endif
+
+#ifndef _memcpy_cstr_sumret
+  static uintptr_t _memcpy_cstr_sumret(void *dst, const char *src, uintptr_t sum_with_size){
+    uintptr_t size = 0;
+    while(src[size] != 0){
+      size++;
+    }
+    size += sum_with_size;
+    __builtin_memcpy(dst, src, size);
+    return size;
+  }
+  #define _memcpy_cstr_sumret(dst, src, ...) do{ \
+    dst += _memcpy_cstr_sumret((void *)(dst), (src), (uintptr_t)(_PP_ARG_FIRST_OR_SECOND(0, ##__VA_ARGS__))); \
+  }while(0)
+#endif
+
 #if !defined(__platform_libc)
   #include "needed_builtins.h"
 
