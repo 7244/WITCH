@@ -484,29 +484,33 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
 
 /* lowers cortisol */
 #ifndef __processor_relax
-  #define __processor_relax __processor_relax
+  #if defined(__platform_bpf)
+    #define __processor_relax() __cta(false)
+  #else
+    #define __processor_relax __processor_relax
 
-  static
-  void
-  __processor_relax(){
-    #if defined(__compiler_clang) || defined(__compiler_gcc)
-      #if defined(__x86_64__) || defined(__i386__)
-        __builtin_ia32_pause();
+    static
+    void
+    __processor_relax(){
+      #if defined(__compiler_clang) || defined(__compiler_gcc)
+        #if defined(__x86_64__) || defined(__i386__)
+          __builtin_ia32_pause();
+        #else
+          #error ?
+        #endif
+      #elif defined(__compiler_tinyc)
+        #if defined(__x86_64__) || defined(__i386__)
+          __asm__ __volatile__("pause" ::: "memory");
+        #else
+          #error ?
+        #endif
+      #elif defined(__compiler_msvc)
+        _mm_pause();
       #else
         #error ?
       #endif
-    #elif defined(__compiler_tinyc)
-      #if defined(__x86_64__) || defined(__i386__)
-        __asm__ __volatile__("pause" ::: "memory");
-      #else
-        #error ?
-      #endif
-    #elif defined(__compiler_msvc)
-      _mm_pause();
-    #else
-      #error ?
-    #endif
-  }
+    }
+  #endif
 #endif
 
 #define lstd_preprocessor_get_argn(p0, p1, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, n, ...) n
