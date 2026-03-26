@@ -325,6 +325,9 @@ static sint32_t _IO_printf(const char *format, ...){
   /* TODO need printf */
   IO_vprint(&fd_stdout, format, argv);
   va_end(argv);
+
+  /* TODO returns 0 bytes always */
+  return 0;
 }
 
 static void _IO_internal_open(){

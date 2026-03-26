@@ -495,8 +495,10 @@ static bool IO_IsPathExists(const void *path){
 static sint32_t _IO_printf(const char *format, ...){
   va_list argv;
   va_start(argv, format);
-  vprintf(format, argv);
+  int r = vprintf(format, argv);
   va_end(argv);
+
+  return r;
 }
 
 static void _IO_internal_open(){
