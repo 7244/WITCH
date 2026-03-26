@@ -787,7 +787,7 @@ static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t
   }
 
   uint8_t buf[PATH_MAX];
-  sintptr_t r = IO_readlink_cstr(rl_path, buf, sizeof(buf));
+  sintptr_t r = IO_readlink_cstr((const char *)rl_path, buf, sizeof(buf));
   if(r < 0){
     return r;
   }
