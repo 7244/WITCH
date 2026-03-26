@@ -104,7 +104,7 @@ typedef struct{
   uint8_t *buffer;
   uintptr_t buffer_size;
 
-  IO_ssize_t read_size;
+  IO_size_t read_size;
   IO_size_t offset;
 }FS_dir_traverse_t;
 static sint32_t FS_dir_traverse_open(
