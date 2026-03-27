@@ -339,6 +339,33 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
     __VA_ARGS__ \
   }
 
+#define IO_QuickExistingFileWriteData_cstr(name_cstr, variable_name, buffer_size, ...) \
+  uintptr_t variable_name##_written_size; \
+  do{ \
+    IO_fd_t _IO_QuickFileWriteData_cstr_fd; \
+    sint32_t _IO_QuickFileWriteData_cstr_err = IO_open((name_cstr), O_WRONLY, &_IO_QuickFileWriteData_cstr_fd); \
+    if(_IO_QuickFileWriteData_cstr_err){ \
+      variable_name##_written_size = (uintptr_t)_IO_QuickFileWriteData_cstr_err; \
+      break; \
+    } \
+    variable_name##_written_size = (uintptr_t)IO_write(&_IO_QuickFileWriteData_cstr_fd, (variable_name), (buffer_size)); \
+    IO_close(&_IO_QuickFileWriteData_cstr_fd); \
+  }while(0); \
+  if(variable_name##_written_size != (buffer_size)){ \
+    __VA_ARGS__ \
+  }
+
+#define IO_QuickExistingFileWriteCSTR_cstr(path_cstr, cstr_to_write, ...) \
+  { \
+    const char *_IO_QuickExistingFileWriteCSTR_cstr_nocare_data = cstr_to_write; \
+    IO_QuickExistingFileWriteData_cstr( \
+      path_cstr, \
+      _IO_QuickExistingFileWriteCSTR_cstr_nocare_data, \
+      MEM_cstreu(_IO_QuickExistingFileWriteCSTR_cstr_nocare_data), \
+      __VA_ARGS__) \
+    ; \
+  }
+
 static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *param){
   const char bun0[] = "/lib/modules/";
   const char bun1[] = "/kernel/drivers/";
