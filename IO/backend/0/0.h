@@ -347,7 +347,11 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *pa
     return (sint32_t)patty0_data_size;
   );
 
-  uint8_t path[sizeof(bun0) - 1 + sizeof(patty0_data) + sizeof(bun1)];
+  uintptr_t max_module_name_length = 128;
+  if(MEM_cstreu(name) > max_module_name_length){
+    return -ENAMETOOLONG;
+  }
+  uint8_t path[sizeof(bun0) - 1 + sizeof(patty0_data) + sizeof(bun1) - 1 + 128 + 3 + 3 + 1];
 
   uint8_t *p = path;
   _memcpy_cstr_sumret(p, bun0);
