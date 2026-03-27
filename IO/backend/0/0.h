@@ -69,6 +69,9 @@ typedef struct{
 static void IO_fd_set(IO_fd_t *fd, sint32_t description){
   fd->fd = description;
 }
+static sint32_t _IO_fd_get_internal(IO_fd_t *fd){
+  return fd->fd;
+}
 
 static sint32_t IO_stat(const void *path, IO_stat_t *s){
   #ifdef __NR_stat64
@@ -314,6 +317,68 @@ static void IO_munmap(void *addr, IO_size_t length){
 
 static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_size){
   return syscall3(__NR_readlink, (uintptr_t)path, (uintptr_t)out, out_size);
+}
+
+#define IO_QuickFileReadData_cstr(name_cstr, variable_name, buffer_size, ...) \
+  uint8_t variable_name##_data[buffer_size]; \
+  uintptr_t variable_name##_data_size; \
+  do{ \
+    IO_fd_t _IO_QuickFileReadData_cstr_fd; \
+    sint32_t _IO_QuickFileReadData_cstr_err = IO_open((name_cstr), O_RDONLY, &_IO_QuickFileReadData_cstr_fd); \
+    if(_IO_QuickFileReadData_cstr_err){ \
+      variable_name##_data_size = (uintptr_t)_IO_QuickFileReadData_cstr_err; \
+      break; \
+    } \
+    variable_name##_data_size = (uintptr_t)IO_read(&_IO_QuickFileReadData_cstr_fd, variable_name##_data, (buffer_size)); \
+    if(variable_name##_data_size == (buffer_size)){ \
+      variable_name##_data_size = (uintptr_t)-EFBIG; \
+    } \
+    IO_close(&_IO_QuickFileReadData_cstr_fd); \
+  }while(0); \
+  if(patty0_data_size > (uintptr_t)-0x1000){ \
+    __VA_ARGS__ \
+  }
+
+static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *param){
+  const char bun0[] = "/lib/modules/";
+  const char bun1[] = "/kernel/drivers/";
+
+  IO_QuickFileReadData_cstr("/proc/sys/kernel/osrelease", patty0, 64,
+    return (sint32_t)patty0_data_size;
+  );
+
+  uint8_t path[sizeof(bun0) - 1 + sizeof(patty0_data) + sizeof(bun1)];
+
+  uint8_t *p = path;
+  _memcpy_cstr_sumret(p, bun0);
+  _memcpy_stackarr_sumret(p, patty0_data, patty0_data_size - sizeof(patty0_data));
+  _memcpy_cstr_sumret(p, bun1);
+  _memcpy_cstr_sumret(p, name);
+  _memcpy_cstr_sumret(p, ".ko", +1);
+
+  IO_fd_t fd;
+  do{
+    sint32_t err = IO_open(path, O_RDONLY, &fd);
+    if(err == 0){
+      break;
+    }
+
+    p--;
+    _memcpy_cstr_sumret(p, ".xz", +1);
+
+    err = IO_open(path, O_RDONLY, &fd);
+    if(err == 0){
+      break;
+    }
+
+    return err;
+  }while(0);
+
+  sintptr_t ret = syscall3(__NR_finit_module, _IO_fd_get_internal(&fd), (uintptr_t)param, 0);
+
+  IO_close(&fd);
+
+  return (sint32_t)ret;
 }
 
 #include "../../print.h"
