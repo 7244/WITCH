@@ -259,6 +259,13 @@ typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 #define LITERAL(type_m, num_m) \
   (type_m)CONCAT(num_m, CONCAT(_LITERAL_, type_m))
 
+#ifndef _memcpy_size_sum
+  #define _memcpy_size_sum(dst, src, size) do{ \
+    __builtin_memcpy((void *)(dst), (const void *)(src), (size)); \
+    dst += (size); \
+  }while(0)
+#endif
+
 #ifndef _memcpy_stackarr_sumret
   static uintptr_t _memcpy_stackarr_sumret(void *dst, const void *src, uintptr_t size){
     __builtin_memcpy(dst, src, size);
