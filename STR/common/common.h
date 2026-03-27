@@ -117,3 +117,46 @@ STR_FindCharacterIndexN_safe(
 
   return hit_amount;
 }
+
+/* returns false if not possible. */
+/* to needs to be size of 12 bytes */
+static bool STR_ExtractPCIAddressInsideString(const uint8_t *str, uintptr_t size, uint8_t *to){
+  uintptr_t i = size - 1;
+  while(i != (uintptr_t)-1){
+    if(str[i] == '/'){
+      i++;
+      break;
+    }
+    i--;
+  }
+  if(i == (uintptr_t)-1){
+    return false;
+  }
+
+  uint8_t check[] = {0,0,0,0,1,0,0,1,0,0,2,0};
+  if(size - i != sizeof(check)){
+    return false;
+  }
+
+  for(uintptr_t c = 0; c < sizeof(check); c++){
+    if(check[c] == 0){
+      if(!STR_ischar_hexdigit(str[i + c])){
+        return false;
+      }
+    }
+    else if(check[c] == 1){
+      if(str[i + c] != ':'){
+        return false;
+      }
+    }
+    else if(check[c] == 2){
+      if(str[i + c] != '.'){
+        return false;
+      }
+    }
+  }
+
+  __builtin_memcpy(to, &str[i], sizeof(check));
+
+  return true;
+}

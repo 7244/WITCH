@@ -792,43 +792,8 @@ static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t
     return r;
   }
 
-  {
-    uintptr_t i = r - 1;
-    while(i != (uintptr_t)-1){
-      if(buf[i] == '/'){
-        i++;
-        break;
-      }
-      i--;
-    }
-    if(i == (uintptr_t)-1){
-      return __LINE__;
-    }
-
-    uint8_t check[] = {0,0,0,0,1,0,0,1,0,0,2,0};
-    if(r - i != sizeof(check)){
-      return __LINE__;
-    }
-
-    for(uintptr_t c = 0; c < sizeof(check); c++){
-      if(check[c] == 0){
-        if(!STR_ischar_hexdigit(buf[i + c])){
-          return __LINE__;
-        }
-      }
-      else if(check[c] == 1){
-        if(buf[i + c] != ':'){
-          return __LINE__;
-        }
-      }
-      else if(check[c] == 2){
-        if(buf[i + c] != '.'){
-          return __LINE__;
-        }
-      }
-    }
-
-    __builtin_memcpy(pci_string, &buf[i], sizeof(check));
+  if(!STR_ExtractPCIAddressInsideString(buf, r, pci_string)){
+    return __LINE__;
   }
 
   return 0;
