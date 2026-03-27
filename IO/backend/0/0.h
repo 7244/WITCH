@@ -335,7 +335,7 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
     } \
     IO_close(&_IO_QuickFileReadData_cstr_fd); \
   }while(0); \
-  if(patty0_data_size > (uintptr_t)-0x1000){ \
+  if(variable_name##_data_size > (uintptr_t)-0x1000){ \
     __VA_ARGS__ \
   }
 
