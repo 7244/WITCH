@@ -366,6 +366,25 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
     ; \
   }
 
+#define IO_QuickExistingFileWriteBase10_uint64_cstr(path_cstr, value, ...) \
+  { \
+    uint8_t _IO_QuickExistingFileWriteBase10_uint64_cstr_utobuf[64]; \
+    uint8_t *_IO_QuickExistingFileWriteBase10_uint64_cstr_utobuf_ptr = _IO_QuickExistingFileWriteBase10_uint64_cstr_utobuf; \
+    uintptr_t _IO_QuickExistingFileWriteBase10_uint64_cstr_utosize; \
+    STR_uto64( \
+      (value), \
+      10, \
+      &_IO_QuickExistingFileWriteBase10_uint64_cstr_utobuf_ptr, \
+      &_IO_QuickExistingFileWriteBase10_uint64_cstr_utosize \
+    ); \
+    IO_QuickExistingFileWriteData_cstr( \
+      path_cstr, \
+      _IO_QuickExistingFileWriteBase10_uint64_cstr_utobuf_ptr, \
+      _IO_QuickExistingFileWriteBase10_uint64_cstr_utosize, \
+      __VA_ARGS__) \
+    ; \
+  }
+
 static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *param){
   const char bun0[] = "/lib/modules/";
   const char bun1[] = "/kernel/drivers/";
