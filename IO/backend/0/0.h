@@ -389,15 +389,30 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *pa
   const char bun0[] = "/lib/modules/";
   const char bun1[] = "/kernel/drivers/";
 
+  /* TOOD need some function to read first line */
   IO_QuickFileReadData_cstr("/proc/sys/kernel/osrelease", patty0, 64,
     return (sint32_t)patty0_data_size;
   );
+  for(uintptr_t i = 0; i < patty0_data_size; i++){
+    if(patty0_data[i] == '\n'){
+      patty0_data_size = i;
+      break;
+    }
+  }
 
-  uintptr_t max_module_name_length = 128;
-  if(MEM_cstreu(name) > max_module_name_length){
+  uint8_t module_name_filler[128];
+  if(MEM_cstreu(name) > sizeof(module_name_filler)){
     return -ENAMETOOLONG;
   }
-  uint8_t path[sizeof(bun0) - 1 + sizeof(patty0_data) + sizeof(bun1) - 1 + 128 + 3 + 3 + 1];
+  uint8_t path[
+    + sizeof(bun0) - 1
+    + sizeof(patty0_data)
+    + sizeof(bun1) - 1
+    + sizeof(module_name_filler)
+    + 3
+    + 3
+    + 1
+  ];
 
   uint8_t *p = path;
   _memcpy_cstr_sumret(p, bun0);
