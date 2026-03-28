@@ -54,6 +54,8 @@
 #define __S_IWRITE 0200
 #define __S_IEXEC 0100
 
+#include <linux/module.h>
+
 typedef sint64_t IO_off_t;
 typedef uintptr_t IO_size_t;
 typedef sintptr_t IO_ssize_t;
@@ -421,6 +423,8 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *pa
   _memcpy_cstr_sumret(p, name);
   _memcpy_cstr_sumret(p, ".ko", +1);
 
+  uintptr_t module_flag = 0;
+
   IO_fd_t fd;
   do{
     sint32_t err = IO_open(path, O_RDONLY, &fd);
@@ -433,13 +437,19 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *pa
 
     err = IO_open(path, O_RDONLY, &fd);
     if(err == 0){
+      module_flag |= MODULE_INIT_COMPRESSED_FILE;
       break;
     }
 
     return err;
   }while(0);
 
-  sintptr_t ret = syscall3(__NR_finit_module, _IO_fd_get_internal(&fd), (uintptr_t)param, 0);
+  sintptr_t ret = syscall3(
+    __NR_finit_module,
+    _IO_fd_get_internal(&fd),
+    (uintptr_t)param,
+    module_flag
+  );
 
   IO_close(&fd);
 
