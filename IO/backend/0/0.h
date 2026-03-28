@@ -453,7 +453,7 @@ static sint32_t _IO_LoadDefaultKernelModule_cstr(
                       modules_dep_ptr,
                       fd_at
                     );
-                    if(err){
+                    if(err && err != -EEXIST){
                       return err;
                     }
                     break;
