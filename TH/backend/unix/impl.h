@@ -8,3 +8,7 @@ static void TH_sleep(uintptr_t ns){
   timespec.tv_nsec = ns % 1000000000;
   syscall1(__NR_nanosleep, (uintptr_t)&timespec);
 }
+
+static void TH_sleepi(uintptr_t ns){
+  TH_sleep(ns);
+}
