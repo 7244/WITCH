@@ -387,9 +387,126 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
     ; \
   }
 
-static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *param){
+static sint32_t _IO_LoadDefaultKernelModule_cstr(
+  uint8_t *module_name,
+  uintptr_t module_name_length,
+  const char *param,
+  uintptr_t modules_dep_size,
+  uint8_t *modules_dep_ptr,
+  IO_dirfd_t *fd_at
+){
+  uintptr_t module_flag = 0;
+
+  uintptr_t line_begin_at = 0;
+  uintptr_t full_path_length = (uintptr_t)-1;
+  {
+    uintptr_t last_slash_at_p1;
+    for(uintptr_t i = 0; i < modules_dep_size;){
+      if(modules_dep_ptr[i] == '/'){
+        last_slash_at_p1 = i + 1;
+      }
+      else if(modules_dep_ptr[i] == '.'){
+        if(MEM_ncmpn(&modules_dep_ptr[last_slash_at_p1], i - last_slash_at_p1, module_name, module_name_length) == false){
+          for(; i < modules_dep_size; i++){
+            if(modules_dep_ptr[i] == '\n'){
+              i += 1;
+              line_begin_at = i;
+              break;
+            }
+          }
+          continue;
+        }
+
+        uintptr_t last_dot_at_p1 = i + 1;
+        for(; i < modules_dep_size; i++){
+          if(modules_dep_ptr[i] == '.'){
+            last_dot_at_p1 = i + 1;
+          }
+          else if(modules_dep_ptr[i] == ':'){
+            full_path_length = i - line_begin_at;
+
+            if(MEM_ncmpn(&modules_dep_ptr[last_dot_at_p1], i - last_dot_at_p1, "ko", 2) == false){
+              module_flag |= MODULE_INIT_COMPRESSED_FILE;
+            }
+
+            bool got_space = false;
+            do{
+              i += 1;
+              if(modules_dep_ptr[i] == '\n'){
+                break;
+              }
+              else if(modules_dep_ptr[i] == ' '){
+                got_space = true;
+              }
+              else if(got_space == true){
+                got_space = false;
+                do{
+                  if(modules_dep_ptr[i] == '/'){
+                    last_slash_at_p1 = i + 1;
+                  }
+                  else if(modules_dep_ptr[i] == '.'){
+                    sint32_t err = _IO_LoadDefaultKernelModule_cstr(
+                      &modules_dep_ptr[last_slash_at_p1],
+                      i - last_slash_at_p1,
+                      param,
+                      modules_dep_size,
+                      modules_dep_ptr,
+                      fd_at
+                    );
+                    if(err){
+                      return err;
+                    }
+                    break;
+                  }
+                  i++;
+                }while(i < modules_dep_size);
+              }
+            }while(i < modules_dep_size);
+
+            break;
+          }
+        }
+
+        break;
+      }
+      i += 1;
+    }
+  }
+
+  if(full_path_length == (uintptr_t)-1){
+    return __LINE__;
+  }
+
+  uint8_t path[PATH_MAX];
+
+  if(full_path_length > sizeof(path) - 1){
+    return __LINE__;
+  }
+
+  __builtin_memcpy(path, &modules_dep_ptr[line_begin_at], full_path_length);
+  path[full_path_length] = 0;
+
+  IO_fd_t fd;
+  sint32_t err = IO_openat(fd_at, path, O_RDONLY, &fd);
+  if(err){
+    return err;
+  }
+
+  sintptr_t ret = syscall3(
+    __NR_finit_module,
+    _IO_fd_get_internal(&fd),
+    (uintptr_t)param,
+    module_flag
+  );
+
+  IO_close(&fd);
+
+  return (sint32_t)ret;
+}
+
+static sint32_t IO_LoadDefaultKernelModule_cstr(const char *module_name_cstr, const char *param){
   const char bun0[] = "/lib/modules/";
-  const char bun1[] = "/kernel/drivers/";
+  const char bun1[] = "/modules.dep";
 
   /* TOOD need some function to read first line */
   IO_QuickFileReadData_cstr("/proc/sys/kernel/osrelease", patty0, 64,
@@ -402,58 +519,119 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *name, const char *pa
     }
   }
 
-  uint8_t module_name_filler[128];
-  if(MEM_cstreu(name) > sizeof(module_name_filler)){
-    return -ENAMETOOLONG;
-  }
   uint8_t path[
     + sizeof(bun0) - 1
     + sizeof(patty0_data)
     + sizeof(bun1) - 1
-    + sizeof(module_name_filler)
-    + 3
-    + 3
     + 1
   ];
 
   uint8_t *p = path;
   _memcpy_cstr_sumret(p, bun0);
   _memcpy_stackarr_sumret(p, patty0_data, patty0_data_size - sizeof(patty0_data));
-  _memcpy_cstr_sumret(p, bun1);
-  _memcpy_cstr_sumret(p, name);
-  _memcpy_cstr_sumret(p, ".ko", +1);
+  uint8_t *p_patty0 = p;
+  _memcpy_cstr_sumret(p, bun1, +1);
 
-  uintptr_t module_flag = 0;
+  uintptr_t mmap_size;
+  uint8_t *mmap_ptr;
+  {
+    IO_fd_t fd;
+    sint32_t err = IO_open(path, O_RDONLY, &fd);
+    if(err){
+      return err;
+    }
+  
+    IO_stat_t s;
+    err = IO_fstat(&fd, &s);
+    if(err){
+      return err;
+    }
+  
+    {
+      IO_off_t io_off = IO_stat_GetSizeInBytes(&s);
+      if((uint64_t)io_off > (uintptr_t)-1){
+        __abort();
+      }
+      mmap_size = io_off;
+    }
+  
+    mmap_ptr = (uint8_t *)IO_mmap(
+      NULL,
+      mmap_size,
+      PROT_READ,
+      MAP_PRIVATE,
+      _IO_fd_get_internal(&fd),
+      0
+    );
+    if((uintptr_t)mmap_ptr > (uintptr_t)-0x1000){
+      err = (sint32_t)(uintptr_t)mmap_ptr;
+    }
+
+    IO_close(&fd);
+
+    if(err){
+      return err;
+    }
+
+    /* lets quick check modules.dep */
+    do{
+      if(mmap_size == 0){
+        err = __LINE__;
+        break;
+      }
+      if(mmap_ptr[mmap_size - 1] != '\n'){
+        err = __LINE__;
+        break;
+      }
+      /* should have at least one slash before dot with rest of end line */
+      uintptr_t i = 0;
+      bool got_slash = false;
+      for(; i < mmap_size; i++){
+        if(mmap_ptr[i] == '/'){
+          got_slash = true;
+        }
+        else if(mmap_ptr[i] == '.'){
+          if(got_slash == false){
+            err = __LINE__;
+          }
+          break;
+        }
+        else if(mmap_ptr[i] == '\n'){
+          got_slash = false;
+        }
+      }
+      if(i == mmap_size){
+        err = __LINE__;
+        break;
+      }
+    }while(0);
+    if(err){
+      IO_munmap(mmap_ptr, mmap_size);
+      return err;
+    }
+  }
+
+  p = p_patty0;
+  *p =  0;
 
   IO_fd_t fd;
-  do{
-    sint32_t err = IO_open(path, O_RDONLY, &fd);
-    if(err == 0){
-      break;
-    }
+  sint32_t err = IO_open(path, O_DIRECTORY, &fd);
+  if(err == 0){
+    err = _IO_LoadDefaultKernelModule_cstr(
+      (uint8_t *)module_name_cstr,
+      MEM_cstreu(module_name_cstr),
+      param,
+      mmap_size,
+      mmap_ptr,
+      (IO_dirfd_t *)&fd
+    );
 
-    p--;
-    _memcpy_cstr_sumret(p, ".xz", +1);
+    IO_close(&fd);
+  }
 
-    err = IO_open(path, O_RDONLY, &fd);
-    if(err == 0){
-      module_flag |= MODULE_INIT_COMPRESSED_FILE;
-      break;
-    }
+  IO_munmap(mmap_ptr, mmap_size);
 
-    return err;
-  }while(0);
-
-  sintptr_t ret = syscall3(
-    __NR_finit_module,
-    _IO_fd_get_internal(&fd),
-    (uintptr_t)param,
-    module_flag
-  );
-
-  IO_close(&fd);
-
-  return (sint32_t)ret;
+  return err;
 }
 
 #include "../../print.h"
