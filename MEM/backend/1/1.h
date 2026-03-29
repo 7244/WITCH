@@ -77,23 +77,3 @@ static uint8_t *MEM_findchr(
   }
   return 0;
 }
-
-static uint8_t *MEM_findchr0(
-  const void *src,
-  uint8_t c
-){
-  for(; *(uint8_t *)src != c; src = (const void *)((uint8_t *)src + 1));
-  return (uint8_t *)src;
-}
-
-static uintptr_t MEM_cstreu(
-  const void *cstr
-){
-  return _builtin_strlen(cstr);
-}
-
-static uint8_t *MEM_cstrep(
-  const void *cstr
-){
-  return (uint8_t *)MEM_findchr0(cstr, 0);
-}
