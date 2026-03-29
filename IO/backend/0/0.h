@@ -288,14 +288,6 @@ static sint32_t IO_rename(const void *src, const void *dst){
   return syscall2(__NR_rename, (uintptr_t)src, (uintptr_t)dst);
 }
 
-static sint32_t IO_access(const void *path){
-  return syscall2(__NR_access, (uintptr_t)path, F_OK);
-}
-
-static bool IO_IsPathExists_cstr(const char *path){
-  return IO_access(path) == 0;
-}
-
 static int IO_epoll_create(int flags){
   return syscall1(__NR_epoll_create1, flags);
 }

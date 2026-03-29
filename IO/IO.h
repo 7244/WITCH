@@ -37,6 +37,28 @@ typedef enum{
   #error ?
 #endif
 
+#if defined(__platform_unix)
+  static sint32_t IO_access(const char *path){
+    #if defined(__platform_unix_linux)
+      return syscall2(__NR_access, (uintptr_t)path, F_OK);
+    #elif defined(__platform_unix_freebsd)
+      return -syscall2_noerr(SYS_access, (uintptr_t)path, F_OK);
+    #else
+      #error ?
+    #endif
+  }
+#endif
+
+static bool IO_IsPathExists_cstr(const char *path){
+  #if defined(__platform_unix)
+    return IO_access(path) == 0;
+  #elif defined(__platform_windows)
+    return GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES;
+  #else
+    #error ?
+  #endif
+}
+
 #ifdef _WITCH_libdefine_PlatformOpen
   #error ?
 #endif

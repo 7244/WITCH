@@ -240,10 +240,6 @@ static sint32_t IO_rename(const void *src, const void *dst){
   return -syscall2_noerr(SYS_rename, src, dst);
 }
 
-static sint32_t IO_access(const void *path){
-  return -syscall2_noerr(SYS_access, path, F_OK);
-}
-
 #include "../../print.h"
 static sint32_t _IO_printf(const char *format, ...){
   IO_fd_t fd_stdout;

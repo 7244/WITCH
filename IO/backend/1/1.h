@@ -483,15 +483,6 @@ static sint32_t IO_rename(const void *src, const void *dst){
   return -1;
 }
 
-static sint32_t IO_access(const void *path){
-  __abort();
-  return -1;
-}
-
-static bool IO_IsPathExists(const void *path){
-  return GetFileAttributes((LPCSTR)path) != INVALID_FILE_ATTRIBUTES;
-}
-
 static sint32_t _IO_printf(const char *format, ...){
   va_list argv;
   va_start(argv, format);
