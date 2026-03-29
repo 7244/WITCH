@@ -17,7 +17,7 @@
     #define __atomic_load_n(ptr, order) \
       [a = ptr]{ \
         std::atomic<std::remove_pointer_t<decltype(a)>> v{}; \
-        v.store(*a, __atomic_orderconvert##order); \
+        v.store(*a, CONCAT(__atomic_orderconvert,order)); \
         return v.load(); \
       }()
   #endif
@@ -26,7 +26,7 @@
     #define __atomic_exchange_n(dst_ptr, src, order) \
       [&]{ \
         auto *v = (std::atomic<std::remove_pointer_t<decltype(dst_ptr)>> *)dst_ptr; \
-        return v->exchange(src, __atomic_orderconvert##order); \
+        return v->exchange(src, CONCAT(__atomic_orderconvert,order)); \
       }()
   #endif
   
