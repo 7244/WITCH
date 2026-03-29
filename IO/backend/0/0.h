@@ -292,8 +292,8 @@ static sint32_t IO_access(const void *path){
   return syscall2(__NR_access, (uintptr_t)path, F_OK);
 }
 
-static bool IO_IsPathExists(const void *path){
-  return IO_access(path) >= 0;
+static bool IO_IsPathExists_cstr(const char *path){
+  return IO_access(path) == 0;
 }
 
 static int IO_epoll_create(int flags){
