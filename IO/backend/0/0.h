@@ -355,7 +355,7 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
     IO_QuickExistingFileWriteData_cstr( \
       path_cstr, \
       _IO_QuickExistingFileWriteCSTR_cstr_nocare_data, \
-      MEM_cstreu(_IO_QuickExistingFileWriteCSTR_cstr_nocare_data), \
+      MEM_cstrlen(_IO_QuickExistingFileWriteCSTR_cstr_nocare_data), \
       __VA_ARGS__) \
     ; \
   }
@@ -611,7 +611,7 @@ static sint32_t IO_LoadDefaultKernelModule_cstr(const char *module_name_cstr, co
   if(err == 0){
     err = _IO_LoadDefaultKernelModule_cstr(
       (uint8_t *)module_name_cstr,
-      MEM_cstreu(module_name_cstr),
+      MEM_cstrlen(module_name_cstr),
       param,
       mmap_size,
       mmap_ptr,

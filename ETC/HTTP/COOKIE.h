@@ -47,11 +47,11 @@ void HTTP_CookieContainer_add0(HTTP_CookieContainer_t *Container, HTTP_Cookie_t 
 }
 
 sint32_t HTTP_CookieContainer_add1(HTTP_CookieContainer_t *Container, const void *name, const void *value, uint32_t flag){
-  uintptr_t name_size = MEM_cstreu(name);
+  uintptr_t name_size = MEM_cstrlen(name);
   if(name_size > HTTP_COOKIE_set_name_size){
     return -1;
   }
-  uintptr_t value_size = MEM_cstreu(value);
+  uintptr_t value_size = MEM_cstrlen(value);
   if(value_size > HTTP_COOKIE_set_value_size){
     return -2;
   }

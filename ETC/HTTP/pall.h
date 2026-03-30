@@ -117,7 +117,7 @@ ETC_HTTP_pall_p(Parse)
           const char *cl_str = "Content-Length";
           const char *te_str = "Transfer-Encoding";
           if(
-            MEM_cstreu(cl_str) == ParsedData->HTTP.header.s[0] &&
+            MEM_cstrlen(cl_str) == ParsedData->HTTP.header.s[0] &&
             STR_ncmp(cl_str, ParsedData->HTTP.header.v[0], ParsedData->HTTP.header.s[0]) == 0
           ){
             if(Parser->TransferType != 0){
@@ -128,7 +128,7 @@ ETC_HTTP_pall_p(Parse)
             goto gt_State;
           }
           else if(
-            MEM_cstreu(te_str) == ParsedData->HTTP.header.s[0] &&
+            MEM_cstrlen(te_str) == ParsedData->HTTP.header.s[0] &&
             STR_ncmp(te_str, ParsedData->HTTP.header.v[0], ParsedData->HTTP.header.s[0]) == 0
           ){
             if(Parser->TransferType != 0){
@@ -136,7 +136,7 @@ ETC_HTTP_pall_p(Parse)
             }
             const char *c_str = "chunked";
             if(
-              MEM_cstreu(c_str) == ParsedData->HTTP.header.s[1] &&
+              MEM_cstrlen(c_str) == ParsedData->HTTP.header.s[1] &&
               STR_ncmp(c_str, ParsedData->HTTP.header.v[1], ParsedData->HTTP.header.s[1]) == 0
             ){
               Parser->TransferType = 2;

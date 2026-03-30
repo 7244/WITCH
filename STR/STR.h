@@ -20,7 +20,7 @@ uint8_t STR_is_char_same_with_any_char_inside_str(uint8_t c, uint8_t *str, uintp
 
 uint8_t *STR_search_char(uint8_t *str, uintptr_t str_size, uint8_t c, uint8_t *stop_str){
   uint8_t *str_end = str + str_size;
-  uintptr_t stop_str_size = MEM_cstreu(stop_str);
+  uintptr_t stop_str_size = MEM_cstrlen(stop_str);
 
   for(; str < str_end; str++){
     if(*str == c)
@@ -36,7 +36,7 @@ uint8_t *STR_search_char(uint8_t *str, uintptr_t str_size, uint8_t c, uint8_t *s
   STR_search_char((str_m).ptr, (str_m).uint, c_m, stop_str_m)
 
 uint8_t *STR_search_char_end(uint8_t *str, uint8_t *str_end, uint8_t c, uint8_t *stop_str){
-  uintptr_t stop_str_size = MEM_cstreu(stop_str);
+  uintptr_t stop_str_size = MEM_cstrlen(stop_str);
 
   for(; str < str_end; str++){
     if(*str == c)

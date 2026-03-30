@@ -187,5 +187,5 @@ uint32_t MIME_namen(const uint8_t *name, uintptr_t length){
 }
 
 uint32_t MIME_name(const uint8_t *name){
-  return MIME_namen(name, MEM_cstreu(name));
+  return MIME_namen(name, MEM_cstrlen(name));
 }

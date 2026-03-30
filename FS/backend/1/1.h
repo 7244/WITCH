@@ -31,7 +31,7 @@ static sint32_t _FS_dir_creat(const void *path){
 }
 
 static sint32_t FS_dir_open(const void *path, FS_dir_t *dir, uint32_t flag){
-  uintptr_t npath = MEM_cstreu(path);
+  uintptr_t npath = MEM_cstrlen(path);
   if(npath >= PATH_MAX){
     return -ENAMETOOLONG;
   }
@@ -237,7 +237,7 @@ static sint32_t FS_file_rename(FS_file_t *file, const void *path){
       return 0;
     }
     case _FS_file_Temporarily_e:{
-      uintptr_t path_length = MEM_cstreu(path);
+      uintptr_t path_length = MEM_cstrlen(path);
       uint8_t FileName[PATH_MAX];
       if(_FS_file_GetFileName(path, path_length, FileName)){
         return -1;

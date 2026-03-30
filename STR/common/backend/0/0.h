@@ -33,11 +33,11 @@ static bool STR_ncmp(const void *s0, const void *s1, uintptr_t n){
 
 /* n is length of first argument */
 static bool STR_n0cmp(const void *s0, const void *s1){
-  return !!strncmp((const char *)s0, (const char *)s1, MEM_cstreu(s0));
+  return !!strncmp((const char *)s0, (const char *)s1, MEM_cstrlen(s0));
 }
 
 static sintptr_t STR_n0ncmp(const void *s0, const void *s1, uintptr_t s1_size){
-  if(MEM_cstreu(s0) != s1_size){
+  if(MEM_cstrlen(s0) != s1_size){
     return -1;
   }
 
@@ -53,7 +53,7 @@ static sintptr_t STR_n0ncmp(const void *s0, const void *s1, uintptr_t s1_size){
 /* n is length of first argument */
 /* increase s1 with n if success */
 static bool STR_n0cmp_inc1(const void *s0, const void **s1){
-  uintptr_t n = MEM_cstreu(s0);
+  uintptr_t n = MEM_cstrlen(s0);
   bool r = !!strncmp((const char *)s0, (const char *)*s1, n);
   if(!r){
     *s1 = (const void *)(((uint8_t *)*s1) + n);

@@ -253,7 +253,7 @@ static bool STR_vFSttcc(STR_ttcc_t *ttcc, const char *cstr, va_list argv){
         #endif
         case 's':{
           const uint8_t *str = va_arg(argv, const uint8_t *);
-          uintptr_t size = pvalue[1] != (uintptr_t)-1 ? pvalue[1] : MEM_cstreu(str);
+          uintptr_t size = pvalue[1] != (uintptr_t)-1 ? pvalue[1] : MEM_cstrlen(str);
           if(_STR_ttcc_com(ttcc, psign[0], pvalue[0], pfiller[0], 0, str, size))
             return 1;
           cstr++;

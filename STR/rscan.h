@@ -447,17 +447,17 @@ static bool STR_vrscanss(const uint8_t *da, uintptr_t *dai, const uintptr_t dasi
 #define STR_vrscanss(da_m, dai_m, dasize_m, re_m, resize_m, argv_m) \
   STR_vrscanss((const uint8_t *)(da_m), (uintptr_t *)(dai_m), (const uintptr_t)(dasize_m), (const uint8_t *)(re_m), (const uintptr_t)(resize_m), argv_m)
 static bool STR_vrscansc(const uint8_t *da, uintptr_t *dai, const uintptr_t dasize, const uint8_t *re, va_list argv){
-  return STR_vrscanss(da, dai, dasize, re, MEM_cstreu(re), argv);
+  return STR_vrscanss(da, dai, dasize, re, MEM_cstrlen(re), argv);
 }
 #define STR_vrscansc(da_m, dai_m, dasize_m, re_m, argv_m) \
   STR_vrscansc((const uint8_t *)(da_m), (uintptr_t *)(dai_m), (const uintptr_t)(dasize_m), (const uint8_t *)(re_m), argv_m)
 static bool STR_vrscancs(const uint8_t *da, uintptr_t *dai, const uint8_t *re, const uintptr_t resize, va_list argv){
-  return STR_vrscanss(da, dai, MEM_cstreu(da), re, resize, argv);
+  return STR_vrscanss(da, dai, MEM_cstrlen(da), re, resize, argv);
 }
 #define STR_vrscancs(da_m, dai_m, re_m, resize_m, argv_m) \
   STR_vrscancs((const uint8_t *)(da_m), (uintptr_t *)(dai_m), (const uint8_t *)(re_m), (const uintptr_t)(resize_m), argv_m)
 static bool STR_vrscancc(const uint8_t *da, uintptr_t *dai, const uint8_t *re, va_list argv){
-  return STR_vrscanss(da, dai, MEM_cstreu(da), re, MEM_cstreu(re), argv);
+  return STR_vrscanss(da, dai, MEM_cstrlen(da), re, MEM_cstrlen(re), argv);
 }
 #define STR_vrscancc(da_m, dai_m, re_m, resize_m, argv_m) \
   STR_vrscancc((const uint8_t *)(da_m), (uintptr_t *)(dai_m), (const uint8_t *)(re_m), (const uintptr_t)(resize_m), argv_m)
@@ -473,7 +473,7 @@ static bool STR_rscanss(const uint8_t *da, uintptr_t *dai, const uintptr_t dasiz
 static bool STR_rscansc(const uint8_t *da, uintptr_t *dai, const uintptr_t dasize, const uint8_t *re, ...){
   va_list argv;
   va_start(argv, re);
-  bool r = STR_vrscanss(da, dai, dasize, re, MEM_cstreu(re), argv);
+  bool r = STR_vrscanss(da, dai, dasize, re, MEM_cstrlen(re), argv);
   va_end(argv);
   return r;
 }
@@ -482,7 +482,7 @@ static bool STR_rscansc(const uint8_t *da, uintptr_t *dai, const uintptr_t dasiz
 static bool STR_rscancs(const uint8_t *da, uintptr_t *dai, const uint8_t *re, const uintptr_t resize, ...){
   va_list argv;
   va_start(argv, resize);
-  bool r = STR_vrscanss(da, dai, MEM_cstreu(da), re, resize, argv);
+  bool r = STR_vrscanss(da, dai, MEM_cstrlen(da), re, resize, argv);
   va_end(argv);
   return r;
 }
@@ -491,7 +491,7 @@ static bool STR_rscancs(const uint8_t *da, uintptr_t *dai, const uint8_t *re, co
 static bool STR_rscancc(const uint8_t *da, uintptr_t *dai, const uint8_t *re, ...){
   va_list argv;
   va_start(argv, re);
-  bool r = STR_vrscanss(da, dai, MEM_cstreu(da), re, MEM_cstreu(re), argv);
+  bool r = STR_vrscanss(da, dai, MEM_cstrlen(da), re, MEM_cstrlen(re), argv);
   va_end(argv);
   return r;
 }

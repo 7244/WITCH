@@ -25,7 +25,7 @@ static uint8_t *MEM_findchr_unsafe(
   return (uint8_t *)src;
 }
 
-static uintptr_t MEM_cstreu(
+static uintptr_t MEM_cstrlen(
   const void *cstr
 ){
   return _builtin_strlen(cstr);

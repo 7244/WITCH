@@ -258,7 +258,7 @@ typedef struct{
 
 bool ETC_VEDC_Encode_IsSame(ETC_VEDC_Encode_t *Encode, uintptr_t EncoderNameSize, const void *EncoderName){
   _ETC_VEDC_EncoderInfo *di = &_ETC_VEDC_EncoderList[Encode->EncoderID];
-  uintptr_t Size = MEM_cstreu(di->Name);
+  uintptr_t Size = MEM_cstrlen(di->Name);
   return MEM_ncmpn(di->Name, Size, EncoderName, EncoderNameSize) != 0;
 }
 
@@ -280,7 +280,7 @@ ETC_VEDC_Encode_Open(
   uintptr_t EncoderAmount = sizeof(_ETC_VEDC_EncoderList) / sizeof(_ETC_VEDC_EncoderList[0]);
   for(uintptr_t i = 1; i < EncoderAmount; i++){
     _ETC_VEDC_EncoderInfo *di = &_ETC_VEDC_EncoderList[i];
-    uintptr_t Size = MEM_cstreu(di->Name);
+    uintptr_t Size = MEM_cstrlen(di->Name);
     if(MEM_ncmpn(di->Name, Size, EncoderName, EncoderNameSize) != 0){
       ETC_VEDC_Encode_Error r = di->Open_cb(&Encode->EncoderData, EncoderSetting, EncoderUnique);
       if(r != ETC_VEDC_Encode_Error_Success){

@@ -210,7 +210,7 @@ ETC_VEDC_Decoder_Open(
   uintptr_t DecoderAmount = sizeof(_ETC_VEDC_DecoderList) / sizeof(_ETC_VEDC_DecoderList[0]);
   for(uintptr_t i = 1; i < DecoderAmount; i++){
     _ETC_VEDC_DecoderInfo *di = &_ETC_VEDC_DecoderList[i];
-    uintptr_t Size = MEM_cstreu(di->Name);
+    uintptr_t Size = MEM_cstrlen(di->Name);
     if(MEM_ncmpn(di->Name, Size, DecoderName, DecoderNameSize) != 0){
       ETC_VEDC_Decoder_Error r = di->Open_cb(&Decoder->DecoderData, DecoderUnique);
       if(r != ETC_VEDC_Decoder_Error_OK){

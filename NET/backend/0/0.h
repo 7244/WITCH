@@ -674,7 +674,7 @@ static sint32_t NET_GetMacAddressByGateway32_ifname_cstr(
   const void *ifname_cstr
 ){
   NET_arpreq_t areq = {};
-  __builtin_memcpy(areq.arp_dev, ifname_cstr, MEM_cstreu(ifname_cstr) + 1);
+  __builtin_memcpy(areq.arp_dev, ifname_cstr, MEM_cstrlen(ifname_cstr) + 1);
 
   _NET_sockaddr_in_t *sin = (_NET_sockaddr_in_t *)&areq.arp_pa;
   sin->sin_family = NET_AF_INET;
@@ -729,11 +729,11 @@ static sint32_t NET_GetIFIndexByInterfaceName_cstr(const char *name_cstr){
   }
 
   NET_ifreq_t ifreq;
-  if(MEM_cstreu(name_cstr) + 1 > sizeof(ifreq.ifr_name)){
+  if(MEM_cstrlen(name_cstr) + 1 > sizeof(ifreq.ifr_name)){
     err = -ENAMETOOLONG;
     goto gt_done;
   }
-  __builtin_memcpy(ifreq.ifr_name, name_cstr, MEM_cstreu(name_cstr) + 1);
+  __builtin_memcpy(ifreq.ifr_name, name_cstr, MEM_cstrlen(name_cstr) + 1);
   err = (sint32_t)NET_ctl3(&s, NET_SIOCGIFINDEX, &ifreq);
   if(err){
     goto gt_done;
@@ -756,7 +756,7 @@ static sint32_t NET_GetSRCMACFromIFName_cstr(const char *ifname_cstr, uint8_t *m
   }
 
   NET_ifreq_t ifr;
-  __builtin_memcpy(ifr.ifr_name, ifname_cstr, MEM_cstreu(ifname_cstr) + 1);
+  __builtin_memcpy(ifr.ifr_name, ifname_cstr, MEM_cstrlen(ifname_cstr) + 1);
 
   err = NET_ctl3(&s, NET_SIOCGIFHWADDR, &ifr);
   if(err){
