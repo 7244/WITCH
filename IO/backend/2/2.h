@@ -1,7 +1,3 @@
-#define _IO_RAWFD_STDIN 0
-#define _IO_RAWFD_STDOUT 1
-#define _IO_RAWFD_STDERR 2
-
 #include _WITCH_PATH(MEM/MEM.h)
 
 #include _WITCH_PATH(include/syscall.h)
@@ -243,7 +239,7 @@ static sint32_t IO_rename(const void *src, const void *dst){
 #include "../../print.h"
 static sint32_t _IO_printf(const char *format, ...){
   IO_fd_t fd_stdout;
-  IO_fd_set(&fd_stdout, _IO_RAWFD_STDOUT);
+  IO_fd_set(&fd_stdout, IO_STDOUT_FILENO);
   va_list argv;
   va_start(argv, format);
   /* TODO need printf */

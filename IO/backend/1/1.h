@@ -1,7 +1,3 @@
-#define _IO_RAWFD_STDIN 0
-#define _IO_RAWFD_STDOUT 1
-#define _IO_RAWFD_STDERR 2
-
 #ifndef IO_set_fd_limit
   /* i read somewhere windows only can open 0x200 fd */
   /* but i also read windows can open 0xffff sockets */
@@ -28,16 +24,6 @@
 #define O_RDWR _O_RDWR
 #ifndef PATH_MAX
   #define PATH_MAX MAX_PATH
-#endif
-
-#ifndef STDIN_FILENO
-  #define STDIN_FILENO 0
-#endif
-#ifndef STDOUT_FILENO
-  #define STDOUT_FILENO 1
-#endif
-#ifndef STDERR_FILENO
-  #define STDERR_FILENO 2
 #endif
 
 typedef sint64_t IO_off_t;
@@ -496,11 +482,11 @@ static void _IO_internal_open(){
   _IO_fd_nodes = A_resize(NULL, IO_set_fd_limit);
   __builtin_memset(_IO_fd_nodes, _IO_fd_unknown_e, IO_set_fd_limit);
   IO_fd_t fd;
-  IO_fd_set(&fd, STDIN_FILENO);
+  IO_fd_set(&fd, IO_STDIN_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
-  IO_fd_set(&fd, STDOUT_FILENO);
+  IO_fd_set(&fd, IO_STDOUT_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
-  IO_fd_set(&fd, STDERR_FILENO);
+  IO_fd_set(&fd, IO_STDERR_FILENO);
   _IO_assign_fd(&fd, _IO_fd_tty_e);
 }
 static void _IO_internal_close(){
