@@ -16,8 +16,8 @@
   #error ?
 #endif
 
-/* use this function only if you know the character is exists */
-static uint8_t *MEM_findchr0(
+/* finds char without bounds, like strlen. char must exist */
+static uint8_t *MEM_findchr_unsafe(
   const void *src,
   uint8_t c
 ){
@@ -34,5 +34,5 @@ static uintptr_t MEM_cstreu(
 static uint8_t *MEM_cstrep(
   const void *cstr
 ){
-  return (uint8_t *)MEM_findchr0(cstr, 0);
+  return (uint8_t *)MEM_findchr_unsafe(cstr, 0);
 }
