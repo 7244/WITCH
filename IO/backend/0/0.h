@@ -414,7 +414,11 @@ static sint32_t _IO_LoadDefaultKernelModule_cstr(
             full_path_length = i - line_begin_at;
 
             if(MEM_ncmpn(&modules_dep_ptr[last_dot_at_p1], i - last_dot_at_p1, "ko", 2) == false){
-              module_flag |= MODULE_INIT_COMPRESSED_FILE;
+              #if defined(MODULE_INIT_COMPRESSED_FILE)
+                module_flag |= MODULE_INIT_COMPRESSED_FILE;
+              #else
+                return __LINE__;
+              #endif
             }
 
             bool got_space = false;
