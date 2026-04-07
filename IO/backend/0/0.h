@@ -30,19 +30,11 @@
     #error ?
   #endif
 
-  #ifndef MAP_SHARED
-    #define MAP_SHARED 0x01
-  #endif
-  #ifndef MAP_PRIVATE
-    #define MAP_PRIVATE 0x02
-  #endif
-  #ifndef MAP_SHARED_VALIDATE
-    #define MAP_SHARED_VALIDATE 0x03
-  #endif
-
   /* PATH_MAX here */
   #include <linux/limits.h>
 #endif
+
+#include _WITCH_PATH(generic_alloc.h)
 
 #include <limits.h>
 
