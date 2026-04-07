@@ -792,7 +792,7 @@ static sint32_t NET_GetPCIStringFromIFName_cstr(const char *ifname_cstr, uint8_t
     return r;
   }
 
-  if(!STR_ExtractPCIAddressInsideString(buf, r, pci_string)){
+  if(!STR_ExtractPCIAddressInsidePath(buf, r, pci_string)){
     return __LINE__;
   }
 
