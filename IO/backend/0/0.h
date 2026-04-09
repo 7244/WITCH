@@ -315,9 +315,11 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
   uintptr_t i = 0;
   while(1){
     uintptr_t len_to_memmove;
+    uintptr_t end_bloat;
     if(i >= path_size){
       if(i == path_size){
         len_to_memmove = 0;
+        end_bloat = 0;
         goto gt_slash_dont_calculate_length;
       }
       else{
@@ -326,16 +328,17 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
     }
     else if(path[i] == '/'){
       len_to_memmove = path_size - (i + 1);
+      end_bloat = 1;
 
       gt_slash_dont_calculate_length:;
 
       if(non_dot_combo == 0 && dot_combo == 1){
         /* /./ */
 
-        __builtin_memmove(&path[i - 1], &path[i + 1], len_to_memmove);
+        __builtin_memmove(&path[i - 1], &path[i + end_bloat], len_to_memmove);
 
-        path_size -= 2;
-        i -= 2;
+        path_size -= 1 + end_bloat;
+        i -= 1 + end_bloat;
       }
       else if(non_dot_combo == 0 && dot_combo == 2){
         /* /../ */
@@ -348,16 +351,16 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
             /* parent of root?? */
             /* well parent of root is... root. */
 
-            __builtin_memmove(&path[1], &path[i + 1], len_to_memmove);
+            __builtin_memmove(&path[1], &path[i + end_bloat], len_to_memmove);
   
-            uintptr_t removed_len = (i + 1) - 1;
+            uintptr_t removed_len = i + end_bloat - 1;
             path_size -= removed_len;
             i -= removed_len;
           }
           else{
-            __builtin_memmove(path, &path[i + 1], len_to_memmove);
+            __builtin_memmove(path, &path[i + end_bloat], len_to_memmove);
 
-            uintptr_t removed_len = (i + 1) - 1;
+            uintptr_t removed_len = i + end_bloat;
             path_size -= removed_len;
             i -= removed_len;
 
@@ -368,9 +371,9 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
         else{
           last_slash_ip1 = slash_abs_arr[slash_abs_i];
 
-          __builtin_memmove(&path[last_slash_ip1], &path[i + 1], len_to_memmove);
+          __builtin_memmove(&path[last_slash_ip1], &path[i + end_bloat], len_to_memmove);
 
-          uintptr_t removed_len = (i + 1) - last_slash_ip1;
+          uintptr_t removed_len = i + end_bloat - last_slash_ip1;
           path_size -= removed_len;
           i -= removed_len;
 
@@ -385,7 +388,7 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
         }
         slash_abs_arr[slash_abs_i] = last_slash_ip1;
       }
-      else{
+      else if(len_to_memmove != 0){
         /* / or // */
 
         if(i == 0){
@@ -396,7 +399,7 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
           slash_abs_arr[slash_abs_i] = 1;
         }
         else{
-          __builtin_memmove(&path[i], &path[i + 1], len_to_memmove);
+          __builtin_memmove(&path[i], &path[i + end_bloat], len_to_memmove);
   
           path_size -= 1;
           i -= 1;
@@ -405,7 +408,7 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
       dot_combo = 0;
       non_dot_combo = 0;
 
-      last_slash_ip1 = i + 1;
+      last_slash_ip1 = i + end_bloat;
     }
     else if(path[i] == '.'){
       dot_combo += 1;
@@ -415,6 +418,12 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
     }
 
     i += 1;
+  }
+
+  if(path_size == 0){
+    path[0] = '.';
+    path[1] = '/';
+    path_size = 2;
   }
 
   return path_size;
@@ -427,12 +436,9 @@ static sintptr_t IO_realpath_cstr(const char *path_cstr, uint8_t *out, uintptr_t
 
   gt_begin:;
 
-  {
-    sintptr_t normalizepath = IO_normalizepath(path, path_size);
-    if(normalizepath < 0){
-      return __LINE__;
-    }
-    path_size = normalizepath;
+  path_size = (uintptr_t)IO_normalizepath(path, path_size);
+  if((sintptr_t)path_size < 0){
+    return -__LINE__;
   }
 
   uintptr_t last_slash_ip1 = 0;
@@ -501,12 +507,9 @@ static sintptr_t IO_realpath_cstr(const char *path_cstr, uint8_t *out, uintptr_t
         uint8_t unnormalized_path[sizeof(path)];
         __builtin_memcpy(unnormalized_path, path, i);
 
-        {
-          sintptr_t normalizepath = IO_normalizepath(path, path_size);
-          if(normalizepath < 0){
-            return __LINE__;
-          }
-          path_size = normalizepath;
+        path_size = (uintptr_t)IO_normalizepath(path, path_size);
+        if((sintptr_t)path_size < 0){
+          return -__LINE__;
         }
 
         /* TOOD expensive */
