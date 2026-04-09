@@ -388,7 +388,7 @@ static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
         }
         slash_abs_arr[slash_abs_i] = last_slash_ip1;
       }
-      else if(len_to_memmove != 0){
+      else if(end_bloat != 0){
         /* / or // */
 
         if(i == 0){
