@@ -301,6 +301,244 @@ static sintptr_t IO_readlink_cstr(const char *path, uint8_t *out, uintptr_t out_
   return syscall3(__NR_readlink, (uintptr_t)path, (uintptr_t)out, out_size);
 }
 
+/* returns normalized path's length or negative as error. */
+/* not null terminated. */
+static sintptr_t IO_normalizepath(uint8_t *path, uintptr_t path_size){
+  uintptr_t dot_combo = 0;
+  uintptr_t non_dot_combo = 0;
+
+  uint32_t slash_abs_arr[128];
+  uintptr_t slash_abs_i = (uintptr_t)-1;
+
+  uintptr_t last_slash_ip1 = 0;
+
+  uintptr_t i = 0;
+  while(1){
+    uintptr_t len_to_memmove;
+    if(i >= path_size){
+      if(i == path_size){
+        len_to_memmove = 0;
+        goto gt_slash_dont_calculate_length;
+      }
+      else{
+        break;
+      }
+    }
+    else if(path[i] == '/'){
+      len_to_memmove = path_size - (i + 1);
+
+      gt_slash_dont_calculate_length:;
+
+      if(non_dot_combo == 0 && dot_combo == 1){
+        /* /./ */
+
+        __builtin_memmove(&path[i - 1], &path[i + 1], len_to_memmove);
+
+        path_size -= 2;
+        i -= 2;
+      }
+      else if(non_dot_combo == 0 && dot_combo == 2){
+        /* /../ */
+
+        if(slash_abs_i == (uintptr_t)-1){
+          /* parent of nothing is parent. */
+        }
+        else if(slash_abs_i == 0){
+          if(last_slash_ip1 == 1){
+            /* parent of root?? */
+            /* well parent of root is... root. */
+
+            __builtin_memmove(&path[1], &path[i + 1], len_to_memmove);
+  
+            uintptr_t removed_len = (i + 1) - 1;
+            path_size -= removed_len;
+            i -= removed_len;
+          }
+          else{
+            __builtin_memmove(path, &path[i + 1], len_to_memmove);
+
+            uintptr_t removed_len = (i + 1) - 1;
+            path_size -= removed_len;
+            i -= removed_len;
+
+            slash_abs_i -= 1;
+            last_slash_ip1 = 0;
+          }
+        }
+        else{
+          last_slash_ip1 = slash_abs_arr[slash_abs_i];
+
+          __builtin_memmove(&path[last_slash_ip1], &path[i + 1], len_to_memmove);
+
+          uintptr_t removed_len = (i + 1) - last_slash_ip1;
+          path_size -= removed_len;
+          i -= removed_len;
+
+          slash_abs_i -= 1;
+          last_slash_ip1 = slash_abs_arr[slash_abs_i];
+        }
+      }
+      else if(non_dot_combo > 0 || dot_combo > 0){
+        slash_abs_i += 1;
+        if(slash_abs_i >= sizeof(slash_abs_arr) / sizeof(slash_abs_arr[0])){
+          return -__LINE__;
+        }
+        slash_abs_arr[slash_abs_i] = last_slash_ip1;
+      }
+      else{
+        /* / or // */
+
+        if(i == 0){
+          slash_abs_i += 1;
+          if(slash_abs_i >= sizeof(slash_abs_arr) / sizeof(slash_abs_arr[0])){
+            return -__LINE__;
+          }
+          slash_abs_arr[slash_abs_i] = 1;
+        }
+        else{
+          __builtin_memmove(&path[i], &path[i + 1], len_to_memmove);
+  
+          path_size -= 1;
+          i -= 1;
+        }
+      }
+      dot_combo = 0;
+      non_dot_combo = 0;
+
+      last_slash_ip1 = i + 1;
+    }
+    else if(path[i] == '.'){
+      dot_combo += 1;
+    }
+    else{
+      non_dot_combo += 1;
+    }
+
+    i += 1;
+  }
+
+  return path_size;
+}
+
+static sintptr_t IO_realpath_cstr(const char *path_cstr, uint8_t *out, uintptr_t out_size){
+  uintptr_t path_size = MEM_cstrlen(path_cstr);
+  uint8_t path[PATH_MAX * 2];
+  __builtin_memcpy(path, path_cstr, path_size);
+
+  gt_begin:;
+
+  {
+    sintptr_t normalizepath = IO_normalizepath(path, path_size);
+    if(normalizepath < 0){
+      return __LINE__;
+    }
+    path_size = normalizepath;
+  }
+
+  uintptr_t last_slash_ip1 = 0;
+
+  uintptr_t i = 0;
+  if(path[i] == '/'){
+    i += 1;
+    last_slash_ip1 = i;
+  }
+
+  while(1){
+    if(i >= path_size){
+      if(i == path_size){
+        goto gt_slash;
+      }
+      else{
+        break;
+      }
+    }
+    else if(path[i] == '/'){
+      gt_slash:;
+
+      path[i] = 0;
+
+      uint8_t rl_path[PATH_MAX];
+      sintptr_t rl = IO_readlink_cstr((const char *)path, rl_path, sizeof(rl_path));
+
+      path[i] = '/';
+
+      if(rl < 0){
+        goto gt_end_of_slash;
+      }
+      else if(rl == 0){
+        /* readlink returns how many bytes is the link. */
+        /* if it's 0, it basically means link points to no where. */
+        return 0;
+      }
+
+      if(rl_path[0] == '/'){
+        /* TODO is this implement right? */
+
+        uintptr_t new_path_size = rl + (path_size - i);
+        if(new_path_size + 1 > sizeof(path)){
+          return -__LINE__;
+        }
+
+        __builtin_memmove(&path[rl], &path[i], path_size - i);
+        __builtin_memcpy(path, rl_path, rl);
+
+        path_size = new_path_size;
+
+        goto gt_begin;
+      }
+      else{
+        uintptr_t new_path_size = last_slash_ip1 + rl + (path_size - i);
+        if(new_path_size + 1 > sizeof(path)){
+          return -__LINE__;
+        }
+
+        __builtin_memmove(&path[last_slash_ip1 + rl], &path[i], path_size - i);
+        __builtin_memcpy(&path[last_slash_ip1], rl_path, rl);
+
+        path_size = new_path_size;
+
+        /* TOOD expensive */
+        uint8_t unnormalized_path[sizeof(path)];
+        __builtin_memcpy(unnormalized_path, path, i);
+
+        {
+          sintptr_t normalizepath = IO_normalizepath(path, path_size);
+          if(normalizepath < 0){
+            return __LINE__;
+          }
+          path_size = normalizepath;
+        }
+
+        /* TOOD expensive */
+        uintptr_t last_slash_i = (uintptr_t)-1;
+        for(uintptr_t ci = 0; ci < i; ci++){
+          if(path[ci] != unnormalized_path[ci]){
+            break;
+          }
+          else if(path[ci] == '/'){
+            last_slash_i = ci;
+          }
+        }
+        i = last_slash_i;
+      }
+
+      gt_end_of_slash:;
+
+      last_slash_ip1 = i + 1;
+    }
+
+    i += 1;
+  }
+
+  if(path_size > out_size){
+    return -__LINE__;
+  }
+
+  __builtin_memcpy(out, path, path_size);
+
+  return path_size;
+}
+
 #define IO_QuickFileReadData_cstr(name_cstr, variable_name, buffer_size, ...) \
   uint8_t variable_name##_data[buffer_size]; \
   uintptr_t variable_name##_data_size; \
