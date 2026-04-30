@@ -289,10 +289,6 @@ typedef struct{
   uint16_t sa_family;
   union{
     sint8_t sa_data_min[14];
-    struct{
-      struct{}__empty_sa_data;
-      char sa_data[];
-    };
   };
 }NET_sockaddr_t;
 
@@ -695,7 +691,7 @@ static sint32_t NET_GetMacAddressByGateway32_ifname_cstr(
     }
   }
 
-  __builtin_memcpy(mac_addr, areq.arp_ha.sa_data, 6);
+  __builtin_memcpy(mac_addr, areq.arp_ha.sa_data_min, 6);
 
   return 0;
 }
@@ -763,7 +759,7 @@ static sint32_t NET_GetSRCMACFromIFName_cstr(const char *ifname_cstr, uint8_t *m
     goto gt_done;
   }
 
-  __builtin_memcpy(mac_addr, ifr.ifr_hwaddr.sa_data, 6);
+  __builtin_memcpy(mac_addr, ifr.ifr_hwaddr.sa_data_min, 6);
 
   gt_done:;
 
