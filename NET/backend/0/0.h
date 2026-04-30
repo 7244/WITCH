@@ -606,14 +606,14 @@ static sint32_t NET_GetDefaultGateway32_ifname_cstr(uint32_t *gateway32, const v
     goto gt_fail_after_fd_open;
   }
 
-  uintptr_t index = 0;
+  uintptr_t index; index = 0;
   while(1){
     if(STR_GetIndexAfterSkipNXCharacters_safe(buff, &index, read_size, 1, '\n')){
       /* TODO read more */
       goto gt_fail_after_fd_open;
     }
 
-    uintptr_t ifname_index = index;
+    uintptr_t ifname_index; ifname_index = index;
 
     if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
       /* TODO read more */
@@ -626,14 +626,14 @@ static sint32_t NET_GetDefaultGateway32_ifname_cstr(uint32_t *gateway32, const v
 
     index++;
 
-    uintptr_t destination_index = index;
+    uintptr_t destination_index; destination_index = index;
 
     if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
       /* TODO read more */
       goto gt_fail_after_fd_open;
     }
 
-    uint32_t dstip32 = STR_psh32_digit(&buff[destination_index], index - destination_index);
+    uint32_t dstip32; dstip32 = STR_psh32_digit(&buff[destination_index], index - destination_index);
 
     if(dstip32 != 0){
       continue;
@@ -641,7 +641,7 @@ static sint32_t NET_GetDefaultGateway32_ifname_cstr(uint32_t *gateway32, const v
 
     index++;
 
-    uintptr_t gateway_index = index;
+    uintptr_t gateway_index; gateway_index = index;
 
     if(STR_FindCharacterIndexN_safe(buff, &index, read_size, 1, '\t')){
       /* TODO read more */
