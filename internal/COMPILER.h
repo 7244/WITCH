@@ -416,7 +416,7 @@ static uintptr_t LOG(uintptr_t num, uint8_t base){
     #define __flush_compiler_memory() __asm__ __volatile__("" ::: "memory")
   #endif
   #ifndef __flush_compiler_variable_r
-    #define __flush_compiler_variable_r(v) __asm__ __volatile__("" : "m" (v))
+    #define __flush_compiler_variable_r(v) __asm__ __volatile__("" :: "m" (v))
   #endif
   #ifndef __flush_compiler_variable_w
     #define __flush_compiler_variable_w(v) __asm__ __volatile__("" : "=m" (v))
