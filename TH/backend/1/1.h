@@ -26,12 +26,12 @@ static void TH_mutex_init(TH_mutex_t *mutex){
   InitializeCriticalSection(&mutex->mutex);
 }
 
-static int TH_lock(TH_mutex_t *mutex){
+inline int TH_lock(TH_mutex_t *mutex){
   EnterCriticalSection(&mutex->mutex);
   return 0;
 }
 
-static int TH_unlock(TH_mutex_t *mutex){
+inline int TH_unlock(TH_mutex_t *mutex){
   LeaveCriticalSection(&mutex->mutex);
   return 0;
 }
