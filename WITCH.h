@@ -2,7 +2,12 @@
 
 #define EXPAND(p0) p0
 #define ARG(...) __VA_ARGS__
-#define STR(_m) #_m
+
+#ifndef STRINGIFY
+  #define _WITCH_STRINGIFY(p) #p
+  #define STRINGIFY(p) _WITCH_STRINGIFY(p)
+#endif
+
 #ifndef CONCAT
   #define _WITCH_CONCAT(p0, p1) p0 ## p1
   #define CONCAT(p0, p1) _WITCH_CONCAT(p0, p1)
