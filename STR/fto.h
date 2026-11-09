@@ -17,36 +17,36 @@
 
 static bool STR_fto128_base10(f128_t v, uintptr_t precision, uint8_t *data, uintptr_t *size){
   const uintptr_t _STR_fto_digit10[bdn10 + 1] = {
-    LITERAL(uintptr_t, 0),
+    0u,
     #if SYSTEM_BIT >= 8
-      LITERAL(uintptr_t, 10),
-      LITERAL(uintptr_t, 100)
+      10u,
+      100u
     #endif
     #if SYSTEM_BIT >= 16
       ,
-      LITERAL(uintptr_t, 1000),
-      LITERAL(uintptr_t, 10000)
+      1000u,
+      10000u
     #endif
     #if SYSTEM_BIT >= 32
       ,
-      LITERAL(uintptr_t, 100000),
-      LITERAL(uintptr_t, 1000000),
-      LITERAL(uintptr_t, 10000000),
-      LITERAL(uintptr_t, 100000000),
-      LITERAL(uintptr_t, 1000000000)
+      100000u,
+      1000000u,
+      10000000u,
+      100000000u,
+      1000000000u
     #endif
     #if SYSTEM_BIT >= 64
       ,
-      LITERAL(uintptr_t, 10000000000),
-      LITERAL(uintptr_t, 100000000000),
-      LITERAL(uintptr_t, 1000000000000),
-      LITERAL(uintptr_t, 10000000000000),
-      LITERAL(uintptr_t, 100000000000000),
-      LITERAL(uintptr_t, 1000000000000000),
-      LITERAL(uintptr_t, 10000000000000000),
-      LITERAL(uintptr_t, 100000000000000000),
-      LITERAL(uintptr_t, 1000000000000000000),
-      LITERAL(uintptr_t, 10000000000000000000)
+      10000000000u,
+      100000000000u,
+      1000000000000u,
+      10000000000000u,
+      100000000000000u,
+      1000000000000000u,
+      10000000000000000u,
+      100000000000000000u,
+      1000000000000000000u,
+      10000000000000000000u
     #endif
   };
 
