@@ -1013,8 +1013,8 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
     
     struct spa_rectangle min_size = SPA_RECTANGLE(1, 1);
     struct spa_rectangle max_size = SPA_RECTANGLE(16384, 16384);
-    struct spa_fraction min_fps = SPA_FRACTION(1, 1);
-    struct spa_fraction max_fps = SPA_FRACTION(60, 1);
+    struct spa_fraction min_fps = SPA_FRACTION(0, 1);
+    struct spa_fraction max_fps = SPA_FRACTION(1000, 1);
 
     params[0] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
       SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
