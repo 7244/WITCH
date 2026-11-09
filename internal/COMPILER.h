@@ -8,15 +8,10 @@
 #ifdef __cplusplus
   #define __language_cpp __cplusplus
 
-  #if __language_cpp <= 202002L
-    /* cpp has bug where `new (ptr) type` requires you to include <new> */
-    /* `new` is listed as keyword. it shouldnt need a include to work. */
-    #include <new>
-  #else
-    #if defined(__WITCH_DEVELOPER) && __WITCH_DEVELOPER
-      #warning is this bug still exist?
-    #endif
-  #endif
+  /* cpp standard has design flaw where `new (ptr) type` requires you to include <new> */
+  /* `new` is listed as keyword. it shouldnt need an include to work. */
+  /* so to fix standard, we can just always include <new> */
+  #include <new>
 
   #define __restrict_or_nothing
 #endif
