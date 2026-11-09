@@ -1,7 +1,12 @@
 #pragma once
 
-#define EXPAND(p0) p0
-#define ARG(...) __VA_ARGS__
+#ifndef EXPAND
+  #define EXPAND(p) p
+#endif
+
+#ifndef ARGS
+  #define ARGS(...) __VA_ARGS__
+#endif
 
 #ifndef STRINGIFY
   #define _WITCH_STRINGIFY(p) #p
