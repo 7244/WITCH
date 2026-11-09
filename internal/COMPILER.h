@@ -244,23 +244,6 @@ typedef double f64_t;
 typedef long double f128_t;
 typedef CONCAT3(f, SYSTEM_BIT, _t) f_t;
 
-#define _LITERAL_uint8_t u
-#define _LITERAL_uint16_t u
-#define _LITERAL_uint32_t lu
-#define _LITERAL_uint64_t llu
-#define _LITERAL_uintptr_t CONCAT3(_LITERAL_uint, SYSTEM_BIT, _t)
-#define _LITERAL_sint8_t
-#define _LITERAL_sint16_t
-#define _LITERAL_sint32_t l
-#define _LITERAL_sint64_t ll
-#define _LITERAL_sintptr_t CONCAT3(_LITERAL_sint, SYSTEM_BIT, _t)
-#define _LITERAL_f32_t f
-#define _LITERAL_f64_t L
-#define _LITERAL_f128_t L
-#define _LITERAL_f_t CONCAT3(_LITERAL_f, SYSTEM_BIT, _t)
-#define LITERAL(type_m, num_m) \
-  (type_m)CONCAT(num_m, CONCAT(_LITERAL_, type_m))
-
 #ifndef _memcpy_size_sum
   #define _memcpy_size_sum(dst, src, size) do{ \
     __builtin_memcpy((void *)(dst), (const void *)(src), (size)); \
