@@ -8,7 +8,7 @@
 #include <time.h>
 #include <iostream>
 //#include <gio/gio.h>
-#define MD_SCR_DEBUG_PRINTS
+// build with -DMD_SCR_DEBUG_PRINTS to trace portal/PipeWire capture
 
 // Wayland protocol headers - generated from .xml files
 // https://raw.githubusercontent.com/swaywm/wlr-protocols/master/unstable/wlr-screencopy-unstable-v1.xml
