@@ -1,16 +1,34 @@
 #pragma once
 
-#define EXPAND(p0) p0
-#define ARG(...) __VA_ARGS__
-#define STR(_m) #_m
-#define _CONCAT(_0_m, _1_m) _0_m ## _1_m
-#define CONCAT(_0_m, _1_m) _CONCAT(_0_m, _1_m)
-#define _CONCAT2(_0_m, _1_m) _0_m ## _1_m
-#define CONCAT2(_0_m, _1_m) _CONCAT(_0_m, _1_m)
-#define _CONCAT3(_0_m, _1_m, _2_m) _0_m ## _1_m ## _2_m
-#define CONCAT3(_0_m, _1_m, _2_m) _CONCAT3(_0_m, _1_m, _2_m)
-#define _CONCAT4(_0_m, _1_m, _2_m, _3_m) _0_m ## _1_m ## _2_m ## _3_m
-#define CONCAT4(_0_m, _1_m, _2_m, _3_m) _CONCAT4(_0_m, _1_m, _2_m, _3_m)
+#ifndef EXPAND
+  #define EXPAND(p) p
+#endif
+
+#ifndef ARGS
+  #define ARGS(...) __VA_ARGS__
+#endif
+
+#ifndef STRINGIFY
+  #define _WITCH_STRINGIFY(p) #p
+  #define STRINGIFY(p) _WITCH_STRINGIFY(p)
+#endif
+
+#ifndef CONCAT
+  #define _WITCH_CONCAT(p0, p1) p0 ## p1
+  #define CONCAT(p0, p1) _WITCH_CONCAT(p0, p1)
+#endif
+#ifndef CONCAT2
+  #define _WITCH_CONCAT2(p0, p1) p0 ## p1
+  #define CONCAT2(p0, p1) _WITCH_CONCAT2(p0, p1)
+#endif
+#ifndef CONCAT3
+  #define _WITCH_CONCAT3(p0, p1, p2) p0 ## p1 ## p2
+  #define CONCAT3(p0, p1, p2) _WITCH_CONCAT3(p0, p1, p2)
+#endif
+#ifndef CONCAT4
+  #define _WITCH_CONCAT4(p0, p1, p2, p3) p0 ## p1 ## p2 ## p3
+  #define CONCAT4(p0, p1, p2, p3) _WITCH_CONCAT4(p0, p1, p2, p3)
+#endif
 
 #ifndef WITCH_INCLUDE_PATH
   #define _WITCH_PATH(p0) <WITCH/p0>
