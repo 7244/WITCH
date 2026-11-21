@@ -101,6 +101,17 @@ typedef struct {
 
 static portal_state_t portal_state = { 0 };
 
+// The portal's restore token (ScreenCast version 4): given back to SelectSources, the same screen or window is shared
+// again without the dialog. Set before MD_SCR_open; after it, it holds the token the portal gave for this share
+#define MD_SCR_HAS_RESTORE_TOKEN 1
+char MD_SCR_restore_token[512] = { 0 };
+void MD_SCR_set_restore_token(const char* token) {
+  snprintf(MD_SCR_restore_token, sizeof(MD_SCR_restore_token), "%s", token ? token : "");
+}
+const char* MD_SCR_get_restore_token(void) {
+  return MD_SCR_restore_token;
+}
+
 // Wayland screencopy implementation (keeping your existing code)
 static void registry_global(void* data, struct wl_registry* registry, uint32_t id, const char* interface, uint32_t version) {
   wayland_screencap_t* ctx = (wayland_screencap_t*)data;
@@ -234,6 +245,8 @@ static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusM
   }
   // Check if this is a Start response
   else if (strstr(path, "start_") && !portal_state.start_done) {
+    // the token given in is used up, this response gives the next one (or none)
+    MD_SCR_restore_token[0] = 0;
     if (dbus_message_iter_get_arg_type(&args) == DBUS_TYPE_ARRAY) {
       dbus_message_iter_recurse(&args, &results_iter);
       while (dbus_message_iter_get_arg_type(&results_iter) == DBUS_TYPE_DICT_ENTRY) {
@@ -242,6 +255,15 @@ static DBusHandlerResult portal_signal_handler(DBusConnection* connection, DBusM
         if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_STRING) {
           dbus_message_iter_get_basic(&dict_entry, &key);
           dbus_message_iter_next(&dict_entry);
+          if (key && strcmp(key, "restore_token") == 0 && dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_VARIANT) {
+            DBusMessageIter token_iter;
+            dbus_message_iter_recurse(&dict_entry, &token_iter);
+            if (dbus_message_iter_get_arg_type(&token_iter) == DBUS_TYPE_STRING) {
+              const char* token = NULL;
+              dbus_message_iter_get_basic(&token_iter, &token);
+              MD_SCR_set_restore_token(token);
+            }
+          }
           if (key && strcmp(key, "streams") == 0) {
             if (dbus_message_iter_get_arg_type(&dict_entry) == DBUS_TYPE_VARIANT) {
               dbus_message_iter_recurse(&dict_entry, &variant_iter);
@@ -461,11 +483,25 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
   }
 
   const char* types_key = "types";
-  uint32_t source_type = 1; // Monitor
+  uint32_t source_type = 3; // Monitor or window, the portal asks which
   if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
     !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &types_key) ||
     !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant) ||
     !dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &source_type) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+
+  // the portal draws the mouse pointer into the picture while it is showing, and leaves it out when an
+  // application hides it (a game does), so viewers see what the user sees
+  const char* cursor_mode_key = "cursor_mode";
+  uint32_t cursor_mode_val = 2; // embedded
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &cursor_mode_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &cursor_mode_val) ||
     !dbus_message_iter_close_container(&option, &variant) ||
     !dbus_message_iter_close_container(&options, &option)) {
     cleanup_resources(reply, conn, msg, &error);
@@ -482,6 +518,33 @@ static int portal_request_screenshare(MD_SCR_t* scr) {
     !dbus_message_iter_close_container(&options, &option)) {
     cleanup_resources(reply, conn, msg, &error);
     return -1;
+  }
+
+  // 2: the choice is kept until the user revokes it, the portal answers Start with a token for it. A portal older
+  // than version 4 ignores both
+  const char* persist_key = "persist_mode";
+  uint32_t persist_val = 2;
+  if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+    !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &persist_key) ||
+    !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "u", &variant) ||
+    !dbus_message_iter_append_basic(&variant, DBUS_TYPE_UINT32, &persist_val) ||
+    !dbus_message_iter_close_container(&option, &variant) ||
+    !dbus_message_iter_close_container(&options, &option)) {
+    cleanup_resources(reply, conn, msg, &error);
+    return -1;
+  }
+  if (MD_SCR_restore_token[0]) {
+    const char* restore_key = "restore_token";
+    const char* restore_val = MD_SCR_restore_token;
+    if (!dbus_message_iter_open_container(&options, DBUS_TYPE_DICT_ENTRY, NULL, &option) ||
+      !dbus_message_iter_append_basic(&option, DBUS_TYPE_STRING, &restore_key) ||
+      !dbus_message_iter_open_container(&option, DBUS_TYPE_VARIANT, "s", &variant) ||
+      !dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &restore_val) ||
+      !dbus_message_iter_close_container(&option, &variant) ||
+      !dbus_message_iter_close_container(&options, &option)) {
+      cleanup_resources(reply, conn, msg, &error);
+      return -1;
+    }
   }
 
   if (!dbus_message_iter_close_container(&args, &options)) {
@@ -688,6 +751,10 @@ static void on_stream_param_changed(void* data, uint32_t id, const struct spa_po
   printf("*** SUCCESS *** PipeWire format: %dx%d, stride: %d, format: %s (%d)\n",
     ctx->width, ctx->height, ctx->stride, format_name, format.info.raw.format);
 #endif
+  // what the compositor agreed to: GNOME sends a frame at most every 1/max_framerate
+  printf("PipeWire frame rate: %u/%u, max %u/%u\n",
+    format.info.raw.framerate.num, format.info.raw.framerate.denom,
+    format.info.raw.max_framerate.num, format.info.raw.max_framerate.denom);
 
   if (ctx->frame_data) {
     free(ctx->frame_data);
@@ -754,6 +821,14 @@ static void on_stream_process(void* data) {
     }
   }
 #endif
+
+  // A buffer without a picture: GNOME sends them when only the pointer moved or nothing changed (more often with no
+  // frame-rate limit). Copying it as a whole frame gave a black (all zero) one, the encoder took it as the newest
+  // and the stream flickered. It goes back to the compositor, and the read waits for the next real frame
+  if (buf->datas[0].chunk && (chunk_size == 0 || (buf->datas[0].chunk->flags & SPA_CHUNK_FLAG_CORRUPTED))) {
+    pw_stream_queue_buffer(ctx->stream, b);
+    return;
+  }
 
   // Primary path: Direct mapped data (works on GNOME)
   if (data_ptr != NULL) {
@@ -976,8 +1051,10 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
   }
 
   // Build format parameters based on desktop environment
-  const struct spa_pod* params[1];
-  uint8_t buffer[1024];
+  // GNOME gets two formats to choose from, the first it can take is used
+  const struct spa_pod* params[2];
+  uint32_t n_params = 1;
+  uint8_t buffer[2048];
   struct spa_pod_builder b = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
 
   if (is_gnome) {
@@ -993,6 +1070,13 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
     struct spa_fraction def_fps = SPA_FRACTION(25, 1);
     struct spa_fraction min_fps = SPA_FRACTION(0, 1);
     struct spa_fraction max_fps = SPA_FRACTION(1000, 1);
+    // GNOME sends a frame only when 1/maxFramerate has passed since the last one, and offers 0..60 (GNOME 50). 60
+    // lets only some paints through: every second at 100 Hz (50 fps), every third at 160 Hz (53 fps). 0 is no limit,
+    // every paint comes and the encoder takes the newest. That one is asked for first; a compositor that doesn't
+    // offer 0 takes the second format, up to 240
+    struct spa_fraction no_limit = SPA_FRACTION(0, 1);
+    struct spa_fraction max_rate = SPA_FRACTION(240, 1);
+    struct spa_fraction min_rate = SPA_FRACTION(1, 1);
 
     params[0] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
       SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
@@ -1003,7 +1087,21 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
         SPA_VIDEO_FORMAT_BGRx,
         SPA_VIDEO_FORMAT_RGBx),
       SPA_FORMAT_VIDEO_size, SPA_POD_CHOICE_RANGE_Rectangle(&def_size, &min_size, &max_size),
-      SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(&def_fps, &min_fps, &max_fps));
+      SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(&def_fps, &min_fps, &max_fps),
+      SPA_FORMAT_VIDEO_maxFramerate, SPA_POD_Fraction(&no_limit));
+    n_params = 2;
+
+    params[1] = (const struct spa_pod*)spa_pod_builder_add_object(&b,
+      SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
+      SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
+      SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
+      SPA_FORMAT_VIDEO_format, SPA_POD_CHOICE_ENUM_Id(3,
+        SPA_VIDEO_FORMAT_BGRA,
+        SPA_VIDEO_FORMAT_BGRx,
+        SPA_VIDEO_FORMAT_RGBx),
+      SPA_FORMAT_VIDEO_size, SPA_POD_CHOICE_RANGE_Rectangle(&def_size, &min_size, &max_size),
+      SPA_FORMAT_VIDEO_framerate, SPA_POD_CHOICE_RANGE_Fraction(&def_fps, &min_fps, &max_fps),
+      SPA_FORMAT_VIDEO_maxFramerate, SPA_POD_CHOICE_RANGE_Fraction(&max_rate, &min_rate, &max_rate));
 
   } else {
     // Use flexible parameters for COSMIC and others
@@ -1052,7 +1150,7 @@ static int pipewire_init_stream(pipewire_ctx_t* ctx, uint32_t node_id) {
 #endif
   }
 
-  if (pw_stream_connect(ctx->stream, PW_DIRECTION_INPUT, node_id, flags, params, 1) < 0) {
+  if (pw_stream_connect(ctx->stream, PW_DIRECTION_INPUT, node_id, flags, params, n_params) < 0) {
     printf("Failed to connect PipeWire stream to node %u\n", node_id);
     
     // For non-GNOME systems, try alternative connection without MAP_BUFFERS flag
