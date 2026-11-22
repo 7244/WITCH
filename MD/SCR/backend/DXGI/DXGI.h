@@ -49,6 +49,12 @@ static sint32_t MD_SCR_open(MD_SCR_t *scr){
   VEC_t outputs;
   VEC_init(&outputs, sizeof(IDXGIOutput *), A_resize);
 
+  /* the primary display (the one with the taskbar and 0,0), and the adapter it is connected to: the first output of
+     the first adapter was taken before, often another monitor, and the device was made on adapter 0 even when the
+     output belonged to another one */
+  IDXGIOutput *chosen_output = 0;
+  IDXGIAdapter1 *chosen_adapter = 0;
+
   while(factory->EnumAdapters1(adapters.Current, &adapter) != DXGI_ERROR_NOT_FOUND){
     DXGI_ADAPTER_DESC1 desc;
     if(adapter->GetDesc1(&desc) != S_OK){
@@ -57,14 +63,22 @@ static sint32_t MD_SCR_open(MD_SCR_t *scr){
     VEC_handle(&adapters);
     ((IDXGIAdapter1 **)adapters.ptr)[adapters.Current] = adapter;
     adapters.Current++;
-    while(adapter->EnumOutputs(outputs.Current, &output) != DXGI_ERROR_NOT_FOUND){
+    /* each adapter numbers its own outputs from 0 */
+    for(UINT output_index = 0; adapter->EnumOutputs(output_index, &output) != DXGI_ERROR_NOT_FOUND; output_index++){
       DXGI_OUTPUT_DESC desc;
       if(output->GetDesc(&desc) != S_OK){
+        output->Release();
         continue;
       }
       VEC_handle(&outputs);
       ((IDXGIOutput **)outputs.ptr)[outputs.Current] = output;
       outputs.Current++;
+      MONITORINFO monitor_info;
+      monitor_info.cbSize = sizeof(monitor_info);
+      if(!chosen_output && desc.AttachedToDesktop && GetMonitorInfoW(desc.Monitor, &monitor_info) && (monitor_info.dwFlags & MONITORINFOF_PRIMARY)){
+        chosen_output = output;
+        chosen_adapter = adapter;
+      }
     }
   }
 
@@ -81,7 +95,12 @@ static sint32_t MD_SCR_open(MD_SCR_t *scr){
 
   D3D_FEATURE_LEVEL feature_level;
 
-  auto result = D3D11CreateDevice(*((IDXGIAdapter1 **)adapters.ptr),
+  if(!chosen_output){
+    chosen_output = *((IDXGIOutput **)outputs.ptr);
+    chosen_adapter = *((IDXGIAdapter1 **)adapters.ptr);
+  }
+
+  auto result = D3D11CreateDevice(chosen_adapter,
     D3D_DRIVER_TYPE_UNKNOWN,
     NULL,
     NULL,
@@ -99,7 +118,7 @@ static sint32_t MD_SCR_open(MD_SCR_t *scr){
     return 1;
   }
 
-  output = *((IDXGIOutput **)outputs.ptr);
+  output = chosen_output;
   IDXGIOutput1* output1 = 0;
 
   if(output->QueryInterface(__uuidof(IDXGIOutput1), (void**)&output1) != S_OK){
