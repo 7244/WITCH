@@ -1430,7 +1430,9 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
   if (!scr) return NULL;
 
   if (scr->method == MD_SCR_METHOD_PORTAL_PIPEWIRE && scr->pw_ctx) {
-    scr->pw_ctx->frame_ready = 0;
+    // A frame that came before this read is kept, it is the newest: the first one often comes while MD_SCR_open
+    // waits for the stream. Cleared here, it was lost, and GNOME sends the next only when something on the screen
+    // changes: a share opened without the dialog (a restore token) stayed black until then. Cleared when handed out
 
     const char* desktop = getenv("XDG_CURRENT_DESKTOP");
     int is_cosmic = (desktop && strstr(desktop, "cosmic"));
@@ -1510,6 +1512,7 @@ uint8_t* MD_SCR_read(MD_SCR_t* scr) {
     }
 #endif
 
+    scr->pw_ctx->frame_ready = 0;
     return scr->pw_ctx->frame_data;
   }
 
